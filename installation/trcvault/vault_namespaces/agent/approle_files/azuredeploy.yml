@@ -1,3 +1,0 @@
-Approle_Name: "azuredeploy"
-Token_Permissions: 
-    vault_token_azuredeploy: true

@@ -6,12 +6,12 @@ import (
 	"strconv"
 	"strings"
 
-	vcutils "github.com/trimble-oss/tierceron/pkg/cli/trcconfigbase/utils"
-	"github.com/trimble-oss/tierceron/pkg/core"
+	vcutils "github.com/trimble-oss/tierceron-core/pkg/cli/trcconfigbase/utils"
+	"github.com/trimble-oss/tierceron-core/pkg/core"
 
-	helperkv "github.com/trimble-oss/tierceron/pkg/vaulthelper/kv"
+	helperkv "github.com/trimble-oss/tierceron-core/pkg/vaulthelper/kv"
 
-	sys "github.com/trimble-oss/tierceron/pkg/vaulthelper/system"
+	sys "github.com/trimble-oss/tierceron-core/pkg/vaulthelper/system"
 )
 
 // Properties stores all configuration properties for a project.

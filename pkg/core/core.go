@@ -15,6 +15,7 @@ type CoreConfig struct {
 	Env           string // dev-1, dev-2, etc...
 	Regions       []string
 
+	VersionFilter     []string
 	DynamicPathFilter string // Seeds from a specific path.
 	WantCerts         bool
 	ExitOnFailure     bool // Exit on a failure or try to continue

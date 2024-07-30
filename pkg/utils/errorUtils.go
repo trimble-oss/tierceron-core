@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/trimble-oss/tierceron/pkg/core"
+	"github.com/trimble-oss/tierceron-core/pkg/core"
 )
 
 var headlessService bool

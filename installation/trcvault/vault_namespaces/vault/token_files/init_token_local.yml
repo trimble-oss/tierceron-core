@@ -1,6 +1,0 @@
-policies: ["init_local"]
-metadata:
-  user : "VaultInit"
-
-ttl: "8760h"
-display_name: "VaultInit Token"

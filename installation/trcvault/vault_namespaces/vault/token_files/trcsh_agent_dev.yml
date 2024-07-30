@@ -1,6 +1,0 @@
-policies: ["trcsh_agent_dev"]
-metadata:
-  user : "Trcsh Agent"
-
-ttl: "8760h"
-display_name: "Trcsh Agent Token"

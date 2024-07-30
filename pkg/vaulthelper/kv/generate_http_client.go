@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/trimble-oss/tierceron/buildopts/coreopts"
+	"github.com/trimble-oss/tierceron-core/buildopts/coreopts"
 )
 
 func IsUrlIp(address string) (bool, error) {

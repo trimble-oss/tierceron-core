@@ -1,36 +1,26 @@
 ﻿
 ## Let's get started
-To set up tierceron secret and configuration management system you can do any of the following...
+When implementing plugins several things must be adhered to:
+* Correct build options.
+* Go module dependencies must match versions with those in github.com/trimble-oss/tierceron
 
-### Install command line tools
-See [installation/README.md](installation/README.md)
+## Intialize a function
+Only 2 functions needs to be implemented in the plugin:
 
-### Setting up local vault (for new individuals or organizations without a vault set up yet)
-See [installation/trclocal/README.md](installation/trclocal/README.md)
+## Provide paths in vault for certificates
+func GetConfigPaths() []string
 
-### Setting up a cloud hosted vault (skip if using local vault.  only for setting up in cloud -- needs cleanup)
-See [installation/trccloud/terraform/azure/cloudboot/GETTING_STARTED.MD](installation/trccloud/terraform/azure/cloudboot/GETTING_STARTED.MD)
+## Provide secrets, certificates, and an event channel map 
+func Init(properties *map[string]interface{})
 
-### Setting up default tokens and approles using example policy, role, and token configuration files (only needed to set up local or cloud instance of vault)
-See [installation/trcvault/README.md](installation/trcvault/README.md)
+# Keys include:
+PluginEventChannelsMap: map[string]interface{}
+Keys provided by GetConfigPaths
+Built in project/service key containing project secrets
 
-### Setting up your very first hello world example application
-See hello world section of [installation/trclocal/trchelloworld/README.md](installation/trclocal/trchelloworld/README.md)
+# Keys in PluginEventChannelsMap include:
+PluginChannelEventIn  - contains channel for receving incoming events
+PluginChannelEventOut - channel for emitting event results
 
-### Installing collaborative deployment system (trc-vault-carrier and trcsh)
-See [installation/trccarrier/README.md](installation/trccarrier/README.md)
-
-See [installation/trcsh/README.md](installation/trcsh/README.md)
-
-See [installation/trcagent/README.md](installation/trcagent/README.md)
-
-
-### Installing TrcDb atrium for Tierceron Vault (OPTIONAL)
-This section is if you would like to develop Tierceron trusted business flows utilizing the Tierceron flume package.  This usually requires extending tierceron to implement your own custom flow extensions.
-
-See [installation/trcdb/README.md](installation/trcdb/README.md)
-
-### Automated tests ⚙
-TODO...
 
 

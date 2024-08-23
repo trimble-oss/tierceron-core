@@ -1,5 +1,0 @@
-*.png diff=exif
-.* export-ignore
-bin export-ignore
-Makefile export-ignore
-

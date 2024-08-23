@@ -2,7 +2,7 @@
 ## License
 [LICENSE](LICENSE)
 
-# Tierceron
+# Tierceron-core
 
 [![GitHub release](https://img.shields.io/github/release/trimble-oss/tierceron-core.svg?style=flat-square)](https://github.com/trimble-oss/tierceron-core/releases/latest)
 [![Go Report Card](https://goreportcard.com/badge/github.com/trimble-oss/tierceron-core)](https://goreportcard.com/report/github.com/trimble-oss/tierceron-core)

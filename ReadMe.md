@@ -4,9 +4,9 @@
 
 # Tierceron
 
-[![GitHub release](https://img.shields.io/github/release/trimble-oss/tierceron.svg?style=flat-square)](https://github.com/trimble-oss/tierceron/releases/latest)
-[![Go Report Card](https://goreportcard.com/badge/github.com/trimble-oss/tierceron)](https://goreportcard.com/report/github.com/trimble-oss/tierceron)
-[![PkgGoDev](https://img.shields.io/badge/go.dev-docs-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/github.com/trimble-oss/tierceron)
+[![GitHub release](https://img.shields.io/github/release/trimble-oss/tierceron-core.svg?style=flat-square)](https://github.com/trimble-oss/tierceron-core/releases/latest)
+[![Go Report Card](https://goreportcard.com/badge/github.com/trimble-oss/tierceron-core)](https://goreportcard.com/report/github.com/trimble-oss/tierceron-core)
+[![PkgGoDev](https://img.shields.io/badge/go.dev-docs-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/github.com/trimble-oss/tierceron-core)
 
 ## What is it?
 Tierceron-core is an interface definition project in support of the tierceron hive.  It provides a list of supported events emitted by the hive kernel.

@@ -9,29 +9,16 @@
 [![PkgGoDev](https://img.shields.io/badge/go.dev-docs-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/github.com/trimble-oss/tierceron)
 
 ## What is it?
-Tierceron is a [encrypted configuration management system](https://en.wikipedia.org/wiki/Microservices) created for managing configurations and secrets used in microservices in Vault (by Hashicorp).  It is written in [Go](https://go.dev/), using Apache [Dolthub](https://github.com/dolthub/go-mysql-server) (Tierceron Flume: provides integrated flows), [G3n](http://g3n.rocks/) (integrated visualization), [Kubernetes](https://kubernetes.io/) (Tierceron Shell: integrated cloud agent secure shell), and Hashicorp [Vault](https://www.hashicorp.com/products/vault) (data and secrets encryption).
-
-This suite of tools provides functionality for creating, reading, and updating configurations over multiple environments (presently dev, QA, RQA, and staging).  If you have a Vault token with the right permissions for the right environment, you can read configurations for that environment.  Presently, only the root token can be used to actually create and update changes to the stored configurations (this should probably be changed).  Support has also been recently prototyped (2019 hackathon) to provide in memory configurations via a supporting shared library, dll, or dynamic library.
+Tierceron-core is an interface definition project in support of the tierceron hive.  It provides a list of supported events emitted by the hive kernel.
 
 ## Why❓
-* Because Configuration Management is a pain.  I wanted to be able to switch between development and QA and any other environment with a single call for all my microservices.  With these tools, I can now do that.
-* We wanted a system that worked transparently from dev -> QA -> staging -> production.
-* Wanted a fun project for our interns to work on over the summer.
-* Since Tierceron is written all in go, the services involved are very stable and tiny.  All configurations may be managed on a small EC2/virtual machine running anywhere from locally to AWS/Azure backed by an encrypted and backed up database.
-* Coding in go is a dream.  If I could code an entire system in go, I would do it in a snap.
+Tierceron hive utilizes trcsh to run as a service that
+delivers secrets securely to running [go plugin](https://pkg.go.dev/plugin) implementation of microservices.
 
 ## Key Features
-- This project follows a [GitFlow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow) model for development and release.
-- Encrypted configurations store in Vault backed by encrypted mysql.
-- Highly stable Vault service that can run on something as small as a t2 micro in AWS or something similar in Azure for example.
-- Tools: 
-    * trcconfig -- for reading configurations
-    * trcinit -- for initializing a configuration set over multiple projects.
-    * trcx -- for extracting seed data that can be managed locally separate from the configuration templates.
-    * trcpub -- for publishing template changes.
-    * nc.so -- for dynamically loading configurations securely in memory.
-            - this has been used successfully for a java microservice to pull in configuration files and public certificates all referenced in memory.  This means there is no configuration footprint on the filesystem.
-            -- switching from dev to QA in this setup simply means using a different token.
+* Configurations delivered in memory from vault to trcsh kernel directly to running tierceron plugin services via an 
+* Kernel services can be remotely managed via trcsh scripts running in a release pipeline.  These scripts require authentication in order to run
+
 
 ## Getting started
 If you are a contributor, please have a look on the [getting started](GETTING_STARTED.MD) file. Here you can check the information required and other things before providing a useful contribution.

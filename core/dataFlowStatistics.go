@@ -15,42 +15,6 @@ import (
 	"github.com/trimble-oss/tierceron-nute/mashupsdk"
 )
 
-// type DataFlowStatistic struct {
-// 	mashupsdk.MashupDetailedElement
-// 	FlowGroup string
-// 	FlowName  string
-// 	StateName string
-// 	StateCode string
-// 	TimeSplit time.Duration
-// 	Mode      int
-// }
-
-// type DataFlow struct {
-// 	mashupsdk.MashupDetailedElement
-// 	Name       string
-// 	TimeStart  time.Time
-// 	Statistics []DataFlowStatistic
-// 	LogStat    bool
-// 	LogFunc    func(string, error)
-// }
-
-// type DataFlowGroup struct {
-// 	mashupsdk.MashupDetailedElement
-// 	Name  string
-// 	Flows []DataFlow
-// }
-
-// type Argosy struct {
-// 	mashupsdk.MashupDetailedElement
-// 	ArgosyID string
-// 	Groups   []DataFlowGroup
-// }
-
-// type ArgosyFleet struct {
-// 	ArgosyName string
-// 	Argosies   []Argosy
-// }
-
 type TTDINode struct {
 	*mashupsdk.MashupDetailedElement
 	//Data       []byte
@@ -257,7 +221,6 @@ func (dfs *TTDINode) GetDeliverStatCtx() (*DeliverStatCtx, error) {
 			dsc.FlowName = flowName
 		}
 	}
-
 	if decodedData["StateCode"] != nil {
 		if stateCode, ok := decodedData["StateCode"].(string); ok {
 			dsc.StateCode = stateCode
@@ -380,4 +343,43 @@ func (dfs *TTDINode) FinishStatisticLog() {
 			//dfs.LogFunc(stat.FlowName+"-"+stat.StateName, nil)
 		}
 	}
+}
+
+// Creating map representation for easier use by persistence functions
+func (dfs *TTDINode) StatisticToMap() map[string]interface{} {
+	var elapsedTime string
+	statMap := make(map[string]interface{})
+	var decodedstat interface{}
+	err := json.Unmarshal([]byte(dfs.MashupDetailedElement.Data), &decodedstat)
+	if err != nil {
+		log.Println("Error in decoding data in StatisticToMap")
+		return statMap
+	}
+	decodedStatData := decodedstat.(map[string]interface{})
+
+	statMap["flowGroup"] = decodedStatData["FlowGroup"]
+	statMap["flowName"] = decodedStatData["FlowName"]
+	statMap["stateName"] = decodedStatData["StateName"]
+	statMap["stateCode"] = decodedStatData["StateCode"]
+	if _, ok := decodedStatData["TimeSplit"].(time.Duration); ok {
+		if decodedStatData["TimeSplit"] != nil && decodedStatData["TimeSplit"].(time.Duration).Seconds() < 0 { //Covering corner case of 0 second time durations being slightly off (-.00004 seconds)
+			elapsedTime = "0s"
+		} else {
+			elapsedTime = decodedStatData["TimeSplit"].(time.Duration).Truncate(time.Millisecond * 10).String()
+		}
+	} else if timeFloat, ok := decodedStatData["TimeSplit"].(float64); ok {
+		elapsedTime = time.Duration(timeFloat * float64(time.Nanosecond)).Truncate(time.Millisecond * 10).String()
+	}
+	statMap["timeSplit"] = elapsedTime
+	if modeFloat, ok := decodedStatData["Mode"].(float64); ok {
+		statMap["mode"] = int(modeFloat)
+	} else {
+		statMap["mode"] = decodedStatData["Mode"]
+	}
+	if ltd, ok := decodedStatData["LastTestedDate"].(string); ok {
+		statMap["lastTestedDate"] = ltd
+	} else {
+		statMap["lastTestedDate"] = ""
+	}
+	return statMap
 }

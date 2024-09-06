@@ -1,4 +1,4 @@
-module github.com/trimble-oss/tierceron-core
+module github.com/trimble-oss/tierceron-core/v2
 
 go 1.21.12
 

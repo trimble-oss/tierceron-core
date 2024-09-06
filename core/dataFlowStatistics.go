@@ -58,6 +58,9 @@ type TTDINode struct {
 }
 
 type DeliverStatCtx struct {
+	FlowGroup string
+	FlowName  string
+	StateCode string
 	LogStat   *bool
 	LogFunc   *func(string, error)
 	TimeStart *string
@@ -244,10 +247,27 @@ func (dfs *TTDINode) GetDeliverStatCtx() (*DeliverStatCtx, error) {
 			dsc.LogFunc = &logFunc
 		}
 	}
+	if decodedData["FlowGroup"] != nil {
+		if flowGroup, ok := decodedData["FlowGroup"].(string); ok {
+			dsc.FlowGroup = flowGroup
+		}
+	}
+	if decodedData["FlowName"] != nil {
+		if flowName, ok := decodedData["FlowName"].(string); ok {
+			dsc.FlowName = flowName
+		}
+	}
+
+	if decodedData["StateCode"] != nil {
+		if stateCode, ok := decodedData["StateCode"].(string); ok {
+			dsc.StateCode = stateCode
+		}
+	}
+
 	return &dsc, nil
 }
 
-func (dfs *TTDINode) FinishStatistic(id string, indexPath string, idName string, logger *log.Logger, vaultWriteBack bool, dsc *DeliverStatCtx) *map[string]interface{} {
+func (dfs *TTDINode) FinishStatistic(id string, indexPath string, idName string, logger *log.Logger, vaultWriteBack bool, dsc *DeliverStatCtx) map[string]interface{} {
 	var decodedstat interface{}
 	err := json.Unmarshal([]byte(dfs.MashupDetailedElement.Data), &decodedstat)
 	if err != nil {
@@ -285,7 +305,7 @@ func (dfs *TTDINode) FinishStatistic(id string, indexPath string, idName string,
 	}
 
 	statMap["lastTestedDate"] = lastTestedDate
-	return &statMap
+	return statMap
 }
 
 func (dfs *TTDINode) MapStatistic(data map[string]interface{}, logger *log.Logger) {

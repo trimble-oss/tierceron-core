@@ -17,7 +17,6 @@ import (
 
 type TTDINode struct {
 	*mashupsdk.MashupDetailedElement
-	//Data       []byte
 	ChildNodes []*TTDINode
 }
 
@@ -85,7 +84,6 @@ func InitDataFlow(logF func(string, error), name string, logS bool) *TTDINode {
 		return &TTDINode{MashupDetailedElement: &mashupsdk.MashupDetailedElement{}}
 	}
 	ttdiNode := &TTDINode{&mashupsdk.MashupDetailedElement{Name: name, State: &mashupsdk.MashupElementState{State: int64(mashupsdk.Init)}, Data: string(encodedData)}, stats}
-	//var newDFStatistic = DataFlow{Name: name, TimeStart: time.Now(), Statistics: stats, LogStat: logS, LogFunc: logF}
 	return ttdiNode
 }
 
@@ -139,7 +137,6 @@ func (dfs *TTDINode) UpdateDataFlowStatistic(flowG string, flowN string, stateN 
 		return
 	}
 	newNode := TTDINode{MashupDetailedElement: &mashupsdk.MashupDetailedElement{Data: string(newEncodedData)}, ChildNodes: []*TTDINode{}}
-	//var newDFStat = DataFlowStatistic{mashupsdk.MashupDetailedElement{}, flowG, flowN, stateN, stateC, time.Since(dfs.TimeStart), mode}
 	dfs.ChildNodes = append(dfs.ChildNodes, &newNode)
 	newData["decodedData"] = decodedData
 	dfs.EfficientLog(newData, logF)
@@ -159,7 +156,6 @@ func (dfs *TTDINode) UpdateDataFlowStatisticWithTime(flowG string, flowN string,
 		return
 	}
 	newNode := TTDINode{MashupDetailedElement: &mashupsdk.MashupDetailedElement{State: &mashupsdk.MashupElementState{State: int64(mashupsdk.Init)}, Data: string(newEncodedData)}, ChildNodes: []*TTDINode{}}
-	//var newDFStat = DataFlowStatistic{mashupsdk.MashupDetailedElement{}, flowG, flowN, stateN, stateC, elapsedTime, mode}
 	dfs.ChildNodes = append(dfs.ChildNodes, &newNode)
 	dfs.EfficientLog(newData, nil)
 }
@@ -315,7 +311,6 @@ func (dfs *TTDINode) MapStatistic(data map[string]interface{}, logger *log.Logge
 	if mode, ok := data["mode"]; ok {
 		modeStr := fmt.Sprintf("%s", mode) //Treats it as a interface due to weird typing from vault (encoding/json.Number)
 		if modeInt, err := strconv.Atoi(modeStr); err == nil {
-			//df.Mode = modeInt
 			newData["Mode"] = modeInt
 		}
 	}

@@ -22,14 +22,16 @@ type TTDINode struct {
 }
 
 type DeliverStatCtx struct {
-	FlowGroup string
-	FlowName  string
-	StateCode string
-	StateName string
-	LogStat   bool
-	LogFunc   *func(string, error)
-	TimeStart *string
-	Mode      float64
+	FlowGroup      string
+	FlowName       string
+	StateCode      string
+	StateName      string
+	LastTestedDate interface{} //TODO: can this be string?
+	LogStat        bool
+	LogFunc        *func(string, error)
+	TimeStart      interface{}
+	TimeSplit      interface{} //either float64 or duration
+	Mode           interface{} //either float64 or int
 }
 
 func InitDataFlow(logF func(string, error), name string, logS bool) *TTDINode {
@@ -51,29 +53,26 @@ func InitDataFlow(logF func(string, error), name string, logS bool) *TTDINode {
 }
 
 func (dfs *TTDINode) UpdateDataFlowStatistic(flowG string, flowN string, stateN string, stateC string, mode int, logF func(string, error)) {
-	var decoded interface{}
 	var decodedData map[string]interface{}
 	var timeStart time.Time
+	var err error
 	if len(dfs.MashupDetailedElement.Data) > 0 {
-		err := json.Unmarshal([]byte(dfs.MashupDetailedElement.Data), &decoded)
+		var dfsctx *DeliverStatCtx
+		dfsctx, decodedData, err = dfs.GetDeliverStatCtx()
 		if err != nil {
 			logF("Error in decoding data in UpdateDataFlowStatistic", err)
 			return
 		}
-		decodedData = decoded.(map[string]interface{})
 
 		//string to time.time
-		if decodedData["TimeStart"] != nil {
-			if _, ok := decoded.(time.Time); ok {
-				timeStart = decodedData["TimeStart"].(time.Time)
-			} else {
-				var timeParseErr error
-				timeStartStr := decodedData["TimeStart"].(string)
-				timeStart, timeParseErr = time.Parse(RFC_ISO_8601, timeStartStr)
-				if timeParseErr != nil {
-					logF("Error in parsing start time in UpdateDataFlowStatistics", timeParseErr)
-					return
-				}
+		if ts, ok := dfsctx.TimeStart.(time.Time); ok {
+			timeStart = ts
+		} else {
+			var timeParseErr error
+			timeStart, timeParseErr = time.Parse(RFC_ISO_8601, dfsctx.TimeStart.(string))
+			if timeParseErr != nil {
+				logF("Error in parsing start time in UpdateDataFlowStatistics", timeParseErr)
+				return
 			}
 		}
 	} else {
@@ -192,18 +191,19 @@ func (dfs *TTDINode) Log() {
 	}
 }
 
-func (dfs *TTDINode) GetDeliverStatCtx() (*DeliverStatCtx, error) {
+func (dfs *TTDINode) GetDeliverStatCtx() (*DeliverStatCtx, map[string]interface{}, error) {
 	var decoded interface{}
 	var dsc DeliverStatCtx
 	err := json.Unmarshal([]byte(dfs.MashupDetailedElement.Data), &decoded)
 	if err != nil {
 		log.Println("Error in decoding data in FinishStatistic")
-		return nil, err
+		return nil, nil, err
 	}
 	decodedData := decoded.(map[string]interface{})
 	if start, ok := decodedData["TimeStart"].(time.Time); ok {
-		time := start.Format(time.RFC3339)
-		dsc.TimeStart = &time
+		dsc.TimeStart = start.Format(time.RFC3339)
+	} else {
+		dsc.TimeStart = decodedData["TimeStart"]
 	}
 	if logStat, ok := decodedData["LogStat"].(bool); ok {
 		dsc.LogStat = logStat
@@ -234,12 +234,15 @@ func (dfs *TTDINode) GetDeliverStatCtx() (*DeliverStatCtx, error) {
 		}
 	}
 	if decodedData["Mode"] != nil {
-		if mode, ok := decodedData["Mode"].(float64); ok {
-			dsc.Mode = mode
-		}
+		dsc.Mode = decodedData["Mode"]
 	}
-
-	return &dsc, nil
+	if decodedData["TimeSplit"] != nil {
+		dsc.TimeSplit = decodedData["TimeSplit"]
+	}
+	if decodedData["LastTestedDate"] != nil {
+		dsc.LastTestedDate = decodedData["LastTestedDate"]
+	}
+	return &dsc, decodedData, nil
 }
 
 func (dfs *TTDINode) FinishStatistic(id string, indexPath string, idName string, logger *log.Logger, vaultWriteBack bool, dsc *DeliverStatCtx) map[string]interface{} {
@@ -273,8 +276,8 @@ func (dfs *TTDINode) FinishStatistic(id string, indexPath string, idName string,
 		statMap["mode"] = decodedStatData["Mode"]
 	}
 	lastTestedDate := ""
-	if dsc.TimeStart != nil {
-		lastTestedDate = *dsc.TimeStart
+	if t, ok := dsc.TimeStart.(string); ok {
+		lastTestedDate = t
 	} else if _, ok := decodedStatData["TimeStart"].(string); ok {
 		lastTestedDate = decodedStatData["TimeStart"].(string)
 	}
@@ -312,7 +315,7 @@ func (dfs *TTDINode) MapStatistic(data map[string]interface{}, logger *log.Logge
 
 // Set logFunc and logStat = false to use this otherwise it logs as states change with logStat = true
 func (dfs *TTDINode) FinishStatisticLog() {
-	dfsctx, err := dfs.GetDeliverStatCtx()
+	dfsctx, _, err := dfs.GetDeliverStatCtx()
 	if err != nil {
 		log.Printf("Error in decoding data in FinishStatisticLog: %s\n", err)
 		return
@@ -321,7 +324,7 @@ func (dfs *TTDINode) FinishStatisticLog() {
 		return
 	}
 	for _, stat := range dfs.ChildNodes {
-		dfstatCtx, err := stat.GetDeliverStatCtx()
+		dfstatCtx, _, err := stat.GetDeliverStatCtx()
 		if err != nil {
 			log.Println("Error in decoding data in FinishStatisticLog")
 			return
@@ -341,34 +344,32 @@ func (dfs *TTDINode) FinishStatisticLog() {
 func (dfs *TTDINode) StatisticToMap() map[string]interface{} {
 	var elapsedTime string
 	statMap := make(map[string]interface{})
-	var decodedstat interface{}
-	err := json.Unmarshal([]byte(dfs.MashupDetailedElement.Data), &decodedstat)
+	dfsctx, _, err := dfs.GetDeliverStatCtx()
 	if err != nil {
 		log.Println("Error in decoding data in StatisticToMap")
 		return statMap
 	}
-	decodedStatData := decodedstat.(map[string]interface{})
 
-	statMap["flowGroup"] = decodedStatData["FlowGroup"]
-	statMap["flowName"] = decodedStatData["FlowName"]
-	statMap["stateName"] = decodedStatData["StateName"]
-	statMap["stateCode"] = decodedStatData["StateCode"]
-	if _, ok := decodedStatData["TimeSplit"].(time.Duration); ok {
-		if decodedStatData["TimeSplit"] != nil && decodedStatData["TimeSplit"].(time.Duration).Seconds() < 0 { //Covering corner case of 0 second time durations being slightly off (-.00004 seconds)
+	statMap["flowGroup"] = dfsctx.FlowGroup
+	statMap["flowName"] = dfsctx.FlowName
+	statMap["stateName"] = dfsctx.StateName
+	statMap["stateCode"] = dfsctx.StateCode
+	if _, ok := dfsctx.TimeSplit.(time.Duration); ok {
+		if dfsctx.TimeSplit != nil && dfsctx.TimeSplit.(time.Duration).Seconds() < 0 { //Covering corner case of 0 second time durations being slightly off (-.00004 seconds)
 			elapsedTime = "0s"
 		} else {
-			elapsedTime = decodedStatData["TimeSplit"].(time.Duration).Truncate(time.Millisecond * 10).String()
+			elapsedTime = dfsctx.TimeSplit.(time.Duration).Truncate(time.Millisecond * 10).String()
 		}
-	} else if timeFloat, ok := decodedStatData["TimeSplit"].(float64); ok {
+	} else if timeFloat, ok := dfsctx.TimeSplit.(float64); ok {
 		elapsedTime = time.Duration(timeFloat * float64(time.Nanosecond)).Truncate(time.Millisecond * 10).String()
 	}
 	statMap["timeSplit"] = elapsedTime
-	if modeFloat, ok := decodedStatData["Mode"].(float64); ok {
+	if modeFloat, ok := dfsctx.Mode.(float64); ok {
 		statMap["mode"] = int(modeFloat)
 	} else {
-		statMap["mode"] = decodedStatData["Mode"]
+		statMap["mode"] = dfsctx.Mode
 	}
-	if ltd, ok := decodedStatData["LastTestedDate"].(string); ok {
+	if ltd, ok := dfsctx.LastTestedDate.(string); ok {
 		statMap["lastTestedDate"] = ltd
 	} else {
 		statMap["lastTestedDate"] = ""

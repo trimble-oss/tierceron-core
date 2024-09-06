@@ -25,9 +25,11 @@ type DeliverStatCtx struct {
 	FlowGroup string
 	FlowName  string
 	StateCode string
-	LogStat   *bool
+	StateName string
+	LogStat   bool
 	LogFunc   *func(string, error)
 	TimeStart *string
+	Mode      float64
 }
 
 func InitDataFlow(logF func(string, error), name string, logS bool) *TTDINode {
@@ -204,7 +206,7 @@ func (dfs *TTDINode) GetDeliverStatCtx() (*DeliverStatCtx, error) {
 		dsc.TimeStart = &time
 	}
 	if logStat, ok := decodedData["LogStat"].(bool); ok {
-		dsc.LogStat = &logStat
+		dsc.LogStat = logStat
 	}
 	if decodedData["LogFunc"] != nil {
 		if logFunc, ok := decodedData["LogFunc"].(func(string, error)); ok {
@@ -224,6 +226,16 @@ func (dfs *TTDINode) GetDeliverStatCtx() (*DeliverStatCtx, error) {
 	if decodedData["StateCode"] != nil {
 		if stateCode, ok := decodedData["StateCode"].(string); ok {
 			dsc.StateCode = stateCode
+		}
+	}
+	if decodedData["StateName"] != nil {
+		if stateName, ok := decodedData["StateName"].(string); ok {
+			dsc.StateName = stateName
+		}
+	}
+	if decodedData["Mode"] != nil {
+		if mode, ok := decodedData["Mode"].(float64); ok {
+			dsc.Mode = mode
 		}
 	}
 
@@ -300,47 +312,27 @@ func (dfs *TTDINode) MapStatistic(data map[string]interface{}, logger *log.Logge
 
 // Set logFunc and logStat = false to use this otherwise it logs as states change with logStat = true
 func (dfs *TTDINode) FinishStatisticLog() {
-	var decoded interface{}
-	err := json.Unmarshal([]byte(dfs.MashupDetailedElement.Data), &decoded)
+	dfsctx, err := dfs.GetDeliverStatCtx()
 	if err != nil {
-		log.Println("Error in decoding data in FinishStatisticLog")
+		log.Printf("Error in decoding data in FinishStatisticLog: %s\n", err)
 		return
 	}
-	decodedData := decoded.(map[string]interface{})
-	if decodedData["LogStat"] == nil || decodedData["LogFunc"] == nil {
-		return
-	}
-	if decodedData["LogFunc"] == nil || (decodedData["LogStat"] != nil && decodedData["LogStat"].(bool)) {
+	if dfsctx.LogFunc == nil || dfsctx.LogStat {
 		return
 	}
 	for _, stat := range dfs.ChildNodes {
-		var decodedstat interface{}
-		err := json.Unmarshal([]byte(stat.MashupDetailedElement.Data), &decodedstat)
+		dfstatCtx, err := stat.GetDeliverStatCtx()
 		if err != nil {
 			log.Println("Error in decoding data in FinishStatisticLog")
 			return
 		}
-		decodedStatData := decodedstat.(map[string]interface{})
-		if decodedStatData["StateName"] != nil && strings.Contains(decodedStatData["StateName"].(string), "Failure") && decodedData["LogFunc"] != nil {
-			logFunc := decodedData["LogFunc"].(func(string, error))
-			logFunc(decodedStatData["FlowName"].(string)+"-"+decodedStatData["StateName"].(string), errors.New(decodedStatData["StateName"].(string)))
-			//dfs.LogFunc(stat.FlowName+"-"+stat.StateName, errors.New(stat.StateName))
-			if decodedStatData["Mode"] != nil {
-				if modeFloat, ok := decodedStatData["Mode"].(float64); ok {
-					if modeFloat == 2 { //Update snapshot Mode on failure so it doesn't repeat
+		if strings.Contains(dfstatCtx.StateName, "Failure") && dfsctx.LogFunc != nil {
+			(*dfsctx.LogFunc)(dfstatCtx.FlowName+"-"+dfstatCtx.StateName, errors.New(dfstatCtx.StateName))
+			if dfstatCtx.Mode == 2 { //Update snapshot Mode on failure so it doesn't repeat
 
-					}
-				} else {
-					if decodedStatData["Mode"] == 2 { //Update snapshot Mode on failure so it doesn't repeat
-
-					}
-				}
 			}
 		} else {
-			logFunc := decodedData["LogFunc"].(func(string, error))
-			logFunc(decodedStatData["FlowName"].(string)+"-"+decodedStatData["StateName"].(string), nil)
-
-			//dfs.LogFunc(stat.FlowName+"-"+stat.StateName, nil)
+			(*dfsctx.LogFunc)(dfstatCtx.FlowName+"-"+dfstatCtx.StateName, nil)
 		}
 	}
 }

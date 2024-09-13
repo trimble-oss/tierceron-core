@@ -1,5 +1,7 @@
 package core
 
+import "log"
+
 const (
 	PLUGIN_EVENT_START = iota
 	PLUGIN_EVENT_STOP
@@ -13,3 +15,10 @@ const DATA_FLOW_STAT_CHANNEL = "DataFlowStatisticsChannel"
 const ERROR_CHANNEL = "ErrorChannel"
 
 const RFC_ISO_8601 = "2006-01-02 15:04:05 -0700 MST"
+
+type ConfigContext struct {
+	Config     *map[string]interface{}
+	Start      func()
+	ConfigCert *map[string][]byte
+	Log        *log.Logger
+}

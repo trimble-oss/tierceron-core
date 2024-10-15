@@ -54,7 +54,10 @@ func Init(properties *map[string]interface{},
 	receiverHandler func(chan int),
 	chatHandler func(chan *ChatMsg),
 ) (*ConfigContext, error) {
-	if properties == nil {
+	if properties == nil ||
+		startHandler == nil ||
+		receiverHandler == nil ||
+		chatHandler == nil {
 		fmt.Println("Missing initialization components")
 		return nil, errors.New("missing initialization components")
 	}
@@ -121,9 +124,7 @@ func Init(properties *map[string]interface{},
 				if rc, ok := rchan[CMD_CHANNEL].(*chan int); ok && rc != nil {
 					configContext.Log.Println("Command Receiver initialized.")
 					configContext.CmdReceiver = rc
-					if receiverHandler != nil {
-						go receiverHandler(*rc)
-					}
+					go receiverHandler(*rc)
 				} else {
 					configContext.Log.Println("Unsupported command receiving channel passed")
 					return nil, errors.New("unsupported command receiving channel passed")
@@ -131,9 +132,7 @@ func Init(properties *map[string]interface{},
 				if cr, ok := rchan[CHAT_CHANNEL].(*chan *ChatMsg); ok && cr != nil {
 					configContext.Log.Println("Chat Receiver initialized.")
 					configContext.ChatReceiver = cr
-					if receiverHandler != nil {
-						go chatHandler(*cr)
-					}
+					go chatHandler(*cr)
 				} else {
 					configContext.Log.Println("Unsupported chat message receiving channel passed")
 					return nil, errors.New("unsupported chat message receiving channel passed")

@@ -106,7 +106,9 @@ func Init(properties *map[string]interface{},
 			if rchan, ok := chans[PLUGIN_CHANNEL_EVENT_IN]; ok {
 				if rc, ok := rchan.(chan int); ok && rc != nil {
 					configContext.Log.Println("Receiver initialized.")
-					go receiverHandler(rc)
+					if receiverHandler != nil {
+						go receiverHandler(rc)
+					}
 				} else {
 					configContext.Log.Println("Unsupported receiving channel passed")
 					return nil, errors.New("unsupported receiving channel passed")

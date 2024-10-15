@@ -16,20 +16,33 @@ const (
 const PLUGIN_EVENT_CHANNELS_MAP_KEY = "PluginEventChannelsMap"
 const PLUGIN_CHANNEL_EVENT_IN = "PluginChannelEventIn"
 const PLUGIN_CHANNEL_EVENT_OUT = "PluginChannelEventOut"
+const CMD_CHANNEL = "CommandChannel"
+const CHAT_CHANNEL = "ChatChannel"
 const DATA_FLOW_STAT_CHANNEL = "DataFlowStatisticsChannel"
 const ERROR_CHANNEL = "ErrorChannel"
 
 const RFC_ISO_8601 = "2006-01-02 15:04:05 -0700 MST"
 
 type ConfigContext struct {
-	Config          *map[string]interface{}
-	Env             string // Env being processed
-	Start           func()
-	ErrorSenderChan *chan error     // Channel for sending errors
-	DfsChan         *chan *TTDINode // Channel for sending data flow statistics
-	ArgosId         string          // Identifier for data flow statistics
-	ConfigCerts     *map[string][]byte
-	Log             *log.Logger
+	Config       *map[string]interface{}
+	Env          string // Env being processed
+	Start        func()
+	ChatSender   *chan *ChatMsg
+	ChatReceiver *chan *ChatMsg
+	CmdSender    *chan int
+	CmdReceiver  *chan int
+	ErrorChan    *chan error     // Channel for sending errors
+	DfsChan      *chan *TTDINode // Channel for sending data flow statistics
+	ArgosId      string          // Identifier for data flow statistics
+	ConfigCerts  *map[string][]byte
+	Log          *log.Logger
+}
+
+type ChatMsg struct {
+	ChatId   *string
+	Name     *string //plugin name
+	Query    *[]string
+	Response *string
 }
 
 func Init(properties *map[string]interface{},
@@ -39,8 +52,12 @@ func Init(properties *map[string]interface{},
 	dfsKeyHeader string,
 	startHandler func(),
 	receiverHandler func(chan int),
+	chatHandler func(chan *ChatMsg),
 ) (*ConfigContext, error) {
-	if properties == nil {
+	if properties == nil ||
+		startHandler == nil ||
+		receiverHandler == nil ||
+		chatHandler == nil {
 		fmt.Println("Missing initialization components")
 		return nil, errors.New("missing initialization components")
 	}
@@ -103,15 +120,22 @@ func Init(properties *map[string]interface{},
 
 	if channels, ok := (*properties)[PLUGIN_EVENT_CHANNELS_MAP_KEY]; ok {
 		if chans, ok := channels.(map[string]interface{}); ok {
-			if rchan, ok := chans[PLUGIN_CHANNEL_EVENT_IN]; ok {
-				if rc, ok := rchan.(chan int); ok && rc != nil {
-					configContext.Log.Println("Receiver initialized.")
-					if receiverHandler != nil {
-						go receiverHandler(rc)
-					}
+			if rchan, ok := chans[PLUGIN_CHANNEL_EVENT_IN].(map[string]interface{}); ok {
+				if rc, ok := rchan[CMD_CHANNEL].(*chan int); ok && rc != nil {
+					configContext.Log.Println("Command Receiver initialized.")
+					configContext.CmdReceiver = rc
+					go receiverHandler(*rc)
 				} else {
-					configContext.Log.Println("Unsupported receiving channel passed")
-					return nil, errors.New("unsupported receiving channel passed")
+					configContext.Log.Println("Unsupported command receiving channel passed")
+					return nil, errors.New("unsupported command receiving channel passed")
+				}
+				if cr, ok := rchan[CHAT_CHANNEL].(*chan *ChatMsg); ok && cr != nil {
+					configContext.Log.Println("Chat Receiver initialized.")
+					configContext.ChatReceiver = cr
+					go chatHandler(*cr)
+				} else {
+					configContext.Log.Println("Unsupported chat message receiving channel passed")
+					return nil, errors.New("unsupported chat message receiving channel passed")
 				}
 			} else {
 				configContext.Log.Println("No receiving channel passed")
@@ -120,7 +144,7 @@ func Init(properties *map[string]interface{},
 			if schan, ok := chans[PLUGIN_CHANNEL_EVENT_OUT].(map[string]interface{}); ok {
 				if sc, ok := schan[ERROR_CHANNEL].(chan error); ok && sc != nil {
 					configContext.Log.Println("Error Sender initialized")
-					configContext.ErrorSenderChan = &sc
+					configContext.ErrorChan = &sc
 				} else {
 					configContext.Log.Println("Unsupported error sending channel passed")
 					return nil, errors.New("unsupported error sending channel passed")
@@ -132,6 +156,20 @@ func Init(properties *map[string]interface{},
 					configContext.Log.Println("Unsupported dataflow statistics sending channel passedUnsupported dataflow statistics sending channel passed")
 					return nil, errors.New("unsupported dataflow statistics sending channel passed")
 				}
+				if cmdsender, ok := schan[CMD_CHANNEL].(*chan int); ok {
+					configContext.Log.Println("Command status sending channel initialized.")
+					configContext.CmdSender = cmdsender
+				} else {
+					configContext.Log.Println("Unsupported command status sending channel passed")
+					return nil, errors.New("unsupported command status sending channel passed")
+				}
+				if chsender, ok := schan[CHAT_CHANNEL].(*chan *ChatMsg); ok {
+					configContext.Log.Println("Chat message sending channel initialized.")
+					configContext.ChatSender = chsender
+				} else {
+					configContext.Log.Println("Unsupported chat message sending channel passed")
+					return nil, errors.New("unsupported chat message sending channel passed")
+				}
 			} else {
 				configContext.Log.Println("No sending channels passed")
 				return nil, errors.New("no sending channels passed")
@@ -141,6 +179,6 @@ func Init(properties *map[string]interface{},
 			return nil, errors.New("no channels passed")
 		}
 	}
-	configContext.Log.Println("Successfully initialized rainier")
+	configContext.Log.Println("Successfully initialized plugin")
 	return configContext, nil
 }

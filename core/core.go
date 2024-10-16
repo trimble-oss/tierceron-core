@@ -24,18 +24,18 @@ const ERROR_CHANNEL = "ErrorChannel"
 const RFC_ISO_8601 = "2006-01-02 15:04:05 -0700 MST"
 
 type ConfigContext struct {
-	Config       *map[string]interface{}
-	Env          string // Env being processed
-	Start        func()
-	ChatSender   *chan *ChatMsg
-	ChatReceiver *chan *ChatMsg
-	CmdSender    *chan int
-	CmdReceiver  *chan int
-	ErrorChan    *chan error     // Channel for sending errors
-	DfsChan      *chan *TTDINode // Channel for sending data flow statistics
-	ArgosId      string          // Identifier for data flow statistics
-	ConfigCerts  *map[string][]byte
-	Log          *log.Logger
+	Config           *map[string]interface{}
+	Env              string // Env being processed
+	Start            func()
+	ChatSenderChan   *chan *ChatMsg
+	ChatReceiverChan *chan *ChatMsg
+	CmdSenderChan    *chan int
+	CmdReceiverChan  *chan int
+	ErrorChan        *chan error     // Channel for sending errors
+	DfsChan          *chan *TTDINode // Channel for sending data flow statistics
+	ArgosId          string          // Identifier for data flow statistics
+	ConfigCerts      *map[string][]byte
+	Log              *log.Logger
 }
 
 type ChatMsg struct {
@@ -123,7 +123,7 @@ func Init(properties *map[string]interface{},
 			if rchan, ok := chans[PLUGIN_CHANNEL_EVENT_IN].(map[string]interface{}); ok {
 				if rc, ok := rchan[CMD_CHANNEL].(*chan int); ok && rc != nil {
 					configContext.Log.Println("Command Receiver initialized.")
-					configContext.CmdReceiver = rc
+					configContext.CmdReceiverChan = rc
 					go receiverHandler(*rc)
 				} else {
 					configContext.Log.Println("Unsupported command receiving channel passed")
@@ -131,7 +131,7 @@ func Init(properties *map[string]interface{},
 				}
 				if cr, ok := rchan[CHAT_CHANNEL].(*chan *ChatMsg); ok && cr != nil {
 					configContext.Log.Println("Chat Receiver initialized.")
-					configContext.ChatReceiver = cr
+					configContext.ChatReceiverChan = cr
 					go chatHandler(*cr)
 				} else {
 					configContext.Log.Println("Unsupported chat message receiving channel passed")
@@ -158,14 +158,14 @@ func Init(properties *map[string]interface{},
 				}
 				if cmdsender, ok := schan[CMD_CHANNEL].(*chan int); ok {
 					configContext.Log.Println("Command status sending channel initialized.")
-					configContext.CmdSender = cmdsender
+					configContext.CmdSenderChan = cmdsender
 				} else {
 					configContext.Log.Println("Unsupported command status sending channel passed")
 					return nil, errors.New("unsupported command status sending channel passed")
 				}
 				if chsender, ok := schan[CHAT_CHANNEL].(*chan *ChatMsg); ok {
 					configContext.Log.Println("Chat message sending channel initialized.")
-					configContext.ChatSender = chsender
+					configContext.ChatSenderChan = chsender
 				} else {
 					configContext.Log.Println("Unsupported chat message sending channel passed")
 					return nil, errors.New("unsupported chat message sending channel passed")

@@ -142,16 +142,16 @@ func Init(properties *map[string]interface{},
 				return nil, errors.New("no receiving channel passed")
 			}
 			if schan, ok := chans[PLUGIN_CHANNEL_EVENT_OUT].(map[string]interface{}); ok {
-				if sc, ok := schan[ERROR_CHANNEL].(chan error); ok && sc != nil {
+				if sc, ok := schan[ERROR_CHANNEL].(*chan error); ok && sc != nil {
 					configContext.Log.Println("Error Sender initialized")
-					configContext.ErrorChan = &sc
+					configContext.ErrorChan = sc
 				} else {
 					configContext.Log.Println("Unsupported error sending channel passed")
 					return nil, errors.New("unsupported error sending channel passed")
 				}
-				if ttdichan, ok := schan[DATA_FLOW_STAT_CHANNEL].(chan *TTDINode); ok {
+				if ttdichan, ok := schan[DATA_FLOW_STAT_CHANNEL].(*chan *TTDINode); ok {
 					configContext.Log.Println("Data flow statistics channel initialized.")
-					configContext.DfsChan = &ttdichan
+					configContext.DfsChan = ttdichan
 				} else {
 					configContext.Log.Println("Unsupported dataflow statistics sending channel passedUnsupported dataflow statistics sending channel passed")
 					return nil, errors.New("unsupported dataflow statistics sending channel passed")

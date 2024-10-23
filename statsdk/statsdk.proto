@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package statsdk;
+option go_package = "./statsdk";
+
+service StatService {
+    rpc GetStats(GetStatRequest) returns (GetStatResponse);
+    rpc SetStats(SetStatRequest) returns (SetStatResponse);
+}
+
+message GetStatRequest {
+    string key = 1;
+}
+
+message SetStatRequest {
+    string key = 1;
+    string value = 2;
+    string data_type = 3;
+}
+
+message GetStatResponse {
+    string results = 1;
+    string data_type = 2;
+}
+
+message SetStatResponse {
+    bool success = 1;
+}

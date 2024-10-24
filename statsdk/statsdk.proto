@@ -10,17 +10,17 @@ service StatService {
 
 message GetStatRequest {
     string key = 1;
+    string token = 2;
 }
 
 message SetStatRequest {
     string key = 1;
     string value = 2;
-    string data_type = 3;
+    string token = 3;
 }
 
 message GetStatResponse {
     string results = 1;
-    string data_type = 2;
 }
 
 message SetStatResponse {

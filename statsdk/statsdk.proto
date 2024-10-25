@@ -19,10 +19,20 @@ message SetStatRequest {
     string token = 3;
 }
 
+message IncrementStatRequest {
+    string key = 1;
+    string value = 2;
+    string token = 3;
+}
+
 message GetStatResponse {
     string results = 1;
 }
 
 message SetStatResponse {
+    bool success = 1;
+}
+
+message IncrementStatResponse {
     bool success = 1;
 }

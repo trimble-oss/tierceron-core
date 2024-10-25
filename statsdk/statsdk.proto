@@ -7,6 +7,7 @@ service StatService {
     rpc GetStats(GetStatRequest) returns (GetStatResponse);
     rpc SetStats(SetStatRequest) returns (SetStatResponse);
     rpc IncrementStats(IncrementStatRequest) returns (IncrementStatResponse);
+    rpc UpdateMaxStats(UpdateMaxStatRequest) returns (UpdateMaxStatResponse);
 }
 
 message GetStatRequest {
@@ -27,6 +28,13 @@ message IncrementStatRequest {
     string datatype = 4;
 }
 
+message UpdateMaxStatRequest {
+    string key = 1;
+    string value = 2;
+    string token = 3;
+    string datatype = 4;
+}
+
 message GetStatResponse {
     string results = 1;
 }
@@ -36,5 +44,9 @@ message SetStatResponse {
 }
 
 message IncrementStatResponse {
+    bool success = 1;
+}
+
+message UpdateMaxStatResponse {
     bool success = 1;
 }

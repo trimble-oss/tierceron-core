@@ -22,6 +22,7 @@ const (
 	StatService_GetStats_FullMethodName       = "/statsdk.StatService/GetStats"
 	StatService_SetStats_FullMethodName       = "/statsdk.StatService/SetStats"
 	StatService_IncrementStats_FullMethodName = "/statsdk.StatService/IncrementStats"
+	StatService_UpdateMaxStats_FullMethodName = "/statsdk.StatService/UpdateMaxStats"
 )
 
 // StatServiceClient is the client API for StatService service.
@@ -31,6 +32,7 @@ type StatServiceClient interface {
 	GetStats(ctx context.Context, in *GetStatRequest, opts ...grpc.CallOption) (*GetStatResponse, error)
 	SetStats(ctx context.Context, in *SetStatRequest, opts ...grpc.CallOption) (*SetStatResponse, error)
 	IncrementStats(ctx context.Context, in *IncrementStatRequest, opts ...grpc.CallOption) (*IncrementStatResponse, error)
+	UpdateMaxStats(ctx context.Context, in *UpdateMaxStatRequest, opts ...grpc.CallOption) (*UpdateMaxStatResponse, error)
 }
 
 type statServiceClient struct {
@@ -71,6 +73,16 @@ func (c *statServiceClient) IncrementStats(ctx context.Context, in *IncrementSta
 	return out, nil
 }
 
+func (c *statServiceClient) UpdateMaxStats(ctx context.Context, in *UpdateMaxStatRequest, opts ...grpc.CallOption) (*UpdateMaxStatResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateMaxStatResponse)
+	err := c.cc.Invoke(ctx, StatService_UpdateMaxStats_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StatServiceServer is the server API for StatService service.
 // All implementations must embed UnimplementedStatServiceServer
 // for forward compatibility.
@@ -78,6 +90,7 @@ type StatServiceServer interface {
 	GetStats(context.Context, *GetStatRequest) (*GetStatResponse, error)
 	SetStats(context.Context, *SetStatRequest) (*SetStatResponse, error)
 	IncrementStats(context.Context, *IncrementStatRequest) (*IncrementStatResponse, error)
+	UpdateMaxStats(context.Context, *UpdateMaxStatRequest) (*UpdateMaxStatResponse, error)
 	mustEmbedUnimplementedStatServiceServer()
 }
 
@@ -96,6 +109,9 @@ func (UnimplementedStatServiceServer) SetStats(context.Context, *SetStatRequest)
 }
 func (UnimplementedStatServiceServer) IncrementStats(context.Context, *IncrementStatRequest) (*IncrementStatResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IncrementStats not implemented")
+}
+func (UnimplementedStatServiceServer) UpdateMaxStats(context.Context, *UpdateMaxStatRequest) (*UpdateMaxStatResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateMaxStats not implemented")
 }
 func (UnimplementedStatServiceServer) mustEmbedUnimplementedStatServiceServer() {}
 func (UnimplementedStatServiceServer) testEmbeddedByValue()                     {}
@@ -172,6 +188,24 @@ func _StatService_IncrementStats_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StatService_UpdateMaxStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateMaxStatRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StatServiceServer).UpdateMaxStats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StatService_UpdateMaxStats_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StatServiceServer).UpdateMaxStats(ctx, req.(*UpdateMaxStatRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // StatService_ServiceDesc is the grpc.ServiceDesc for StatService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -190,6 +224,10 @@ var StatService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "IncrementStats",
 			Handler:    _StatService_IncrementStats_Handler,
+		},
+		{
+			MethodName: "UpdateMaxStats",
+			Handler:    _StatService_UpdateMaxStats_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

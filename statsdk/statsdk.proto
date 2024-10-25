@@ -6,6 +6,7 @@ option go_package = "./statsdk";
 service StatService {
     rpc GetStats(GetStatRequest) returns (GetStatResponse);
     rpc SetStats(SetStatRequest) returns (SetStatResponse);
+    rpc IncrementStats(IncrementStatRequest) returns (IncrementStatResponse);
 }
 
 message GetStatRequest {

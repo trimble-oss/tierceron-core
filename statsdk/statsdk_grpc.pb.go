@@ -30,7 +30,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StatServiceClient interface {
 	GetStats(ctx context.Context, in *GetStatRequest, opts ...grpc.CallOption) (*GetStatResponse, error)
-	SetStats(ctx context.Context, in *SetStatRequest, opts ...grpc.CallOption) (*UpdateStatResponse, error)
+	SetStats(ctx context.Context, in *UpdateStatRequest, opts ...grpc.CallOption) (*UpdateStatResponse, error)
 	IncrementStats(ctx context.Context, in *UpdateStatRequest, opts ...grpc.CallOption) (*UpdateStatResponse, error)
 	UpdateMaxStats(ctx context.Context, in *UpdateStatRequest, opts ...grpc.CallOption) (*UpdateStatResponse, error)
 }
@@ -53,7 +53,7 @@ func (c *statServiceClient) GetStats(ctx context.Context, in *GetStatRequest, op
 	return out, nil
 }
 
-func (c *statServiceClient) SetStats(ctx context.Context, in *SetStatRequest, opts ...grpc.CallOption) (*UpdateStatResponse, error) {
+func (c *statServiceClient) SetStats(ctx context.Context, in *UpdateStatRequest, opts ...grpc.CallOption) (*UpdateStatResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UpdateStatResponse)
 	err := c.cc.Invoke(ctx, StatService_SetStats_FullMethodName, in, out, cOpts...)
@@ -88,7 +88,7 @@ func (c *statServiceClient) UpdateMaxStats(ctx context.Context, in *UpdateStatRe
 // for forward compatibility.
 type StatServiceServer interface {
 	GetStats(context.Context, *GetStatRequest) (*GetStatResponse, error)
-	SetStats(context.Context, *SetStatRequest) (*UpdateStatResponse, error)
+	SetStats(context.Context, *UpdateStatRequest) (*UpdateStatResponse, error)
 	IncrementStats(context.Context, *UpdateStatRequest) (*UpdateStatResponse, error)
 	UpdateMaxStats(context.Context, *UpdateStatRequest) (*UpdateStatResponse, error)
 	mustEmbedUnimplementedStatServiceServer()
@@ -104,7 +104,7 @@ type UnimplementedStatServiceServer struct{}
 func (UnimplementedStatServiceServer) GetStats(context.Context, *GetStatRequest) (*GetStatResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStats not implemented")
 }
-func (UnimplementedStatServiceServer) SetStats(context.Context, *SetStatRequest) (*UpdateStatResponse, error) {
+func (UnimplementedStatServiceServer) SetStats(context.Context, *UpdateStatRequest) (*UpdateStatResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetStats not implemented")
 }
 func (UnimplementedStatServiceServer) IncrementStats(context.Context, *UpdateStatRequest) (*UpdateStatResponse, error) {
@@ -153,7 +153,7 @@ func _StatService_GetStats_Handler(srv interface{}, ctx context.Context, dec fun
 }
 
 func _StatService_SetStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetStatRequest)
+	in := new(UpdateStatRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -165,7 +165,7 @@ func _StatService_SetStats_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: StatService_SetStats_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StatServiceServer).SetStats(ctx, req.(*SetStatRequest))
+		return srv.(StatServiceServer).SetStats(ctx, req.(*UpdateStatRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

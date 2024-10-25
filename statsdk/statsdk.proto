@@ -5,7 +5,7 @@ option go_package = "./statsdk";
 
 service StatService {
     rpc GetStats(GetStatRequest) returns (GetStatResponse);
-    rpc SetStats(SetStatRequest) returns (UpdateStatResponse);
+    rpc SetStats(UpdateStatRequest) returns (UpdateStatResponse);
     rpc IncrementStats(UpdateStatRequest) returns (UpdateStatResponse);
     rpc UpdateMaxStats(UpdateStatRequest) returns (UpdateStatResponse);
 }
@@ -13,12 +13,6 @@ service StatService {
 message GetStatRequest {
     string key = 1;
     string token = 2;
-}
-
-message SetStatRequest {
-    string key = 1;
-    string value = 2;
-    string token = 3;
 }
 
 message UpdateStatRequest {

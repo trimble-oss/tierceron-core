@@ -5,9 +5,9 @@ option go_package = "./statsdk";
 
 service StatService {
     rpc GetStats(GetStatRequest) returns (GetStatResponse);
-    rpc SetStats(SetStatRequest) returns (SetStatResponse);
-    rpc IncrementStats(IncrementStatRequest) returns (IncrementStatResponse);
-    rpc UpdateMaxStats(UpdateMaxStatRequest) returns (UpdateMaxStatResponse);
+    rpc SetStats(SetStatRequest) returns (UpdateStatResponse);
+    rpc IncrementStats(UpdateStatRequest) returns (UpdateStatResponse);
+    rpc UpdateMaxStats(UpdateStatRequest) returns (UpdateStatResponse);
 }
 
 message GetStatRequest {
@@ -21,14 +21,7 @@ message SetStatRequest {
     string token = 3;
 }
 
-message IncrementStatRequest {
-    string key = 1;
-    string value = 2;
-    string token = 3;
-    string datatype = 4;
-}
-
-message UpdateMaxStatRequest {
+message UpdateStatRequest {
     string key = 1;
     string value = 2;
     string token = 3;
@@ -39,14 +32,6 @@ message GetStatResponse {
     string results = 1;
 }
 
-message SetStatResponse {
-    bool success = 1;
-}
-
-message IncrementStatResponse {
-    bool success = 1;
-}
-
-message UpdateMaxStatResponse {
+message UpdateStatResponse {
     bool success = 1;
 }

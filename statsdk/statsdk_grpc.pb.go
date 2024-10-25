@@ -30,9 +30,9 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StatServiceClient interface {
 	GetStats(ctx context.Context, in *GetStatRequest, opts ...grpc.CallOption) (*GetStatResponse, error)
-	SetStats(ctx context.Context, in *SetStatRequest, opts ...grpc.CallOption) (*SetStatResponse, error)
-	IncrementStats(ctx context.Context, in *IncrementStatRequest, opts ...grpc.CallOption) (*IncrementStatResponse, error)
-	UpdateMaxStats(ctx context.Context, in *UpdateMaxStatRequest, opts ...grpc.CallOption) (*UpdateMaxStatResponse, error)
+	SetStats(ctx context.Context, in *SetStatRequest, opts ...grpc.CallOption) (*UpdateStatResponse, error)
+	IncrementStats(ctx context.Context, in *UpdateStatRequest, opts ...grpc.CallOption) (*UpdateStatResponse, error)
+	UpdateMaxStats(ctx context.Context, in *UpdateStatRequest, opts ...grpc.CallOption) (*UpdateStatResponse, error)
 }
 
 type statServiceClient struct {
@@ -53,9 +53,9 @@ func (c *statServiceClient) GetStats(ctx context.Context, in *GetStatRequest, op
 	return out, nil
 }
 
-func (c *statServiceClient) SetStats(ctx context.Context, in *SetStatRequest, opts ...grpc.CallOption) (*SetStatResponse, error) {
+func (c *statServiceClient) SetStats(ctx context.Context, in *SetStatRequest, opts ...grpc.CallOption) (*UpdateStatResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(SetStatResponse)
+	out := new(UpdateStatResponse)
 	err := c.cc.Invoke(ctx, StatService_SetStats_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -63,9 +63,9 @@ func (c *statServiceClient) SetStats(ctx context.Context, in *SetStatRequest, op
 	return out, nil
 }
 
-func (c *statServiceClient) IncrementStats(ctx context.Context, in *IncrementStatRequest, opts ...grpc.CallOption) (*IncrementStatResponse, error) {
+func (c *statServiceClient) IncrementStats(ctx context.Context, in *UpdateStatRequest, opts ...grpc.CallOption) (*UpdateStatResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(IncrementStatResponse)
+	out := new(UpdateStatResponse)
 	err := c.cc.Invoke(ctx, StatService_IncrementStats_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -73,9 +73,9 @@ func (c *statServiceClient) IncrementStats(ctx context.Context, in *IncrementSta
 	return out, nil
 }
 
-func (c *statServiceClient) UpdateMaxStats(ctx context.Context, in *UpdateMaxStatRequest, opts ...grpc.CallOption) (*UpdateMaxStatResponse, error) {
+func (c *statServiceClient) UpdateMaxStats(ctx context.Context, in *UpdateStatRequest, opts ...grpc.CallOption) (*UpdateStatResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UpdateMaxStatResponse)
+	out := new(UpdateStatResponse)
 	err := c.cc.Invoke(ctx, StatService_UpdateMaxStats_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -88,9 +88,9 @@ func (c *statServiceClient) UpdateMaxStats(ctx context.Context, in *UpdateMaxSta
 // for forward compatibility.
 type StatServiceServer interface {
 	GetStats(context.Context, *GetStatRequest) (*GetStatResponse, error)
-	SetStats(context.Context, *SetStatRequest) (*SetStatResponse, error)
-	IncrementStats(context.Context, *IncrementStatRequest) (*IncrementStatResponse, error)
-	UpdateMaxStats(context.Context, *UpdateMaxStatRequest) (*UpdateMaxStatResponse, error)
+	SetStats(context.Context, *SetStatRequest) (*UpdateStatResponse, error)
+	IncrementStats(context.Context, *UpdateStatRequest) (*UpdateStatResponse, error)
+	UpdateMaxStats(context.Context, *UpdateStatRequest) (*UpdateStatResponse, error)
 	mustEmbedUnimplementedStatServiceServer()
 }
 
@@ -104,13 +104,13 @@ type UnimplementedStatServiceServer struct{}
 func (UnimplementedStatServiceServer) GetStats(context.Context, *GetStatRequest) (*GetStatResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStats not implemented")
 }
-func (UnimplementedStatServiceServer) SetStats(context.Context, *SetStatRequest) (*SetStatResponse, error) {
+func (UnimplementedStatServiceServer) SetStats(context.Context, *SetStatRequest) (*UpdateStatResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetStats not implemented")
 }
-func (UnimplementedStatServiceServer) IncrementStats(context.Context, *IncrementStatRequest) (*IncrementStatResponse, error) {
+func (UnimplementedStatServiceServer) IncrementStats(context.Context, *UpdateStatRequest) (*UpdateStatResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IncrementStats not implemented")
 }
-func (UnimplementedStatServiceServer) UpdateMaxStats(context.Context, *UpdateMaxStatRequest) (*UpdateMaxStatResponse, error) {
+func (UnimplementedStatServiceServer) UpdateMaxStats(context.Context, *UpdateStatRequest) (*UpdateStatResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateMaxStats not implemented")
 }
 func (UnimplementedStatServiceServer) mustEmbedUnimplementedStatServiceServer() {}
@@ -171,7 +171,7 @@ func _StatService_SetStats_Handler(srv interface{}, ctx context.Context, dec fun
 }
 
 func _StatService_IncrementStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(IncrementStatRequest)
+	in := new(UpdateStatRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -183,13 +183,13 @@ func _StatService_IncrementStats_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: StatService_IncrementStats_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StatServiceServer).IncrementStats(ctx, req.(*IncrementStatRequest))
+		return srv.(StatServiceServer).IncrementStats(ctx, req.(*UpdateStatRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _StatService_UpdateMaxStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateMaxStatRequest)
+	in := new(UpdateStatRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -201,7 +201,7 @@ func _StatService_UpdateMaxStats_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: StatService_UpdateMaxStats_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StatServiceServer).UpdateMaxStats(ctx, req.(*UpdateMaxStatRequest))
+		return srv.(StatServiceServer).UpdateMaxStats(ctx, req.(*UpdateStatRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

@@ -23,6 +23,7 @@ message IncrementStatRequest {
     string key = 1;
     string value = 2;
     string token = 3;
+    string datatype = 4;
 }
 
 message GetStatResponse {

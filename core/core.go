@@ -24,8 +24,8 @@ const ERROR_CHANNEL = "ErrorChannel"
 const RFC_ISO_8601 = "2006-01-02 15:04:05 -0700 MST"
 
 const (
-	TRCSHHIVEK_CERT = "Common/PluginCertHiveK.crt.mf.tmpl"
-	TRCSHHIVEK_KEY  = "Common/PluginCertHiveKkey.key.mf.tmpl"
+	TRCSHHIVEK_CERT = "Common/servicecert.crt.mf.tmpl"
+	TRCSHHIVEK_KEY  = "Common/servicekey.key.mf.tmpl"
 )
 
 type ConfigContext struct {

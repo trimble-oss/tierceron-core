@@ -28,14 +28,19 @@ const (
 	TRCSHHIVEK_KEY  = "Common/servicekey.key.mf.tmpl"
 )
 
+type KernelCmd struct {
+	PluginName string
+	Command    int
+}
+
 type ConfigContext struct {
 	Config           *map[string]interface{}
 	Env              string // Env being processed
-	Start            func()
+	Start            func(string)
 	ChatSenderChan   *chan *ChatMsg
 	ChatReceiverChan *chan *ChatMsg
-	CmdSenderChan    *chan int
-	CmdReceiverChan  *chan int
+	CmdSenderChan    *chan KernelCmd
+	CmdReceiverChan  *chan KernelCmd
 	ErrorChan        *chan error     // Channel for sending errors
 	DfsChan          *chan *TTDINode // Channel for sending data flow statistics
 	ArgosId          string          // Identifier for data flow statistics
@@ -46,6 +51,7 @@ type ConfigContext struct {
 type ChatMsg struct {
 	ChatId   *string
 	Name     *string //plugin name
+	KernelId *string
 	Query    *[]string
 	Response *string
 }
@@ -55,8 +61,8 @@ func Init(properties *map[string]interface{},
 	commonKeyPath string,
 	commonPath string,
 	dfsKeyHeader string,
-	startHandler func(),
-	receiverHandler func(chan int),
+	startHandler func(string),
+	receiverHandler func(chan KernelCmd),
 	chatHandler func(chan *ChatMsg),
 ) (*ConfigContext, error) {
 	if properties == nil ||
@@ -126,7 +132,7 @@ func Init(properties *map[string]interface{},
 	if channels, ok := (*properties)[PLUGIN_EVENT_CHANNELS_MAP_KEY]; ok {
 		if chans, ok := channels.(map[string]interface{}); ok {
 			if rchan, ok := chans[PLUGIN_CHANNEL_EVENT_IN].(map[string]interface{}); ok {
-				if rc, ok := rchan[CMD_CHANNEL].(*chan int); ok && rc != nil {
+				if rc, ok := rchan[CMD_CHANNEL].(*chan KernelCmd); ok && rc != nil {
 					configContext.Log.Println("Command Receiver initialized.")
 					configContext.CmdReceiverChan = rc
 					go receiverHandler(*rc)
@@ -161,7 +167,7 @@ func Init(properties *map[string]interface{},
 					configContext.Log.Println("Unsupported dataflow statistics sending channel passedUnsupported dataflow statistics sending channel passed")
 					return nil, errors.New("unsupported dataflow statistics sending channel passed")
 				}
-				if cmdsender, ok := schan[CMD_CHANNEL].(*chan int); ok {
+				if cmdsender, ok := schan[CMD_CHANNEL].(*chan KernelCmd); ok {
 					configContext.Log.Println("Command status sending channel initialized.")
 					configContext.CmdSenderChan = cmdsender
 				} else {

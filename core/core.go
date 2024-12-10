@@ -193,3 +193,9 @@ func Init(properties *map[string]interface{},
 	configContext.Log.Println("Successfully initialized plugin")
 	return configContext, nil
 }
+
+func SanitizeForLogging(errMsg string) string {
+	errMsgSanitized := strings.ReplaceAll(errMsg, "\n", "")
+	errMsgSanitized = strings.ReplaceAll(errMsgSanitized, "\r", "")
+	return errMsgSanitized
+}

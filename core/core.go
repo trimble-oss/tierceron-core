@@ -32,6 +32,7 @@ type ConfigContext struct {
 	Config           *map[string]interface{}
 	Env              string // Env being processed
 	Start            func()
+	Stop             func()
 	ChatSenderChan   *chan *ChatMsg
 	ChatReceiverChan *chan *ChatMsg
 	CmdSenderChan    *chan int
@@ -186,4 +187,10 @@ func Init(properties *map[string]interface{},
 	}
 	configContext.Log.Println("Successfully initialized plugin")
 	return configContext, nil
+}
+
+func SanitizeForLogging(errMsg string) string {
+	errMsgSanitized := strings.ReplaceAll(errMsg, "\n", "")
+	errMsgSanitized = strings.ReplaceAll(errMsgSanitized, "\r", "")
+	return errMsgSanitized
 }

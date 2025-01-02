@@ -1,8 +1,6 @@
 module github.com/trimble-oss/tierceron-core/v2
 
-go 1.22
-
-toolchain go1.23.3
+go 1.23.3
 
 require (
 	github.com/trimble-oss/tierceron-nute v1.0.1

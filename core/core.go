@@ -36,6 +36,7 @@ type KernelCmd struct {
 type ConfigContext struct {
 	Config           *map[string]interface{}
 	Env              string // Env being processed
+	Region           string // Region processed
 	Start            func(string)
 	ChatSenderChan   *chan *ChatMsg
 	ChatReceiverChan *chan *ChatMsg

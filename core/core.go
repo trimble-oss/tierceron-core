@@ -79,7 +79,6 @@ func Init(properties *map[string]interface{},
 	}
 
 	var env string
-	var region string
 	var argosId string
 	if e, ok := (*properties)["env"].(string); ok {
 		env = e
@@ -88,12 +87,12 @@ func Init(properties *map[string]interface{},
 		logger.Println("Missing env from kernel")
 		return nil, errors.New("missing env from kernel")
 	}
-
-	if r, ok := (*properties)["region"].(string); ok {
-		region = r
-	} else {
-		// default region to empty...
-		region = ""
+	region := ""
+	if configProp, ok := (*properties)["config"].(*map[string]interface{}); ok {
+		if r, ok := (*configProp)["region"].(string); ok {
+			logger.Println("received region value from kernel")
+			region = r
+		}
 	}
 
 	if len(argosId) == 0 {

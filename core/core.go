@@ -50,11 +50,12 @@ type ConfigContext struct {
 }
 
 type ChatMsg struct {
-	ChatId   *string
-	Name     *string //plugin name
-	KernelId *string
-	Query    *[]string
-	Response *string
+	ChatId      *string
+	Name        *string //plugin name
+	KernelId    *string
+	IsBroadcast bool
+	Query       *[]string
+	Response    *string
 }
 
 func Init(properties *map[string]interface{},

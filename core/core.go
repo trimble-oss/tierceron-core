@@ -18,6 +18,7 @@ const PLUGIN_CHANNEL_EVENT_IN = "PluginChannelEventIn"
 const PLUGIN_CHANNEL_EVENT_OUT = "PluginChannelEventOut"
 const CMD_CHANNEL = "CommandChannel"
 const CHAT_CHANNEL = "ChatChannel"
+const CHAT_BROADCAST_CHANNEL = "ChatBroadcastChannel"
 const DATA_FLOW_STAT_CHANNEL = "DataFlowStatisticsChannel"
 const ERROR_CHANNEL = "ErrorChannel"
 
@@ -34,19 +35,20 @@ type KernelCmd struct {
 }
 
 type ConfigContext struct {
-	Config           *map[string]interface{}
-	Env              string // Env being processed
-	Region           string // Region processed
-	Start            func(string)
-	ChatSenderChan   *chan *ChatMsg
-	ChatReceiverChan *chan *ChatMsg
-	CmdSenderChan    *chan KernelCmd
-	CmdReceiverChan  *chan KernelCmd
-	ErrorChan        *chan error     // Channel for sending errors
-	DfsChan          *chan *TTDINode // Channel for sending data flow statistics
-	ArgosId          string          // Identifier for data flow statistics
-	ConfigCerts      *map[string][]byte
-	Log              *log.Logger
+	Config            *map[string]interface{}
+	Env               string // Env being processed
+	Region            string // Region processed
+	Start             func(string)
+	ChatSenderChan    *chan *ChatMsg
+	ChatReceiverChan  *chan *ChatMsg
+	ChatBroadcastChan *chan *ChatMsg
+	CmdSenderChan     *chan KernelCmd
+	CmdReceiverChan   *chan KernelCmd
+	ErrorChan         *chan error     // Channel for sending errors
+	DfsChan           *chan *TTDINode // Channel for sending data flow statistics
+	ArgosId           string          // Identifier for data flow statistics
+	ConfigCerts       *map[string][]byte
+	Log               *log.Logger
 }
 
 type ChatMsg struct {
@@ -141,6 +143,13 @@ func Init(properties *map[string]interface{},
 
 	if channels, ok := (*properties)[PLUGIN_EVENT_CHANNELS_MAP_KEY]; ok {
 		if chans, ok := channels.(map[string]interface{}); ok {
+			if bchan, ok := chans[CHAT_BROADCAST_CHANNEL].(*chan *ChatMsg); ok {
+				configContext.Log.Println("Chat broadcast channel initialized.")
+				configContext.ChatBroadcastChan = bchan
+			} else {
+				configContext.Log.Println("Unsupported broadcast channel passed")
+				return nil, errors.New("unsupported broadcast channel passed")
+			}
 			if rchan, ok := chans[PLUGIN_CHANNEL_EVENT_IN].(map[string]interface{}); ok {
 				if rc, ok := rchan[CMD_CHANNEL].(*chan KernelCmd); ok && rc != nil {
 					configContext.Log.Println("Command Receiver initialized.")

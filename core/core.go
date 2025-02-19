@@ -51,13 +51,27 @@ type ConfigContext struct {
 	Log               *log.Logger
 }
 
+//
+// Plugin initialization:
+// 1. Kernel calls GetConfigPaths
+// 2. Kernel calls Init
+//    - certs and configs passed to plugin.
+// 3. Kernel makes channel messaging to continue boot process passed to receiverHandler with events:
+//    a. PLUGIN_EVENT_START
+//    b. PLUGIN_EVENT_STOP -- on shutdown..
+// 4. ChatMsg events sent to chatReceiverHandler via chat_receive_chan
+//    a. Responses put into *configContext.ChatSenderChan
+//       All messages sent by plugins must dump pointers to ChatMsg into
+//      *configContext.ChatSenderChan
+//       example: *configContext.ChatSenderChan <- &chatResultMsg
+//
 type ChatMsg struct {
-	ChatId      *string
-	Name        *string //plugin name
-	KernelId    *string
-	IsBroadcast bool
-	Query       *[]string
-	Response    *string
+	ChatId      *string   // Only relevant for 3rd party integration.
+	Name        *string   // Source plugin name
+	KernelId    *string   // Internal use by kernel
+	IsBroadcast bool      // Is message intended for broadcast.
+	Query       *[]string // List of plugins to send message to.
+	Response    *string   // Pointer to json serialized data.
 }
 
 func Init(properties *map[string]interface{},

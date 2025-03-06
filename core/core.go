@@ -51,20 +51,18 @@ type ConfigContext struct {
 	Log               *log.Logger
 }
 
-//
 // Plugin initialization:
 // 1. Kernel calls GetConfigPaths
 // 2. Kernel calls Init
-//    - certs and configs passed to plugin.
-// 3. Kernel makes channel messaging to continue boot process passed to receiverHandler with events:
-//    a. PLUGIN_EVENT_START
-//    b. PLUGIN_EVENT_STOP -- on shutdown..
-// 4. ChatMsg events sent to chatReceiverHandler via chat_receive_chan
-//    a. Responses put into *configContext.ChatSenderChan
-//       All messages sent by plugins must dump pointers to ChatMsg into
-//      *configContext.ChatSenderChan
-//       example: *configContext.ChatSenderChan <- &chatResultMsg
-//
+//   - certs and configs passed to plugin.
+//     3. Kernel makes channel messaging to continue boot process passed to receiverHandler with events:
+//     a. PLUGIN_EVENT_START
+//     b. PLUGIN_EVENT_STOP -- on shutdown..
+//     4. ChatMsg events sent to chatReceiverHandler via chat_receive_chan
+//     a. Responses put into *configContext.ChatSenderChan
+//     All messages sent by plugins must dump pointers to ChatMsg into
+//     *configContext.ChatSenderChan
+//     example: *configContext.ChatSenderChan <- &chatResultMsg
 type ChatMsg struct {
 	ChatId      *string   // Only relevant for 3rd party integration.
 	Name        *string   // Source plugin name
@@ -224,6 +222,93 @@ func Init(properties *map[string]interface{},
 		}
 	}
 	configContext.Log.Println("Successfully initialized plugin")
+	return configContext, nil
+}
+
+func InitPost(pluginName string,
+	properties *map[string]interface{},
+	PostInit func(*ConfigContext)) (*ConfigContext, error) {
+	if properties == nil {
+		fmt.Println("Missing initialization components")
+		return nil, errors.New("missing initialization component")
+	}
+	var logger *log.Logger
+	if _, ok := (*properties)["log"].(*log.Logger); ok {
+		logger = (*properties)["log"].(*log.Logger)
+	}
+
+	configContext := &ConfigContext{
+		Config:      properties,
+		ConfigCerts: &map[string][]byte{},
+		Log:         logger,
+	}
+
+	if channels, ok := (*properties)[PLUGIN_EVENT_CHANNELS_MAP_KEY]; ok {
+		if chans, ok := channels.(map[string]interface{}); ok {
+			if rchan, ok := chans[PLUGIN_CHANNEL_EVENT_IN].(map[string]interface{}); ok {
+				if cmdreceiver, ok := rchan[CMD_CHANNEL].(*chan KernelCmd); ok {
+					configContext.CmdReceiverChan = cmdreceiver
+					configContext.Log.Println("Command Receiver initialized.")
+				} else {
+					configContext.Log.Println("Unsupported receiving channel passed")
+					goto postinit
+				}
+
+				if cr, ok := rchan[CHAT_CHANNEL].(*chan *ChatMsg); ok {
+					configContext.Log.Println("Chat Receiver initialized.")
+					configContext.ChatReceiverChan = cr
+					//					go chatHandler(*cr)
+				} else {
+					configContext.Log.Println("Unsupported chat message receiving channel passed")
+					goto postinit
+				}
+
+			} else {
+				configContext.Log.Println("No event in receiving channel passed")
+				goto postinit
+			}
+			if schan, ok := chans[PLUGIN_CHANNEL_EVENT_OUT].(map[string]interface{}); ok {
+				if cmdsender, ok := schan[CMD_CHANNEL].(*chan KernelCmd); ok {
+					configContext.CmdSenderChan = cmdsender
+					configContext.Log.Println("Command Sender initialized.")
+				} else {
+					configContext.Log.Println("Unsupported receiving channel passed")
+					goto postinit
+				}
+
+				if cs, ok := schan[CHAT_CHANNEL].(*chan *ChatMsg); ok {
+					configContext.Log.Println("Chat Sender initialized.")
+					configContext.ChatSenderChan = cs
+				} else {
+					configContext.Log.Println("Unsupported chat message receiving channel passed")
+					goto postinit
+				}
+
+				if dfsc, ok := schan[DATA_FLOW_STAT_CHANNEL].(*chan *TTDINode); ok {
+					configContext.Log.Println("DFS Sender initialized.")
+					configContext.DfsChan = dfsc
+				} else {
+					configContext.Log.Println("Unsupported DFS sending channel passed")
+					goto postinit
+				}
+
+				if sc, ok := schan[ERROR_CHANNEL].(*chan error); ok {
+					configContext.ErrorChan = sc
+				} else {
+					configContext.Log.Println("Unsupported sending channel passed")
+					goto postinit
+				}
+			} else {
+				configContext.Log.Println("No event out channel passed")
+				goto postinit
+			}
+		} else {
+			configContext.Log.Println("No event channels passed")
+			goto postinit
+		}
+	}
+postinit:
+	PostInit(configContext)
 	return configContext, nil
 }
 

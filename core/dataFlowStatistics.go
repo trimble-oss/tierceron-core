@@ -12,7 +12,7 @@ import (
 
 	"time"
 
-	"github.com/trimble-oss/tierceron-nute/mashupsdk"
+	"github.com/trimble-oss/tierceron-nute-core/mashupsdk"
 )
 
 type TTDINode struct {

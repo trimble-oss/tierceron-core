@@ -17,6 +17,10 @@ func (fnt FlowNameType) TableName() string {
 	return string(fnt)
 }
 
+func (fnt FlowNameType) FlowName() string {
+	return string(fnt)
+}
+
 type PermissionUpdate interface{}
 type FlowStateUpdate interface {
 	// NewFlowState() CurrentFlowState
@@ -109,7 +113,7 @@ type FlowMachineContext interface {
 	SetPermissionUpdate(FlowContext) // tfmContext.SetPermissionUpdate(tfContext)
 	//	seedVaultCycle(FlowContext, string, interface{}, func(interface{}, map[string]interface{}, interface{}, string, string, func(interface{}, map[string]interface{}) (string, []string, [][]interface{}, error)) (string, error), func(FlowContext, map[string]interface{}, map[string]interface{}, []string) error, bool)
 	//	seedTrcDbCycle(FlowContext, string, interface{}, func(interface{}, map[string]interface{}, interface{}, string, string, func(interface{}, map[string]interface{}) (string, []string, [][]interface{}, error)) (string, error), func(FlowContext, map[string]interface{}, map[string]interface{}, []string) error, bool, chan bool)
-	SyncTableCycle(FlowContext, string, interface{}, func(interface{}, map[string]interface{}, interface{}, string, string, func(interface{}, map[string]interface{}) (string, []string, [][]interface{}, error)) (string, error), func(FlowContext, map[string]interface{}, map[string]interface{}, []string) error, bool)
+	SyncTableCycle(FlowContext, string, interface{}, func(interface{}, map[string]interface{}, interface{}, string, string, func(interface{}, map[string]interface{}) (string, []string, [][]interface{}, error)) (string, error), func(FlowContext, map[string]interface{}, []string) error, bool)
 	SelectFlowChannel(FlowContext) <-chan interface{}
 	GetCacheRefreshSqlConn(FlowContext, string, map[string]interface{}) (*sql.DB, error)
 	CallDBQuery(FlowContext, map[string]interface{}, map[string]sqle.Expression, bool, string, []FlowNameType, string) ([][]interface{}, bool)

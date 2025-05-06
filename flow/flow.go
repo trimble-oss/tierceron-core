@@ -58,16 +58,9 @@ type FlowContext interface {
 	PushState(string, FlowStateUpdate)
 	GetUpdatePermission() PermissionUpdate
 	GetFlowUpdate(CurrentFlowState) FlowStateUpdate
-	GetRemoteDataSourceAttribute(string) interface{}
+	GetRemoteDataSourceAttribute(string, string) interface{} // region, attribute
 	// tfContext.NewFlowStateUpdate(strconv.Itoa(int(previousState.State)), tfContext.GetPreviousFlowSyncMode())
 	GetLogger() *log.Logger
-}
-
-type FlowConfigContext interface {
-	ConfigTemplate(string, bool, string, string, bool, bool) (string, map[int]string, bool, error)
-	LogInfo(string)
-	LogErrorMessage(string, bool)
-	SetWantCerts(bool)
 }
 
 func SyncCheck(syncMode string) string {
@@ -105,11 +98,11 @@ type FlowMachineContext interface {
 	Init(map[string]map[string]interface{}, []string, []FlowNameType, []FlowNameType) error
 	AddTableSchema(sqle.PrimaryKeySchema, FlowContext)
 	CreateTableTriggers(FlowContext, string)
-	CreateTable(ctx *sqle.Context, name string, schema sqle.PrimaryKeySchema, collation sqle.CollationID) error
+	CreateTable(name string, schema sqle.PrimaryKeySchema, collation sqle.CollationID)
 	CreateCompositeTableTriggers(FlowContext, string, string, func(string, string, string, string) string, func(string, string, string, string) string, func(string, string, string, string) string)
 	CreateDataFlowTableTriggers(FlowContext, string, string, string, func(string, string, string, string, string) string, func(string, string, string, string, string) string, func(string, string, string, string, string) string)
 	GetFlowConfiguration(FlowContext, string) (map[string]interface{}, bool)
-	ProcessFlow(FlowConfigContext, FlowContext, func(FlowMachineContext, FlowContext) error, map[string]interface{}, map[string]map[string]interface{}, FlowNameType, FlowType) error
+	ProcessFlow(FlowContext, func(FlowMachineContext, FlowContext) error, map[string]interface{}, map[string]map[string]interface{}, FlowNameType, FlowType) error
 	SetPermissionUpdate(FlowContext) // tfmContext.SetPermissionUpdate(tfContext)
 	//	seedVaultCycle(FlowContext, string, interface{}, func(interface{}, map[string]interface{}, interface{}, string, string, func(interface{}, map[string]interface{}) (string, []string, [][]interface{}, error)) (string, error), func(FlowContext, map[string]interface{}, map[string]interface{}, []string) error, bool)
 	//	seedTrcDbCycle(FlowContext, string, interface{}, func(interface{}, map[string]interface{}, interface{}, string, string, func(interface{}, map[string]interface{}) (string, []string, [][]interface{}, error)) (string, error), func(FlowContext, map[string]interface{}, map[string]interface{}, []string) error, bool, chan bool)

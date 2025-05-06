@@ -58,7 +58,7 @@ type FlowContext interface {
 	PushState(string, FlowStateUpdate)
 	GetUpdatePermission() PermissionUpdate
 	GetFlowUpdate(CurrentFlowState) FlowStateUpdate
-	GetRemoteDataSourceAttribute(string, string) interface{} // region, attribute
+	GetRemoteDataSourceAttribute(string) interface{} // region, attribute
 	// tfContext.NewFlowStateUpdate(strconv.Itoa(int(previousState.State)), tfContext.GetPreviousFlowSyncMode())
 	GetLogger() *log.Logger
 }
@@ -98,7 +98,7 @@ type FlowMachineContext interface {
 	Init(map[string]map[string]interface{}, []string, []FlowNameType, []FlowNameType) error
 	AddTableSchema(sqle.PrimaryKeySchema, FlowContext)
 	CreateTableTriggers(FlowContext, string)
-	CreateTable(name string, schema sqle.PrimaryKeySchema, collation sqle.CollationID)
+	CreateTable(name string, schema sqle.PrimaryKeySchema, collation sqle.CollationID) error
 	CreateCompositeTableTriggers(FlowContext, string, string, func(string, string, string, string) string, func(string, string, string, string) string, func(string, string, string, string) string)
 	CreateDataFlowTableTriggers(FlowContext, string, string, string, func(string, string, string, string, string) string, func(string, string, string, string, string) string, func(string, string, string, string, string) string)
 	GetFlowConfiguration(FlowContext, string) (map[string]interface{}, bool)

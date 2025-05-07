@@ -1,12 +1,10 @@
 package flow
 
 import (
-	"database/sql"
 	"io"
 	"log"
 	"sync"
 
-	sqle "github.com/dolthub/go-mysql-server/sql"
 	tccore "github.com/trimble-oss/tierceron-core/v2/core"
 )
 
@@ -14,6 +12,10 @@ type FlowType int64
 type FlowNameType string
 
 func (fnt FlowNameType) TableName() string {
+	return string(fnt)
+}
+
+func (fnt FlowNameType) ServiceName() string {
 	return string(fnt)
 }
 
@@ -94,11 +96,11 @@ type FlowMachineContext interface {
 	GetEnv() string
 	GetDatabaseName() string
 	GetTableModifierLock() *sync.Mutex
-	TableCollationIdGen(string) sqle.CollationID
+	TableCollationIdGen(string) interface{}
 	Init(map[string]map[string]interface{}, []string, []FlowNameType, []FlowNameType) error
-	AddTableSchema(sqle.PrimaryKeySchema, FlowContext)
+	AddTableSchema(interface{}, FlowContext)
 	CreateTableTriggers(FlowContext, string)
-	CreateTable(name string, schema sqle.PrimaryKeySchema, collation sqle.CollationID) error
+	CreateTable(name string, schema interface{}, collation interface{}) error
 	CreateCompositeTableTriggers(FlowContext, string, string, func(string, string, string, string) string, func(string, string, string, string) string, func(string, string, string, string) string)
 	CreateDataFlowTableTriggers(FlowContext, string, string, string, func(string, string, string, string, string) string, func(string, string, string, string, string) string, func(string, string, string, string, string) string)
 	GetFlowConfiguration(FlowContext, string) (map[string]interface{}, bool)
@@ -108,9 +110,9 @@ type FlowMachineContext interface {
 	//	seedTrcDbCycle(FlowContext, string, interface{}, func(interface{}, map[string]interface{}, interface{}, string, string, func(interface{}, map[string]interface{}) (string, []string, [][]interface{}, error)) (string, error), func(FlowContext, map[string]interface{}, map[string]interface{}, []string) error, bool, chan bool)
 	SyncTableCycle(FlowContext, string, interface{}, func(interface{}, map[string]interface{}, interface{}, string, string, func(interface{}, map[string]interface{}) (string, []string, [][]interface{}, error)) (string, error), func(FlowContext, map[string]interface{}, []string) error, bool)
 	SelectFlowChannel(FlowContext) <-chan interface{}
-	GetCacheRefreshSqlConn(FlowContext, string, map[string]interface{}) (*sql.DB, error)
-	CallDBQuery(FlowContext, map[string]interface{}, map[string]sqle.Expression, bool, string, []FlowNameType, string) ([][]interface{}, bool)
-	GetDbConn(FlowContext, string, string, map[string]interface{}) (*sql.DB, error)
+	GetCacheRefreshSqlConn(FlowContext, string) (interface{}, error)
+	CallDBQuery(FlowContext, map[string]interface{}, map[string]interface{}, bool, string, []FlowNameType, string) ([][]interface{}, bool)
+	GetDbConn(FlowContext, string, string, map[string]interface{}) (interface{}, error)
 	CallAPI(map[string]string, string, string, io.Reader, bool) (map[string]interface{}, int, error)
 	SetEncryptionSecret()
 	Log(string, error)

@@ -34,6 +34,8 @@ type FlowContext interface {
 	SetInit(bool)
 	IsRestart() bool
 	SetRestart(bool)
+	NotifyFlowComponentLoaded() // Notify that a critical flow is loaded
+	WaitFlowLoaded()            // Block until all flows are loaded
 	CancelTheContext() bool
 	FlowLocker()
 	FlowUnlocker()
@@ -94,6 +96,7 @@ func SyncCheck(syncMode string) string {
 
 type FlowMachineContext interface {
 	GetEnv() string
+	GetFlowContext(FlowNameType) FlowContext
 	GetDatabaseName() string
 	GetTableModifierLock() *sync.Mutex
 	TableCollationIdGen(string) interface{}

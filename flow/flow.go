@@ -123,6 +123,7 @@ type FlowMachineContext interface {
 		func(FlowContext, map[string]interface{}) error,
 		bool)
 	SelectFlowChannel(FlowContext) <-chan interface{}
+	GetAuthExtended(func(map[string]interface{}) map[string]interface{}, bool) (map[string]interface{}, error) // Auth for communicating with other services
 	GetCacheRefreshSqlConn(FlowContext, string) (interface{}, error)
 	CallDBQuery(FlowContext, map[string]interface{}, map[string]interface{}, bool, string, []FlowNameType, string) ([][]interface{}, bool)
 	GetDbConn(FlowContext, string, string, map[string]interface{}) (interface{}, error)

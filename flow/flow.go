@@ -111,7 +111,17 @@ type FlowMachineContext interface {
 	SetPermissionUpdate(FlowContext) // tfmContext.SetPermissionUpdate(tfContext)
 	//	seedVaultCycle(FlowContext, string, interface{}, func(interface{}, map[string]interface{}, interface{}, string, string, func(interface{}, map[string]interface{}) (string, []string, [][]interface{}, error)) (string, error), func(FlowContext, map[string]interface{}, map[string]interface{}, []string) error, bool)
 	//	seedTrcDbCycle(FlowContext, string, interface{}, func(interface{}, map[string]interface{}, interface{}, string, string, func(interface{}, map[string]interface{}) (string, []string, [][]interface{}, error)) (string, error), func(FlowContext, map[string]interface{}, map[string]interface{}, []string) error, bool, chan bool)
-	SyncTableCycle(FlowContext, string, interface{}, func(interface{}, map[string]interface{}, interface{}, string, string, func(interface{}, map[string]interface{}) (string, []string, [][]interface{}, error)) (string, error), func(FlowContext, map[string]interface{}, []string) error, bool)
+	SyncTableCycle(FlowContext,
+		string,
+		interface{},
+		func(interface{},
+			map[string]interface{},
+			interface{},
+			string,
+			string,
+			func(interface{}, map[string]interface{}) (string, []string, [][]interface{}, error)) (string, error),
+		func(FlowContext, map[string]interface{}) error,
+		bool)
 	SelectFlowChannel(FlowContext) <-chan interface{}
 	GetCacheRefreshSqlConn(FlowContext, string) (interface{}, error)
 	CallDBQuery(FlowContext, map[string]interface{}, map[string]interface{}, bool, string, []FlowNameType, string) ([][]interface{}, bool)

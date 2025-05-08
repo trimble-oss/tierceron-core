@@ -62,7 +62,8 @@ type FlowContext interface {
 	PushState(string, FlowStateUpdate)
 	GetUpdatePermission() PermissionUpdate
 	GetFlowUpdate(CurrentFlowState) FlowStateUpdate
-	GetRemoteDataSourceAttribute(string) interface{} // region, attribute
+	GetDataSourceRegions(bool) []string
+	GetRemoteDataSourceAttribute(string, ...string) interface{} // region, attribute
 	// tfContext.NewFlowStateUpdate(strconv.Itoa(int(previousState.State)), tfContext.GetPreviousFlowSyncMode())
 	GetLogger() *log.Logger
 }

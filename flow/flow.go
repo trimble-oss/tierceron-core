@@ -51,6 +51,7 @@ type FlowContext interface {
 	SetFlowState(CurrentFlowState)
 	GetPreviousFlowState() CurrentFlowState
 	SetPreviousFlowState(CurrentFlowState)
+	TransitionState(string) chan CurrentFlowState
 	SetFlowData(TemplateData)
 	HasFlowSyncFilters() bool
 	GetFlowStateSyncFilterRaw() string

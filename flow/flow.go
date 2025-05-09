@@ -49,14 +49,14 @@ type FlowContext interface {
 	SetFlowState(CurrentFlowState)
 	GetPreviousFlowState() CurrentFlowState
 	SetPreviousFlowState(CurrentFlowState)
-	TransitionState(string) chan CurrentFlowState
+	TransitionState(string)
 	SetFlowData(TemplateData)
 	HasFlowSyncFilters() bool
 	GetFlowStateSyncFilterRaw() string
 	GetFlowSyncFilters() []string
 	GetFlowName() string
 	NewFlowStateUpdate(string, string) FlowStateUpdate
-	GetCurrentFlowStateUpdateByDataSource(string) chan CurrentFlowState
+	GetCurrentFlowStateUpdateByDataSource(string) interface{}
 	UpdateFlowStateByDataSource(string)
 	PushState(string, FlowStateUpdate)
 	GetUpdatePermission() PermissionUpdate

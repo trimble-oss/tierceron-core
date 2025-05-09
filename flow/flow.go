@@ -37,8 +37,6 @@ type FlowContext interface {
 	NotifyFlowComponentLoaded() // Notify that a critical flow is loaded
 	WaitFlowLoaded()            // Block until all flows are loaded
 	CancelTheContext() bool
-	FlowLocker()
-	FlowUnlocker()
 	FlowSyncModeMatchAny([]string) bool
 	FlowSyncModeMatch(string, bool) bool
 	GetFlowSyncMode() string

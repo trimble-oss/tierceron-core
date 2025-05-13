@@ -31,18 +31,20 @@ type CurrentFlowState interface{}
 type TemplateData interface{}
 
 type FlowDefinitionContext struct {
-	GetTableConfigurationById   func(databaseName string, tableName string, idColumnName string) map[string]interface{}
-	GetTableConfigurations      func(db interface{}, secLookup bool) ([]interface{}, error)
-	GetTableMap                 func(tableConfig interface{}) map[string]interface{}
-	GetTableFromMap             func(tableConfigMap map[string]interface{}) interface{}
-	GetFilterFieldFromConfig    func(tableconfig interface{}) string
-	GetTableMapFromArray        func(tableArray []interface{}) map[string]interface{}
-	GetTableConfigurationInsert func(tableConfigMap map[string]interface{}, databaseName string, tableName string) map[string]interface{}
-	GetTableConfigurationUpdate func(tableConfigMap map[string]interface{}, databaseName string, tableName string) map[string]interface{}
-	ApplyDependencies           func(tableConfig interface{}, db interface{}, log *log.Logger) error
-	GetTableSchema              func(tableName string) interface{}
-	GetIndexedPathExt           func(engine interface{}, rowDataMap map[string]interface{}, indexColumnNames interface{}, databaseName string, tableName string, dbCallBack func(interface{}, map[string]interface{}) (string, []string, [][]interface{}, error)) (string, error)
-	GetTableIndexColumnName     func() string
+	GetTableConfigurationById func(databaseName string, tableName string, idColumnName ...string) map[string]interface{}
+	GetTableConfigurations    func(db interface{}, secLookup bool) ([]interface{}, error)
+
+	GetRefreshTableConfiguration func(tfmContext FlowMachineContext, tfContext FlowContext, dbI interface{}) ([]interface{}, error)
+	GetTableMap                  func(tableConfig interface{}) map[string]interface{}
+	GetTableFromMap              func(tableConfigMap map[string]interface{}) interface{}
+	GetFilterFieldFromConfig     func(tableconfig interface{}) string
+	GetTableMapFromArray         func(tableArray []interface{}) map[string]interface{}
+	GetTableConfigurationInsert  func(tableConfigMap map[string]interface{}, databaseName string, tableName string) map[string]interface{}
+	GetTableConfigurationUpdate  func(tableConfigMap map[string]interface{}, databaseName string, tableName string) map[string]interface{}
+	ApplyDependencies            func(tableConfig interface{}, db interface{}, log *log.Logger) error
+	GetTableSchema               func(tableName string) interface{}
+	GetIndexedPathExt            func(engine interface{}, rowDataMap map[string]interface{}, indexColumnNames interface{}, databaseName string, tableName string, dbCallBack func(interface{}, map[string]interface{}) (string, []string, [][]interface{}, error)) (string, error)
+	GetTableIndexColumnName      func() string
 }
 
 type FlowContext interface {
@@ -83,6 +85,7 @@ type FlowContext interface {
 	GetRemoteDataSourceAttribute(string, ...string) interface{} // region, attribute
 	// tfContext.NewFlowStateUpdate(strconv.Itoa(int(previousState.State)), tfContext.GetPreviousFlowSyncMode())
 	GetLogger() *log.Logger
+	Log(string, error)
 }
 
 func SyncCheck(syncMode string) string {

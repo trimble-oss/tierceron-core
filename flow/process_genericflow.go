@@ -50,15 +50,20 @@ func tableConfigurationFlowPullRemote(tfmContext FlowMachineContext, tfContext F
 		}
 
 		tfmContext.Log("Attempting to pull in table configurations from "+region, nil)
-		tableConfigurations, err := flowDefinitionContext.GetTableConfigurations(sqlConn, tfmContext.GetEnv() == "staging") //Staging is a special case that needs to be keyed off existing SEC eids to avoid prod data being pulled in.
-		if err != nil {
-			return nil, err
-		}
-		if len(tableConfigurations) > 0 {
-			tfmContext.Log("Found "+fmt.Sprintf("%d", len(tableConfigurations))+" tableconfiguration rows from "+region, nil)
-		}
-		for _, tableConfiguration := range tableConfigurations {
-			tableConfigMapArr = append(tableConfigMapArr, flowDefinitionContext.GetTableMap(tableConfiguration))
+		if flowDefinitionContext.GetTableConfigurationById != nil {
+			tableConfigurations, err := flowDefinitionContext.GetTableConfigurations(sqlConn, tfmContext.GetEnv() == "staging") //Staging is a special case that needs to be keyed off existing SEC eids to avoid prod data being pulled in.
+			if err != nil {
+				return nil, err
+			}
+			if len(tableConfigurations) > 0 {
+				tfmContext.Log("Found "+fmt.Sprintf("%d", len(tableConfigurations))+" tableconfiguration rows from "+region, nil)
+			}
+			for _, tableConfiguration := range tableConfigurations {
+				tableConfigMapArr = append(tableConfigMapArr, flowDefinitionContext.GetTableMap(tableConfiguration))
+			}
+		} else if flowDefinitionContext.GetRefreshTableConfiguration != nil {
+			flowDefinitionContext.GetRefreshTableConfiguration(tfmContext, tfContext, sqlConn) //Staging is a special case that needs to be keyed off existing SEC eids to avoid prod data being pulled in.
+
 		}
 
 		tfmContext.Log("Finished pulling in table configurations from "+region, nil)
@@ -99,22 +104,24 @@ func tableConfigurationFlowPushRemote(tfContext FlowContext, changedItem map[str
 					}
 				*/
 
-				if tfContext.HasFlowSyncFilters() {
-					syncFilter := tfContext.GetFlowSyncFilters()
-					for _, filter := range syncFilter {
-						if filter == flowDefinitionContext.GetFilterFieldFromConfig(table) {
-							err := flowDefinitionContext.ApplyDependencies(table, sqlConnI, tfContext.GetLogger()) //Attempts to update only the eid on push
-							if err != nil {
-								tfContext.PushState("flowStateReceiver", tfContext.NewFlowStateUpdate("2", "pusherror"))
-								return err
+				if flowDefinitionContext.ApplyDependencies != nil {
+					if tfContext.HasFlowSyncFilters() {
+						syncFilter := tfContext.GetFlowSyncFilters()
+						for _, filter := range syncFilter {
+							if filter == flowDefinitionContext.GetFilterFieldFromConfig(table) {
+								err := flowDefinitionContext.ApplyDependencies(table, sqlConnI, tfContext.GetLogger()) //Attempts to update only the eid on push
+								if err != nil {
+									tfContext.PushState("flowStateReceiver", tfContext.NewFlowStateUpdate("2", "pusherror"))
+									return err
+								}
 							}
 						}
-					}
-				} else {
-					err := flowDefinitionContext.ApplyDependencies(table, sqlConnI, tfContext.GetLogger()) //Attempts to update only the eid on push
-					if err != nil {
-						tfContext.PushState("flowStateReceiver", tfContext.NewFlowStateUpdate("2", "pusherror"))
-						return err
+					} else {
+						err := flowDefinitionContext.ApplyDependencies(table, sqlConnI, tfContext.GetLogger()) //Attempts to update only the eid on push
+						if err != nil {
+							tfContext.PushState("flowStateReceiver", tfContext.NewFlowStateUpdate("2", "pusherror"))
+							return err
+						}
 					}
 				}
 			}

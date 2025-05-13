@@ -150,14 +150,14 @@ func ProcessTableConfigurations(tfmContext FlowMachineContext, tfContext FlowCon
 						tableDefinition, _ := tfmContext.LoadBaseTemplate(tfContext)
 						tfContext.SetFlowData(tableDefinition)
 					}
-					tfmContext.Log("TenantConfiguration flow is being stopped...", nil)
+					tfmContext.Log(fmt.Sprintf("%s flow is being stopped...", tfContext.GetFlowName()), nil)
 					tfContext.PushState("flowStateReceiver", tfContext.NewFlowStateUpdate("0", tfContext.GetFlowSyncMode()))
 					continue
 				} else if tfContext.GetFlowStateState() == 0 {
-					tfmContext.Log("TenantConfiguration flow is currently offline...", nil)
+					tfmContext.Log(fmt.Sprintf("%s flow is currently offline...", tfContext.GetFlowName()), nil)
 					continue
 				} else if tfContext.GetFlowStateState() == 1 {
-					tfmContext.Log("TenantConfiguration flow is restarting...", nil)
+					tfmContext.Log(fmt.Sprintf("%s flow is restarting...", tfContext.GetFlowName()), nil)
 					if !tfContext.IsInit() { //init vault sync cycle
 						tfContext.SetInit(true)
 						tfmContext.CallDBQuery(tfContext, map[string]interface{}{"TrcQuery": "truncate " + tfContext.GetFlowSourceAlias() + "." + tfContext.GetFlowName()}, nil, false, "DELETE", nil, "")
@@ -173,11 +173,11 @@ func ProcessTableConfigurations(tfmContext FlowMachineContext, tfContext FlowCon
 				if tfContext.GetFlowStateState() != 0 && (tfContext.FlowSyncModeMatchAny([]string{"pull", "pullonce", "push", "pushonce", "pusheast"}) && prod.IsProd()) { //pusheast is unique for isProd() as it pushes both east/west
 				} else if tfContext.FlowSyncModeMatch("pull", true) || tfContext.FlowSyncModeMatch("push", true) {
 				} else {
-					tfmContext.Log("TenantConfiguration is setup"+SyncCheck(tfContext.GetFlowSyncMode())+".", nil)
+					tfmContext.Log(fmt.Sprintf("%s is setup%s.", tfContext.GetFlowName(), SyncCheck(tfContext.GetFlowSyncMode())), nil)
 					continue
 				}
 
-				tfmContext.Log("TenantConfiguration is running and checking for changes"+SyncCheck(tfContext.GetFlowSyncMode())+".", nil)
+				tfmContext.Log(fmt.Sprintf("%s is running and checking for changes %s.", tfContext.GetFlowName(), SyncCheck(tfContext.GetFlowSyncMode())), nil)
 
 				//Logic for push/pull once
 				if tfContext.FlowSyncModeMatch("push", true) {
@@ -201,14 +201,14 @@ func ProcessTableConfigurations(tfmContext FlowMachineContext, tfContext FlowCon
 
 					rows, _ := tfmContext.CallDBQuery(tfContext, map[string]interface{}{"TrcQuery": "SELECT * FROM " + tfContext.GetFlowSourceAlias() + "." + tfContext.GetFlowName()}, nil, false, "SELECT", nil, "")
 					if len(rows) == 0 {
-						tfmContext.Log("Nothing in TenantConfiguration table to push out yet...", nil) //Table is not currently loaded.
+						tfmContext.Log(fmt.Sprintf("Nothing in %s table to push out yet...", tfContext.GetFlowName()), nil) //Table is not currently loaded.
 						continue
 					}
 					for _, value := range rows {
 						tableMap := flowDefinitionContext.GetTableMapFromArray(value)
 						pushError := tableConfigurationFlowPushRemote(tfContext, tableMap)
 						if pushError != nil {
-							tfmContext.Log("Error pushing out TenantConfiguration", pushError)
+							tfmContext.Log(fmt.Sprintf("Error pushing out %s", tfContext.GetFlowName()), pushError)
 							continue
 						}
 					}
@@ -225,17 +225,17 @@ func ProcessTableConfigurations(tfmContext FlowMachineContext, tfContext FlowCon
 					continue
 				}
 
-				var filterTenantConfigurations []map[string]interface{}
+				var filterTableConfigurations []map[string]interface{}
 				if tfContext.HasFlowSyncFilters() {
 					syncFilter := tfContext.GetFlowSyncFilters()
 					for _, filter := range syncFilter {
 						for _, table := range tableConfigurations {
 							if filter == table["tableId"].(string) {
-								filterTenantConfigurations = append(filterTenantConfigurations, table)
+								filterTableConfigurations = append(filterTableConfigurations, table)
 							}
 						}
 					}
-					tableConfigurations = filterTenantConfigurations
+					tableConfigurations = filterTableConfigurations
 				}
 
 				for _, table := range tableConfigurations {

@@ -133,7 +133,11 @@ func tableConfigurationFlowPushRemote(tfContext FlowContext, changedItem map[str
 func ProcessTableConfigurations(tfmContext FlowMachineContext, tfContext FlowContext) error {
 	flowDefinitionContext := tfContext.GetFlowDefinitionContext()
 	tfmContext.AddTableSchema(flowDefinitionContext.GetTableSchema(tfContext.GetFlowName()), tfContext)
-	tfmContext.CreateTableTriggers(tfContext, flowDefinitionContext.GetTableIndexColumnName())
+	if flowDefinitionContext.CreateTableTriggers != nil {
+		flowDefinitionContext.CreateTableTriggers(tfmContext, tfContext)
+	} else {
+		tfmContext.CreateTableTriggers(tfContext, flowDefinitionContext.GetTableIndexColumnName())
+	}
 	tfContext.TransitionState("N/A")
 	tfContext.SetInit(true)
 

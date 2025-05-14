@@ -31,9 +31,9 @@ type CurrentFlowState interface{}
 type TemplateData interface{}
 
 type FlowDefinitionContext struct {
-	GetTableConfigurationById func(databaseName string, tableName string, idColumnName ...string) map[string]interface{}
-	GetTableConfigurations    func(db interface{}, secLookup bool) ([]interface{}, error)
-
+	GetTableConfigurationById    func(databaseName string, tableName string, idColumnName ...string) map[string]interface{}
+	GetTableConfigurations       func(db interface{}, secLookup bool) ([]interface{}, error)
+	CreateTableTriggers          func(tfmContext FlowMachineContext, tfContext FlowContext) // Optional override
 	GetRefreshTableConfiguration func(tfmContext FlowMachineContext, tfContext FlowContext, dbI interface{}) ([]interface{}, error)
 	GetTableMap                  func(tableConfig interface{}) map[string]interface{}
 	GetTableFromMap              func(tableConfigMap map[string]interface{}) interface{}
@@ -51,9 +51,9 @@ type FlowContext interface {
 	IsInit() bool
 	SetInit(bool)
 	IsRestart() bool
+	SetRestart(bool)
 	SetFlowDefinitionContext(*FlowDefinitionContext)
 	GetFlowDefinitionContext() *FlowDefinitionContext
-	SetRestart(bool)
 	NotifyFlowComponentLoaded() // Notify that a critical flow is loaded
 	WaitFlowLoaded()            // Block until all flows are loaded
 	CancelTheContext() bool

@@ -44,7 +44,7 @@ type FlowDefinitionContext struct {
 	ApplyDependencies                func(tableConfig interface{}, db interface{}, log *log.Logger) error
 	GetTableSchema                   func(tableName string) interface{}
 	GetIndexedPathExt                func(engine interface{}, rowDataMap map[string]interface{}, indexColumnNames interface{}, databaseName string, tableName string, dbCallBack func(interface{}, map[string]interface{}) (string, []string, [][]interface{}, error)) (string, error)
-	GetTableIndexColumnName          func() string
+	GetTableIndexColumnNames         func() []string
 	TableConfigurationFlowPullRemote func(tfmContext FlowMachineContext, tfContext FlowContext) error
 }
 
@@ -125,7 +125,7 @@ type FlowMachineContext interface {
 	TableCollationIdGen(string) interface{}
 	Init(map[string]map[string]interface{}, []string, []FlowNameType, []FlowNameType) error
 	AddTableSchema(interface{}, FlowContext)
-	CreateTableTriggers(FlowContext, string)
+	CreateTableTriggers(FlowContext, []string)
 	CreateTable(name string, schema interface{}, collation interface{}) error
 	CreateCompositeTableTriggers(FlowContext, string, string, func(string, string, string, string) string, func(string, string, string, string) string, func(string, string, string, string) string)
 	CreateDataFlowTableTriggers(FlowContext, string, string, string, func(string, string, string, string, string) string, func(string, string, string, string, string) string, func(string, string, string, string, string) string)
@@ -135,7 +135,7 @@ type FlowMachineContext interface {
 	//	seedVaultCycle(FlowContext, string, interface{}, func(interface{}, map[string]interface{}, interface{}, string, string, func(interface{}, map[string]interface{}) (string, []string, [][]interface{}, error)) (string, error), func(FlowContext, map[string]interface{}, map[string]interface{}, []string) error, bool)
 	//	seedTrcDbCycle(FlowContext, string, interface{}, func(interface{}, map[string]interface{}, interface{}, string, string, func(interface{}, map[string]interface{}) (string, []string, [][]interface{}, error)) (string, error), func(FlowContext, map[string]interface{}, map[string]interface{}, []string) error, bool, chan bool)
 	SyncTableCycle(FlowContext,
-		string,
+		[]string, // index column names
 		interface{},
 		func(interface{},
 			map[string]interface{},

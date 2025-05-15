@@ -138,7 +138,7 @@ func ProcessTableConfigurations(tfmContext FlowMachineContext, tfContext FlowCon
 	if flowDefinitionContext.CreateTableTriggers != nil {
 		flowDefinitionContext.CreateTableTriggers(tfmContext, tfContext)
 	} else {
-		tfmContext.CreateTableTriggers(tfContext, flowDefinitionContext.GetTableIndexColumnName())
+		tfmContext.CreateTableTriggers(tfContext, flowDefinitionContext.GetTableIndexColumnNames())
 	}
 	tfContext.TransitionState("nosync")
 	tfContext.SetInit(true)
@@ -179,7 +179,7 @@ func ProcessTableConfigurations(tfmContext FlowMachineContext, tfContext FlowCon
 					continue
 				} else if tfContext.GetFlowStateState() == 2 {
 					if tfContext.IsInit() { //init vault sync cycle
-						go tfmContext.SyncTableCycle(tfContext, flowDefinitionContext.GetTableIndexColumnName(), []string{flowDefinitionContext.GetTableIndexColumnName()}, flowDefinitionContext.GetIndexedPathExt, tableConfigurationFlowPushRemote, tfContext.GetFlowSyncMode() == "push")
+						go tfmContext.SyncTableCycle(tfContext, flowDefinitionContext.GetTableIndexColumnNames(), flowDefinitionContext.GetTableIndexColumnNames(), flowDefinitionContext.GetIndexedPathExt, tableConfigurationFlowPushRemote, tfContext.GetFlowSyncMode() == "push")
 					}
 				}
 

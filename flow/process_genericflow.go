@@ -46,7 +46,7 @@ func tableConfigurationFlowPullRemote(tfmContext FlowMachineContext, tfContext F
 		}
 		sqlConn, ok = sqlConnI.(*sql.DB)
 		if !ok {
-			tfmContext.Log("Unable to obtain data source connection for spectrumentableConfigurationterpriseconfig for "+region+" during pull", nil)
+			tfmContext.Log("Unable to obtain data source connection for tableConfiguration for "+region+" during pull", nil)
 		}
 
 		tfmContext.Log("Attempting to pull in table configurations from "+region, nil)

@@ -8,6 +8,7 @@ type FlowDefinition struct {
 }
 
 type FlowMachineInitContext struct {
+	GetFlowMachineTemplates     func() map[string]interface{}
 	FlowMachineInterfaceConfigs map[string]interface{}
 	GetDatabaseName             func() string
 	GetTableFlows               func() []FlowDefinition                     // Required

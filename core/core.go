@@ -51,6 +51,16 @@ type ConfigContext struct {
 	Log               *log.Logger
 }
 
+type TrcdbResponse struct {
+	Columns []*string // Ordered list of column names
+	Rows    []map[string]any
+}
+
+type TrcdbExchange struct {
+	Query    string        // Query to be executed in trcdb
+	Response TrcdbResponse // Response from Trcdb
+}
+
 // Plugin initialization:
 // 1. Kernel calls GetConfigPaths
 // 2. Kernel calls Init
@@ -64,12 +74,13 @@ type ConfigContext struct {
 //     *configContext.ChatSenderChan
 //     example: *configContext.ChatSenderChan <- &chatResultMsg
 type ChatMsg struct {
-	ChatId      *string   // Only relevant for 3rd party integration.
-	Name        *string   // Source plugin name
-	KernelId    *string   // Internal use by kernel
-	IsBroadcast bool      // Is message intended for broadcast.
-	Query       *[]string // List of plugins to send message to.
-	Response    *string   // Pointer to json serialized data.
+	ChatId        *string        // Only relevant for 3rd party integration.
+	Name          *string        // Source plugin name
+	KernelId      *string        // Internal use by kernel
+	IsBroadcast   bool           // Is message intended for broadcast.
+	Query         *[]string      // List of plugins to send message to.
+	Response      *string        // Pointer to json serialized data.
+	TrcdbExchange *TrcdbExchange // Optional dialog for Trcdb integration
 }
 
 func Init(properties *map[string]interface{},

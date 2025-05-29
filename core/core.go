@@ -44,9 +44,10 @@ type ConfigContext struct {
 	ChatBroadcastChan *chan *ChatMsg
 	CmdSenderChan     *chan KernelCmd
 	CmdReceiverChan   *chan KernelCmd
-	ErrorChan         *chan error     // Channel for sending errors
-	DfsChan           *chan *TTDINode // Channel for sending data flow statistics
-	ArgosId           string          // Identifier for data flow statistics
+	TrcdbChan         *chan *TrcdbExchange // Channel for sending trcdb queries
+	ErrorChan         *chan error          // Channel for sending errors
+	DfsChan           *chan *TTDINode      // Channel for sending data flow statistics
+	ArgosId           string               // Identifier for data flow statistics
 	ConfigCerts       *map[string][]byte
 	Log               *log.Logger
 }
@@ -57,6 +58,7 @@ type TrcdbResponse struct {
 }
 
 type TrcdbExchange struct {
+	Flows    []string      // List of flows used in query
 	Query    string        // Query to be executed in trcdb
 	Response TrcdbResponse // Response from Trcdb
 }

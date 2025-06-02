@@ -19,6 +19,8 @@ type FlowMachineInitContext struct {
 	TestFlowController          func(FlowMachineContext, FlowContext) error // Required
 }
 
+var HARBINGER_INTERFACE_CONFIG = "./config.yml"
+
 /*
 GetTableFlows - driverConfigBasis.VersionFilter
 GetBusinessFlows - flowopts.BuildOptions.GetAdditionalFlows()

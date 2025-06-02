@@ -142,11 +142,15 @@ func Init(properties *map[string]interface{},
 	if key, ok := (*properties)[commonKeyPath]; ok {
 		keybytes = key.([]byte)
 	}
-	if common, ok := (*properties)[commonPath]; ok {
-		config_properties = common.(*map[string]interface{})
+	if len(commonPath) > 0 {
+		if common, ok := (*properties)[commonPath]; ok {
+			config_properties = common.(*map[string]interface{})
+		} else {
+			fmt.Println("Missing config components")
+			return nil, errors.New("missing config components")
+		}
 	} else {
-		fmt.Println("Missing config components")
-		return nil, errors.New("missing config components")
+		config_properties = &map[string]interface{}{}
 	}
 
 	var configCerts *map[string][]byte = &map[string][]byte{}

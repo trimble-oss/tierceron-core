@@ -140,7 +140,7 @@ func ProcessTableConfigurations(tfmContext FlowMachineContext, tfContext FlowCon
 	} else {
 		tfmContext.CreateTableTriggers(tfContext, flowDefinitionContext.GetTableIndexColumnNames())
 	}
-	tfContext.TransitionState("nosync")
+	go tfContext.TransitionState("nosync")
 	tfContext.SetInit(true)
 
 	sqlIngestInterval := tfContext.GetRemoteDataSourceAttribute("dbingestinterval").(time.Duration)

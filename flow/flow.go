@@ -9,6 +9,7 @@ import (
 )
 
 type FlowType int64
+type FlowColumnType int64
 type FlowNameType string
 
 func (fnt FlowNameType) TableName() string {
@@ -30,6 +31,43 @@ type FlowStateUpdate interface {
 type CurrentFlowState interface{}
 type TemplateData interface{}
 
+const (
+	TinyText FlowColumnType = iota
+	Text
+	MediumText
+	LongText
+	TinyBlob
+	Blob
+	MediumBlob
+	LongBlob
+	Int8
+	Uint8
+	Int16
+	Uint16
+	Int24
+	Uint24
+	Int32
+	Uint32
+	Int64
+	Uint64
+	Float32
+	Float64
+	Timestamp
+)
+
+// The following are mappable types to go-mysql-server/sql column
+type FlowColumn struct {
+	Name           string
+	Type           FlowColumnType
+	AutoIncrement  bool
+	Nullable       bool
+	Source         string
+	DatabaseSource string
+	PrimaryKey     bool
+	Comment        string
+	Extra          string
+}
+
 type FlowDefinitionContext struct {
 	GetTableConfigurationById        func(databaseName string, tableName string, idColumnName ...string) map[string]interface{}
 	GetTableConfigurations           func(db interface{}, secLookup bool) ([]interface{}, error)
@@ -45,6 +83,7 @@ type FlowDefinitionContext struct {
 	GetTableSchema                   func(tableName string) interface{}
 	GetIndexedPathExt                func(engine interface{}, rowDataMap map[string]interface{}, indexColumnNames interface{}, databaseName string, tableName string, dbCallBack func(interface{}, map[string]interface{}) (string, []string, [][]interface{}, error)) (string, error)
 	GetTableIndexColumnNames         func() []string
+	GetFlowIndexComplex              func() (string, []string, string, error)
 	TableConfigurationFlowPullRemote func(tfmContext FlowMachineContext, tfContext FlowContext) error
 }
 

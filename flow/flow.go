@@ -9,6 +9,7 @@ import (
 )
 
 type FlowType int64
+type FlowColumnType int64
 type FlowNameType string
 
 func (fnt FlowNameType) TableName() string {
@@ -29,6 +30,43 @@ type FlowStateUpdate interface {
 }
 type CurrentFlowState interface{}
 type TemplateData interface{}
+
+const (
+	TinyText FlowColumnType = iota
+	Text
+	MediumText
+	LongText
+	TinyBlob
+	Blob
+	MediumBlob
+	LongBlob
+	Int8
+	Uint8
+	Int16
+	Uint16
+	Int24
+	Uint24
+	Int32
+	Uint32
+	Int64
+	Uint64
+	Float32
+	Float64
+	Timestamp
+)
+
+// The following are mappable types to go-mysql-server/sql column
+type FlowColumn struct {
+	Name           string
+	Type           FlowColumnType
+	AutoIncrement  bool
+	Nullable       bool
+	Source         string
+	DatabaseSource string
+	PrimaryKey     bool
+	Comment        string
+	Extra          string
+}
 
 type FlowDefinitionContext struct {
 	GetTableConfigurationById        func(databaseName string, tableName string, idColumnName ...string) map[string]interface{}

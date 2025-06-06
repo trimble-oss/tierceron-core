@@ -83,7 +83,7 @@ type FlowDefinitionContext struct {
 	GetTableSchema                   func(tableName string) interface{}
 	GetIndexedPathExt                func(engine interface{}, rowDataMap map[string]interface{}, indexColumnNames interface{}, databaseName string, tableName string, dbCallBack func(interface{}, map[string]interface{}) (string, []string, [][]interface{}, error)) (string, error)
 	GetTableIndexColumnNames         func() []string
-	GetTableGrant                    func(string) (string, error)
+	GetTableGrant                    func(string) (string, string, error)
 	GetFlowIndexComplex              func() (string, []string, string, error)
 	TableConfigurationFlowPullRemote func(tfmContext FlowMachineContext, tfContext FlowContext) error
 }

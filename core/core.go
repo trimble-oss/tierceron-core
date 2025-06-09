@@ -57,8 +57,8 @@ type ConfigContext struct {
 }
 
 type TrcdbResponse struct {
-	Columns []*string // Ordered list of column names
-	Rows    []map[string]any
+	Rows    [][]interface{} // Rows of data returned from query
+	Success bool            // Whether the query was successful
 }
 
 type TrcdbExchange struct {

@@ -20,8 +20,10 @@ const CMD_CHANNEL = "CommandChannel"
 const CHAT_CHANNEL = "ChatChannel"
 const CHAT_BROADCAST_CHANNEL = "ChatBroadcastChannel"
 const DATA_FLOW_STAT_CHANNEL = "DataFlowStatisticsChannel"
-const TRCDB_CHANNEL = "TrcdbChannel"
+
 const ERROR_CHANNEL = "ErrorChannel"
+
+const TRCDB_RESOURCE = "TrcdbResource"
 
 const RFC_ISO_8601 = "2006-01-02 15:04:05 -0700 MST"
 
@@ -45,13 +47,13 @@ type ConfigContext struct {
 	ChatBroadcastChan *chan *ChatMsg
 	CmdSenderChan     *chan KernelCmd
 	CmdReceiverChan   *chan KernelCmd
-	TrcdbQueryChan    *chan *TrcdbExchange // Channel for sending trcdb queries
-	TrcdbResponseChan *chan *TrcdbExchange // Channel for receiving trcdb responses
-	ErrorChan         *chan error          // Channel for sending errors
-	DfsChan           *chan *TTDINode      // Channel for sending data flow statistics
-	ArgosId           string               // Identifier for data flow statistics
-	ConfigCerts       *map[string][]byte
-	Log               *log.Logger
+	// TrcdbQueryChan    *chan *TrcdbExchange // Channel for sending trcdb queries
+	// TrcdbResponseChan *chan *TrcdbExchange // Channel for receiving trcdb responses
+	ErrorChan   *chan error     // Channel for sending errors
+	DfsChan     *chan *TTDINode // Channel for sending data flow statistics
+	ArgosId     string          // Identifier for data flow statistics
+	ConfigCerts *map[string][]byte
+	Log         *log.Logger
 }
 
 type TrcdbResponse struct {
@@ -60,9 +62,10 @@ type TrcdbResponse struct {
 }
 
 type TrcdbExchange struct {
-	Flows    []string      // List of flows used in query
-	Query    string        // Query to be executed in trcdb
-	Response TrcdbResponse // Response from Trcdb
+	Flows     []string      // List of flows used in query
+	Operation string        // Operation to be performed ("SELECT", "INSERT", "UPDATE", "DELETE")
+	Query     string        // Query to be executed in trcdb
+	Response  TrcdbResponse // Response from Trcdb
 }
 
 // Plugin initialization:
@@ -198,10 +201,6 @@ func Init(properties *map[string]interface{},
 					configContext.Log.Println("Unsupported chat message receiving channel passed")
 					return nil, errors.New("unsupported chat message receiving channel passed")
 				}
-				if trcdbchan, ok := rchan[TRCDB_CHANNEL].(*chan *TrcdbExchange); ok && trcdbchan != nil {
-					configContext.Log.Println("Trcdb response receiving channel initialized.")
-					configContext.TrcdbResponseChan = trcdbchan
-				}
 			} else {
 				configContext.Log.Println("No receiving channel passed")
 				return nil, errors.New("no receiving channel passed")
@@ -234,10 +233,6 @@ func Init(properties *map[string]interface{},
 				} else {
 					configContext.Log.Println("Unsupported chat message sending channel passed")
 					return nil, errors.New("unsupported chat message sending channel passed")
-				}
-				if trcdbchan, ok := schan[TRCDB_CHANNEL].(*chan *TrcdbExchange); ok && trcdbchan != nil {
-					configContext.Log.Println("Trcdb query sending channel initialized.")
-					configContext.TrcdbQueryChan = trcdbchan
 				}
 			} else {
 				configContext.Log.Println("No sending channels passed")

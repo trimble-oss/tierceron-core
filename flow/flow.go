@@ -24,12 +24,12 @@ func (fnt FlowNameType) FlowName() string {
 	return string(fnt)
 }
 
-type PermissionUpdate interface{}
+type PermissionUpdate any
 type FlowStateUpdate interface {
 	// NewFlowState() CurrentFlowState
 }
-type CurrentFlowState interface{}
-type TemplateData interface{}
+type CurrentFlowState any
+type TemplateData any
 
 const (
 	TinyText FlowColumnType = iota
@@ -69,19 +69,19 @@ type FlowColumn struct {
 }
 
 type FlowDefinitionContext struct {
-	GetTableConfigurationById        func(databaseName string, tableName string, idColumnName ...string) map[string]interface{}
-	GetTableConfigurations           func(db interface{}, secLookup bool) ([]interface{}, error)
+	GetTableConfigurationById        func(databaseName string, tableName string, idColumnName ...string) map[string]any
+	GetTableConfigurations           func(db any, secLookup bool) ([]any, error)
 	CreateTableTriggers              func(tfmContext FlowMachineContext, tfContext FlowContext) // Optional override
-	GetRefreshTableConfiguration     func(tfmContext FlowMachineContext, tfContext FlowContext, dbI interface{}) ([]interface{}, error)
-	GetTableMap                      func(tableConfig interface{}) map[string]interface{}
-	GetTableFromMap                  func(tableConfigMap map[string]interface{}) interface{}
-	GetFilterFieldFromConfig         func(tableconfig interface{}) string
-	GetTableMapFromArray             func(tableArray []interface{}) map[string]interface{}
-	GetTableConfigurationInsert      func(tableConfigMap map[string]interface{}, databaseName string, tableName string) map[string]interface{}
-	GetTableConfigurationUpdate      func(tableConfigMap map[string]interface{}, databaseName string, tableName string) map[string]interface{}
-	ApplyDependencies                func(tableConfig interface{}, db interface{}, log *log.Logger) error
-	GetTableSchema                   func(tableName string) interface{}
-	GetIndexedPathExt                func(engine interface{}, rowDataMap map[string]interface{}, indexColumnNames interface{}, databaseName string, tableName string, dbCallBack func(interface{}, map[string]interface{}) (string, []string, [][]interface{}, error)) (string, error)
+	GetRefreshTableConfiguration     func(tfmContext FlowMachineContext, tfContext FlowContext, dbI any) ([]any, error)
+	GetTableMap                      func(tableConfig any) map[string]any
+	GetTableFromMap                  func(tableConfigMap map[string]any) any
+	GetFilterFieldFromConfig         func(tableconfig any) string
+	GetTableMapFromArray             func(tableArray []any) map[string]any
+	GetTableConfigurationInsert      func(tableConfigMap map[string]any, databaseName string, tableName string) map[string]any
+	GetTableConfigurationUpdate      func(tableConfigMap map[string]any, databaseName string, tableName string) map[string]any
+	ApplyDependencies                func(tableConfig any, db any, log *log.Logger) error
+	GetTableSchema                   func(tableName string) any
+	GetIndexedPathExt                func(engine any, rowDataMap map[string]any, indexColumnNames any, databaseName string, tableName string, dbCallBack func(any, map[string]any) (string, []string, [][]any, error)) (string, error)
 	GetTableIndexColumnNames         func() []string
 	GetTableGrant                    func(string) (string, string, error)
 	GetFlowIndexComplex              func() (string, []string, string, error)
@@ -117,13 +117,13 @@ type FlowContext interface {
 	GetFlowSyncFilters() []string
 	GetFlowName() string
 	NewFlowStateUpdate(string, string) FlowStateUpdate
-	GetCurrentFlowStateUpdateByDataSource(string) interface{}
+	GetCurrentFlowStateUpdateByDataSource(string) any
 	UpdateFlowStateByDataSource(string)
 	PushState(string, FlowStateUpdate)
 	GetUpdatePermission() PermissionUpdate
 	GetFlowUpdate(CurrentFlowState) FlowStateUpdate
 	GetDataSourceRegions(bool) []string
-	GetRemoteDataSourceAttribute(string, ...string) interface{} // region, attribute
+	GetRemoteDataSourceAttribute(string, ...string) any // region, attribute
 	// tfContext.NewFlowStateUpdate(strconv.Itoa(int(previousState.State)), tfContext.GetPreviousFlowSyncMode())
 	SetCustomSeedTrcdbFunc(func(FlowMachineContext, FlowContext) error)
 	GetLogger() *log.Logger
@@ -162,42 +162,42 @@ type FlowMachineContext interface {
 	GetFlowContext(FlowNameType) FlowContext
 	GetDatabaseName() string
 	GetTableModifierLock() *sync.Mutex
-	TableCollationIdGen(string) interface{}
-	Init(map[string]map[string]interface{}, []string, []FlowNameType, []FlowNameType) error
-	AddTableSchema(interface{}, FlowContext)
+	TableCollationIdGen(string) any
+	Init(map[string]map[string]any, []string, []FlowNameType, []FlowNameType) error
+	AddTableSchema(any, FlowContext)
 	CreateTableTriggers(FlowContext, []string)
-	CreateTable(name string, schema interface{}, collation interface{}) error
+	CreateTable(name string, schema any, collation any) error
 	CreateCompositeTableTriggers(FlowContext, string, string, func(string, string, string, string) string, func(string, string, string, string) string, func(string, string, string, string) string)
 	CreateDataFlowTableTriggers(FlowContext, string, string, string, func(string, string, string, string, string) string, func(string, string, string, string, string) string, func(string, string, string, string, string) string)
-	GetFlowConfiguration(FlowContext, string) (map[string]interface{}, bool)
-	ProcessFlow(FlowContext, func(FlowMachineContext, FlowContext) error, map[string]interface{}, map[string]map[string]interface{}, FlowNameType, FlowType) error
+	GetFlowConfiguration(FlowContext, string) (map[string]any, bool)
+	ProcessFlow(FlowContext, func(FlowMachineContext, FlowContext) error, map[string]any, map[string]map[string]any, FlowNameType, FlowType) error
 	SetPermissionUpdate(FlowContext) // tfmContext.SetPermissionUpdate(tfContext)
-	//	seedVaultCycle(FlowContext, string, interface{}, func(interface{}, map[string]interface{}, interface{}, string, string, func(interface{}, map[string]interface{}) (string, []string, [][]interface{}, error)) (string, error), func(FlowContext, map[string]interface{}, map[string]interface{}, []string) error, bool)
-	//	seedTrcDbCycle(FlowContext, string, interface{}, func(interface{}, map[string]interface{}, interface{}, string, string, func(interface{}, map[string]interface{}) (string, []string, [][]interface{}, error)) (string, error), func(FlowContext, map[string]interface{}, map[string]interface{}, []string) error, bool, chan bool)
+	//	seedVaultCycle(FlowContext, string, any, func(any, map[string]any, any, string, string, func(any, map[string]any) (string, []string, [][]any, error)) (string, error), func(FlowContext, map[string]any, map[string]any, []string) error, bool)
+	//	seedTrcDbCycle(FlowContext, string, any, func(any, map[string]any, any, string, string, func(any, map[string]any) (string, []string, [][]any, error)) (string, error), func(FlowContext, map[string]any, map[string]any, []string) error, bool, chan bool)
 	SyncTableCycle(FlowContext,
 		[]string, // index column names
-		interface{},
-		func(interface{},
-			map[string]interface{},
-			interface{},
+		any,
+		func(any,
+			map[string]any,
+			any,
 			string,
 			string,
-			func(interface{}, map[string]interface{}) (string, []string, [][]interface{}, error)) (string, error),
-		func(FlowContext, map[string]interface{}) error,
+			func(any, map[string]any) (string, []string, [][]any, error)) (string, error),
+		func(FlowContext, map[string]any) error,
 		bool)
-	SelectFlowChannel(FlowContext) <-chan interface{}
-	GetAuthExtended(func(map[string]interface{}) map[string]interface{}, bool) (map[string]interface{}, error) // Auth for communicating with other services
-	GetCacheRefreshSqlConn(FlowContext, string) (interface{}, error)
-	CallDBQuery(FlowContext, map[string]interface{}, map[string]interface{}, bool, string, []FlowNameType, string) ([][]interface{}, bool)
-	GetDbConn(FlowContext, string, string, map[string]interface{}) (interface{}, error)
-	CallAPI(map[string]string, string, string, io.Reader, bool) (map[string]interface{}, int, error)
+	SelectFlowChannel(FlowContext) <-chan any
+	GetAuthExtended(func(map[string]any) map[string]any, bool) (map[string]any, error) // Auth for communicating with other services
+	GetCacheRefreshSqlConn(FlowContext, string) (any, error)
+	CallDBQuery(FlowContext, map[string]any, map[string]any, bool, string, []FlowNameType, string) ([][]any, bool)
+	GetDbConn(FlowContext, string, string, map[string]any) (any, error)
+	CallAPI(map[string]string, string, string, io.Reader, bool) (map[string]any, int, error)
 	SetEncryptionSecret()
 	Log(string, error)
 	LogInfo(string)
 	GetLogger() *log.Logger
-	PathToTableRowHelper(FlowContext) ([]interface{}, error)
+	PathToTableRowHelper(FlowContext) ([]any, error)
 	DeliverTheStatistic(FlowContext, *tccore.TTDINode, string, string, string, bool)
 	LoadBaseTemplate(FlowContext) (TemplateData, error) //var baseTableTemplate extract.TemplateResultData , tfContext.GoMod, tfContext.FlowSource, tfContext.Flow.ServiceName(), tfContext.FlowPath
 
-	//	writeToTableHelper(FlowContext, map[string]string, map[string]string) []interface{}
+	//	writeToTableHelper(FlowContext, map[string]string, map[string]string) []any
 }

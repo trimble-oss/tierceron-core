@@ -38,7 +38,7 @@ type KernelCmd struct {
 }
 
 type ConfigContext struct {
-	Config            *map[string]interface{}
+	Config            *map[string]any
 	Env               string // Env being processed
 	Region            string // Region processed
 	Start             func(string)
@@ -57,8 +57,8 @@ type ConfigContext struct {
 }
 
 type TrcdbResponse struct {
-	Rows    [][]interface{} // Rows of data returned from query
-	Success bool            // Whether the query was successful
+	Rows    [][]any // Rows of data returned from query
+	Success bool    // Whether the query was successful
 }
 
 type TrcdbExchange struct {
@@ -91,7 +91,7 @@ type ChatMsg struct {
 	TrcdbExchange *TrcdbExchange // Optional dialog for Trcdb integration
 }
 
-func Init(properties *map[string]interface{},
+func Init(properties *map[string]any,
 	commonCertPath string,
 	commonKeyPath string,
 	commonPath string,
@@ -122,7 +122,7 @@ func Init(properties *map[string]interface{},
 		return nil, errors.New("missing env from kernel")
 	}
 	region := ""
-	if configProp, ok := (*properties)["config"].(*map[string]interface{}); ok {
+	if configProp, ok := (*properties)["config"].(*map[string]any); ok {
 		if r, ok := (*configProp)["region"].(string); ok {
 			logger.Println("received region value from kernel")
 			region = r
@@ -141,7 +141,7 @@ func Init(properties *map[string]interface{},
 
 	var certbytes []byte
 	var keybytes []byte
-	var config_properties *map[string]interface{}
+	var config_properties *map[string]any
 	if cert, ok := (*properties)[commonCertPath]; ok {
 		certbytes = cert.([]byte)
 	}
@@ -150,13 +150,13 @@ func Init(properties *map[string]interface{},
 	}
 	if len(commonPath) > 0 {
 		if common, ok := (*properties)[commonPath]; ok {
-			config_properties = common.(*map[string]interface{})
+			config_properties = common.(*map[string]any)
 		} else {
 			fmt.Println("Missing config components")
 			return nil, errors.New("missing config components")
 		}
 	} else {
-		config_properties = &map[string]interface{}{}
+		config_properties = &map[string]any{}
 	}
 
 	var configCerts *map[string][]byte = &map[string][]byte{}
@@ -177,7 +177,7 @@ func Init(properties *map[string]interface{},
 	}
 
 	if channels, ok := (*properties)[PLUGIN_EVENT_CHANNELS_MAP_KEY]; ok {
-		if chans, ok := channels.(map[string]interface{}); ok {
+		if chans, ok := channels.(map[string]any); ok {
 			if bchan, ok := chans[CHAT_BROADCAST_CHANNEL].(*chan *ChatMsg); ok {
 				configContext.Log.Println("Chat broadcast channel initialized.")
 				configContext.ChatBroadcastChan = bchan
@@ -185,7 +185,7 @@ func Init(properties *map[string]interface{},
 				configContext.Log.Println("Unsupported broadcast channel passed")
 				return nil, errors.New("unsupported broadcast channel passed")
 			}
-			if rchan, ok := chans[PLUGIN_CHANNEL_EVENT_IN].(map[string]interface{}); ok {
+			if rchan, ok := chans[PLUGIN_CHANNEL_EVENT_IN].(map[string]any); ok {
 				if rc, ok := rchan[CMD_CHANNEL].(*chan KernelCmd); ok && rc != nil {
 					configContext.Log.Println("Command Receiver initialized.")
 					configContext.CmdReceiverChan = rc
@@ -206,7 +206,7 @@ func Init(properties *map[string]interface{},
 				configContext.Log.Println("No receiving channel passed")
 				return nil, errors.New("no receiving channel passed")
 			}
-			if schan, ok := chans[PLUGIN_CHANNEL_EVENT_OUT].(map[string]interface{}); ok {
+			if schan, ok := chans[PLUGIN_CHANNEL_EVENT_OUT].(map[string]any); ok {
 				if sc, ok := schan[ERROR_CHANNEL].(*chan error); ok && sc != nil {
 					configContext.Log.Println("Error Sender initialized")
 					configContext.ErrorChan = sc
@@ -249,7 +249,7 @@ func Init(properties *map[string]interface{},
 }
 
 func InitPost(pluginName string,
-	properties *map[string]interface{},
+	properties *map[string]any,
 	PostInit func(*ConfigContext)) (*ConfigContext, error) {
 	if properties == nil {
 		fmt.Println("Missing initialization components")
@@ -267,8 +267,8 @@ func InitPost(pluginName string,
 	}
 
 	if channels, ok := (*properties)[PLUGIN_EVENT_CHANNELS_MAP_KEY]; ok {
-		if chans, ok := channels.(map[string]interface{}); ok {
-			if rchan, ok := chans[PLUGIN_CHANNEL_EVENT_IN].(map[string]interface{}); ok {
+		if chans, ok := channels.(map[string]any); ok {
+			if rchan, ok := chans[PLUGIN_CHANNEL_EVENT_IN].(map[string]any); ok {
 				if cmdreceiver, ok := rchan[CMD_CHANNEL].(*chan KernelCmd); ok {
 					configContext.CmdReceiverChan = cmdreceiver
 					configContext.Log.Println("Command Receiver initialized.")
@@ -290,7 +290,7 @@ func InitPost(pluginName string,
 				configContext.Log.Println("No event in receiving channel passed")
 				goto postinit
 			}
-			if schan, ok := chans[PLUGIN_CHANNEL_EVENT_OUT].(map[string]interface{}); ok {
+			if schan, ok := chans[PLUGIN_CHANNEL_EVENT_OUT].(map[string]any); ok {
 				if cmdsender, ok := schan[CMD_CHANNEL].(*chan KernelCmd); ok {
 					configContext.CmdSenderChan = cmdsender
 					configContext.Log.Println("Command Sender initialized.")

@@ -11,10 +11,10 @@ Only 2 functions needs to be implemented in the plugin:
 func GetConfigPaths() []string
 
 ## Provide secrets, certificates, and an event channel map 
-func Init(properties *map[string]interface{})
+func Init(properties *map[string]any)
 
 # Keys include:
-PluginEventChannelsMap: map[string]interface{}
+PluginEventChannelsMap: map[string]any
 Keys provided by GetConfigPaths
 Built in project/service key containing project secrets
 

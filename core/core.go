@@ -86,7 +86,8 @@ type ChatMsg struct {
 	KernelId      *string        // Internal use by kernel
 	IsBroadcast   bool           // Is message intended for broadcast.
 	Query         *[]string      // List of plugins to send message to.
-	Response      *string        // Pointer to json serialized data.
+	Response      *string        // Pointer to response data (json serialized or other)
+	HookResponse  interface{}    // Optional response for interacting plugins that require more complicated data structures.
 	TrcdbExchange *TrcdbExchange // Optional dialog for Trcdb integration
 }
 

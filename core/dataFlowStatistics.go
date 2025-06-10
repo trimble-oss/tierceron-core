@@ -28,10 +28,10 @@ type DeliverStatCtx struct {
 	LogStat   bool
 	LogFunc   *func(string, error)
 	//TODO: Make not interface
-	TimeStart      interface{} //either string or time.Time
-	LastTestedDate interface{} //either string or time.Time
-	TimeSplit      interface{} //either float64 or time.Duration
-	Mode           interface{} //either float64 or int
+	TimeStart      any //either string or time.Time
+	LastTestedDate any //either string or time.Time
+	TimeSplit      any //either float64 or time.Duration
+	Mode           any //either float64 or int
 }
 
 func (dsc *DeliverStatCtx) GetElapsedTimeStr() string {
@@ -72,7 +72,7 @@ func (dsc *DeliverStatCtx) GetLastTestedDateStr() string {
 
 func InitDataFlow(logF func(string, error), name string, logS bool) *TTDINode {
 	var stats []*TTDINode
-	data := make(map[string]interface{})
+	data := make(map[string]any)
 	data["TimeStart"] = time.Now().Format(RFC_ISO_8601)
 	data["LogStat"] = logS
 	if logF != nil {
@@ -88,7 +88,7 @@ func InitDataFlow(logF func(string, error), name string, logS bool) *TTDINode {
 }
 
 func (dfs *TTDINode) UpdateDataFlowStatistic(flowG string, flowN string, stateN string, stateC string, mode int, logF func(string, error)) {
-	var decodedData map[string]interface{}
+	var decodedData map[string]any
 	var timeStart time.Time
 	var err error
 	if len(dfs.MashupDetailedElement.Data) > 0 {
@@ -111,7 +111,7 @@ func (dfs *TTDINode) UpdateDataFlowStatistic(flowG string, flowN string, stateN 
 			}
 		}
 	} else {
-		decodedData = make(map[string]interface{})
+		decodedData = make(map[string]any)
 		timeStart = time.Now()
 		decodedData["TimeStart"] = timeStart.Format(RFC_ISO_8601)
 
@@ -123,7 +123,7 @@ func (dfs *TTDINode) UpdateDataFlowStatistic(flowG string, flowN string, stateN 
 		dfs.MashupDetailedElement.Data = string(newEncodedData)
 	}
 
-	newData := make(map[string]interface{})
+	newData := make(map[string]any)
 	newData["FlowGroup"] = flowG
 	newData["FlowName"] = flowN
 	newData["StateName"] = stateN
@@ -143,7 +143,7 @@ func (dfs *TTDINode) UpdateDataFlowStatistic(flowG string, flowN string, stateN 
 }
 
 func (dfs *TTDINode) UpdateDataFlowStatisticWithTime(flowG string, flowN string, stateN string, stateC string, mode int, elapsedTime time.Duration) {
-	newData := make(map[string]interface{})
+	newData := make(map[string]any)
 	newData["FlowGroup"] = flowG
 	newData["FlowName"] = flowN
 	newData["StateName"] = stateN
@@ -161,14 +161,14 @@ func (dfs *TTDINode) UpdateDataFlowStatisticWithTime(flowG string, flowN string,
 }
 
 // Doesn't deserialize statistic data for updatedataflowstatistic
-func (dfs *TTDINode) EfficientLog(statMap map[string]interface{}, logF func(string, error)) {
+func (dfs *TTDINode) EfficientLog(statMap map[string]any, logF func(string, error)) {
 	var dfsctx *DeliverStatCtx
-	var decodedMap map[string]interface{} = nil
+	var decodedMap map[string]any = nil
 	var err error
 	logstat := false
 	if statMap["decodedData"] != nil {
 		decodedMap = statMap
-		decodedData := statMap["decodedData"].(map[string]interface{})
+		decodedData := statMap["decodedData"].(map[string]any)
 		if logF == nil {
 			if lf, ok := decodedData["LogFunc"].(func(string, error)); ok {
 				logF = lf
@@ -222,20 +222,20 @@ func (dfs *TTDINode) Log() {
 	}
 }
 
-func (dfs *TTDINode) GetDeliverStatCtx(decodedMap ...map[string]interface{}) (*DeliverStatCtx, map[string]interface{}, error) {
-	var decodedData map[string]interface{}
+func (dfs *TTDINode) GetDeliverStatCtx(decodedMap ...map[string]any) (*DeliverStatCtx, map[string]any, error) {
+	var decodedData map[string]any
 	var dsc DeliverStatCtx
 
 	if len(decodedMap) > 0 {
 		decodedData = decodedMap[0]
 	} else {
-		var decoded interface{}
+		var decoded any
 		err := json.Unmarshal([]byte(dfs.MashupDetailedElement.Data), &decoded)
 		if err != nil {
 			log.Println("Error in decoding data in FinishStatistic")
 			return nil, nil, err
 		}
-		decodedData = decoded.(map[string]interface{})
+		decodedData = decoded.(map[string]any)
 	}
 
 	if start, ok := decodedData["TimeStart"].(time.Time); ok {
@@ -283,13 +283,13 @@ func (dfs *TTDINode) GetDeliverStatCtx(decodedMap ...map[string]interface{}) (*D
 	return &dsc, decodedData, nil
 }
 
-func (dfs *TTDINode) FinishStatistic(id string, indexPath string, idName string, logger *log.Logger, vaultWriteBack bool, dsc *DeliverStatCtx) map[string]interface{} {
+func (dfs *TTDINode) FinishStatistic(id string, indexPath string, idName string, logger *log.Logger, vaultWriteBack bool, dsc *DeliverStatCtx) map[string]any {
 	dfsctx, _, err := dfs.GetDeliverStatCtx()
 	if err != nil {
 		log.Println("Error in decoding data in FinishStatistic")
 		return nil
 	}
-	statMap := make(map[string]interface{})
+	statMap := make(map[string]any)
 	//Change names here
 	statMap["flowGroup"] = dfsctx.FlowGroup
 	statMap["flowName"] = dfsctx.FlowName
@@ -301,8 +301,8 @@ func (dfs *TTDINode) FinishStatistic(id string, indexPath string, idName string,
 	return statMap
 }
 
-func (dfs *TTDINode) MapStatistic(data map[string]interface{}, logger *log.Logger) {
-	newData := make(map[string]interface{})
+func (dfs *TTDINode) MapStatistic(data map[string]any, logger *log.Logger) {
+	newData := make(map[string]any)
 	newData["FlowGroup"] = data["flowGroup"].(string)
 	newData["FlowName"] = data["flowName"].(string)
 	newData["StateName"] = data["stateName"].(string)
@@ -355,9 +355,9 @@ func (dfs *TTDINode) FinishStatisticLog() {
 }
 
 // Creating map representation for easier use by persistence functions
-func (dfs *TTDINode) StatisticToMap() map[string]interface{} {
+func (dfs *TTDINode) StatisticToMap() map[string]any {
 	var elapsedTime string
-	statMap := make(map[string]interface{})
+	statMap := make(map[string]any)
 	dfsctx, _, err := dfs.GetDeliverStatCtx()
 	if err != nil {
 		log.Println("Error in decoding data in StatisticToMap")

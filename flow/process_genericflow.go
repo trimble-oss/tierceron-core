@@ -11,7 +11,7 @@ import (
 )
 
 // True == equal, false = not equal
-func CompareRows(a map[string]interface{}, b map[string]interface{}) bool {
+func CompareRows(a map[string]any, b map[string]any) bool {
 	for key, value := range a {
 		if _, ok := b[key].(string); ok {
 			if b[key] != value {
@@ -27,11 +27,11 @@ func CompareRows(a map[string]interface{}, b map[string]interface{}) bool {
 	return true
 }
 
-func tableConfigurationFlowPullRemote(tfmContext FlowMachineContext, tfContext FlowContext) ([]map[string]interface{}, error) {
+func tableConfigurationFlowPullRemote(tfmContext FlowMachineContext, tfContext FlowContext) ([]map[string]any, error) {
 	// b. Retrieve table configurations
 	flowDefinitionContext := tfContext.GetFlowDefinitionContext()
 	regionSyncList := tfContext.GetDataSourceRegions(true)
-	var tableConfigMapArr []map[string]interface{}
+	var tableConfigMapArr []map[string]any
 	if len(regionSyncList) == 0 {
 		return tableConfigMapArr, nil
 	}
@@ -71,16 +71,16 @@ func tableConfigurationFlowPullRemote(tfmContext FlowMachineContext, tfContext F
 	return tableConfigMapArr, nil
 }
 
-func tableConfigurationFlowPushRemote(tfContext FlowContext, changedItem map[string]interface{}) error {
+func tableConfigurationFlowPushRemote(tfContext FlowContext, changedItem map[string]any) error {
 	flowDefinitionContext := tfContext.GetFlowDefinitionContext()
 	regionSyncList := tfContext.GetDataSourceRegions(true)
 	if len(regionSyncList) == 0 {
 		return nil
 	}
 	if flowDefinitionContext.GetTableFromMap != nil {
-		var sqlConnI interface{}
+		var sqlConnI any
 		for _, region := range regionSyncList {
-			if regionSource, ok := tfContext.GetRemoteDataSourceAttribute(region).(map[string]interface{}); ok {
+			if regionSource, ok := tfContext.GetRemoteDataSourceAttribute(region).(map[string]any); ok {
 				if conn, ok := regionSource["connection"]; ok && conn != nil {
 					sqlConnI = conn
 				}
@@ -97,8 +97,8 @@ func tableConfigurationFlowPushRemote(tfContext FlowContext, changedItem map[str
 
 					/*
 						//region check before pushing
-						if !strings.Contains(table.Region.String, trcRemoteDataSource[region].(map[string]interface{})["dbsourceregion"].(string)) {
-							if trcRemoteDataSource[region].(map[string]interface{})["dbsourceregion"].(string) != "west" { //default to west if region doesn't match.
+						if !strings.Contains(table.Region.String, trcRemoteDataSource[region].(map[string]any)["dbsourceregion"].(string)) {
+							if trcRemoteDataSource[region].(map[string]any)["dbsourceregion"].(string) != "west" { //default to west if region doesn't match.
 								return nil
 							}
 						}
@@ -173,7 +173,7 @@ func ProcessTableConfigurations(tfmContext FlowMachineContext, tfContext FlowCon
 					tfmContext.Log(fmt.Sprintf("%s flow is restarting...", tfContext.GetFlowName()), nil)
 					if !tfContext.IsInit() { //init vault sync cycle
 						tfContext.SetInit(true)
-						tfmContext.CallDBQuery(tfContext, map[string]interface{}{"TrcQuery": "truncate " + tfContext.GetFlowSourceAlias() + "." + tfContext.GetFlowName()}, nil, false, "DELETE", nil, "")
+						tfmContext.CallDBQuery(tfContext, map[string]any{"TrcQuery": "truncate " + tfContext.GetFlowSourceAlias() + "." + tfContext.GetFlowName()}, nil, false, "DELETE", nil, "")
 					}
 					tfContext.PushState("flowStateReceiver", tfContext.NewFlowStateUpdate("2", tfContext.GetFlowSyncMode()))
 					continue
@@ -212,7 +212,7 @@ func ProcessTableConfigurations(tfmContext FlowMachineContext, tfContext FlowCon
 						}
 					}
 
-					rows, _ := tfmContext.CallDBQuery(tfContext, map[string]interface{}{"TrcQuery": "SELECT * FROM " + tfContext.GetFlowSourceAlias() + "." + tfContext.GetFlowName()}, nil, false, "SELECT", nil, "")
+					rows, _ := tfmContext.CallDBQuery(tfContext, map[string]any{"TrcQuery": "SELECT * FROM " + tfContext.GetFlowSourceAlias() + "." + tfContext.GetFlowName()}, nil, false, "SELECT", nil, "")
 					if len(rows) == 0 {
 						tfmContext.Log(fmt.Sprintf("Nothing in %s table to push out yet...", tfContext.GetFlowName()), nil) //Table is not currently loaded.
 						continue
@@ -238,7 +238,7 @@ func ProcessTableConfigurations(tfmContext FlowMachineContext, tfContext FlowCon
 					continue
 				}
 
-				var filterTableConfigurations []map[string]interface{}
+				var filterTableConfigurations []map[string]any
 				if tfContext.HasFlowSyncFilters() {
 					syncFilter := tfContext.GetFlowSyncFilters()
 					for _, filter := range syncFilter {

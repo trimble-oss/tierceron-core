@@ -134,7 +134,7 @@ func RegisterStatServiceServer(s grpc.ServiceRegistrar, srv StatServiceServer) {
 	s.RegisterService(&StatService_ServiceDesc, srv)
 }
 
-func _StatService_GetStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _StatService_GetStats_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(GetStatRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -146,13 +146,13 @@ func _StatService_GetStats_Handler(srv interface{}, ctx context.Context, dec fun
 		Server:     srv,
 		FullMethod: StatService_GetStats_FullMethodName,
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(StatServiceServer).GetStats(ctx, req.(*GetStatRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _StatService_SetStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _StatService_SetStats_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(UpdateStatRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -164,13 +164,13 @@ func _StatService_SetStats_Handler(srv interface{}, ctx context.Context, dec fun
 		Server:     srv,
 		FullMethod: StatService_SetStats_FullMethodName,
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(StatServiceServer).SetStats(ctx, req.(*UpdateStatRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _StatService_IncrementStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _StatService_IncrementStats_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(UpdateStatRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -182,13 +182,13 @@ func _StatService_IncrementStats_Handler(srv interface{}, ctx context.Context, d
 		Server:     srv,
 		FullMethod: StatService_IncrementStats_FullMethodName,
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(StatServiceServer).IncrementStats(ctx, req.(*UpdateStatRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _StatService_UpdateMaxStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _StatService_UpdateMaxStats_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(UpdateStatRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -200,7 +200,7 @@ func _StatService_UpdateMaxStats_Handler(srv interface{}, ctx context.Context, d
 		Server:     srv,
 		FullMethod: StatService_UpdateMaxStats_FullMethodName,
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(StatServiceServer).UpdateMaxStats(ctx, req.(*UpdateStatRequest))
 	}
 	return interceptor(ctx, in, info, handler)

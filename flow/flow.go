@@ -24,6 +24,9 @@ func (fnt FlowNameType) FlowName() string {
 	return string(fnt)
 }
 
+var DataFlowStatConfigurationsFlow FlowNameType = "DataFlowStatistics"
+var ArgosSociiFlow FlowNameType = "ArgosSocii"
+
 type PermissionUpdate any
 type FlowStateUpdate interface {
 	// NewFlowState() CurrentFlowState
@@ -189,6 +192,7 @@ type FlowMachineContext interface {
 	GetAuthExtended(func(map[string]any) map[string]any, bool) (map[string]any, error) // Auth for communicating with other services
 	GetCacheRefreshSqlConn(FlowContext, string) (any, error)
 	CallDBQuery(FlowContext, map[string]any, map[string]any, bool, string, []FlowNameType, string) ([][]any, bool)
+	CallDBQueryN([]string, map[string]any, map[string]any, bool, string, []FlowNameType, string) ([][]any, bool)
 	GetDbConn(FlowContext, string, string, map[string]any) (any, error)
 	CallAPI(map[string]string, string, string, io.Reader, bool) (map[string]any, int, error)
 	SetEncryptionSecret()

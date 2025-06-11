@@ -24,6 +24,9 @@ func (fnt FlowNameType) FlowName() string {
 	return string(fnt)
 }
 
+var DataFlowStatConfigurationsFlow FlowNameType = "DataFlowStatistics"
+var ArgosSociiFlow FlowNameType = "ArgosSocii"
+
 type PermissionUpdate any
 type FlowStateUpdate interface {
 	// NewFlowState() CurrentFlowState

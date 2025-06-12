@@ -52,7 +52,7 @@ func CallSelectedChatMsgHook(chatMsgHooks *cmap.ConcurrentMap[string, ChatHookFu
 
 func CallChatQueryChan(chatMsgHookCtx *cmap.ConcurrentMap[string, ChatHookFunc],
 	sourcePlugin string,
-	flow string,
+	flows []string,
 	query string,
 	operation string,
 	chatSenderChan *chan *ChatMsg) *ChatMsg {
@@ -65,7 +65,7 @@ func CallChatQueryChan(chatMsgHookCtx *cmap.ConcurrentMap[string, ChatHookFunc],
 	chatTrcdbQueryMsg.Query = &[]string{"trcdb"}
 	chatTrcdbQueryMsg.TrcdbExchange = &TrcdbExchange{
 		Query:     query,
-		Flows:     []string{flow},
+		Flows:     flows,
 		Operation: operation,
 	}
 	responseChan := make(chan *ChatMsg, 1)

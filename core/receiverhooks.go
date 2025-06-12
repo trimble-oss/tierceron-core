@@ -10,17 +10,20 @@ import (
 
 type ChatHookFunc func(*ChatMsg) bool
 
-func RegisterChatMsgHook(chatMsgHookCtx *cmap.ConcurrentMap[string, ChatHookFunc], id string, hook ChatHookFunc) (string, error) {
+func RegisterChatMsgHook(chatMsgHookCtx **cmap.ConcurrentMap[string, ChatHookFunc], id string, hook ChatHookFunc) (string, error) {
 	if chatMsgHookCtx == nil {
+		return "", errors.New("chatMsgHookCtx pointer is nil")
+	}
+	if *chatMsgHookCtx == nil {
 		cmHooks := cmap.New[ChatHookFunc]()
-		chatMsgHookCtx = &cmHooks
+		*chatMsgHookCtx = &cmHooks
 	}
 	if hook == nil {
 		return "", errors.New("hook cannot be nil")
 	}
 
 	for {
-		if chatMsgHookCtx.SetIfAbsent(id, hook) {
+		if (*chatMsgHookCtx).SetIfAbsent(id, hook) {
 			break
 		} else {
 			// Probably never will trigger...  But just in case..
@@ -50,7 +53,7 @@ func CallSelectedChatMsgHook(chatMsgHooks *cmap.ConcurrentMap[string, ChatHookFu
 	}
 }
 
-func CallChatQueryChan(chatMsgHookCtx *cmap.ConcurrentMap[string, ChatHookFunc],
+func CallChatQueryChan(chatMsgHookCtx **cmap.ConcurrentMap[string, ChatHookFunc],
 	sourcePlugin string,
 	flows []string,
 	query string,

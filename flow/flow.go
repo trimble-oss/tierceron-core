@@ -202,6 +202,7 @@ type FlowMachineContext interface {
 	PathToTableRowHelper(FlowContext) ([]any, error)
 	DeliverTheStatistic(FlowContext, *tccore.TTDINode, string, string, string, bool)
 	LoadBaseTemplate(FlowContext) (TemplateData, error) //var baseTableTemplate extract.TemplateResultData , tfContext.GoMod, tfContext.FlowSource, tfContext.Flow.ServiceName(), tfContext.FlowPath
+	WaitAllFlowsLoaded()                                // Block until all flows are loaded
 
 	//	writeToTableHelper(FlowContext, map[string]string, map[string]string) []any
 }

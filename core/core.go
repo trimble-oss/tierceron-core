@@ -56,6 +56,10 @@ type ConfigContext struct {
 	Log         *log.Logger
 }
 
+type TrcdbRequest struct {
+	Rows [][]any // Rows of data returned from query
+}
+
 type TrcdbResponse struct {
 	Rows    [][]any // Rows of data returned from query
 	Success bool    // Whether the query was successful
@@ -65,7 +69,9 @@ type TrcdbExchange struct {
 	Flows     []string      // List of flows used in query
 	Operation string        // Operation to be performed ("SELECT", "INSERT", "UPDATE", "DELETE")
 	Query     string        // Query to be executed in trcdb
-	Response  TrcdbResponse // Response from Trcdb
+	ExecTrcsh string        // Path to script to executed on response rows
+	Request   TrcdbRequest  // Request rows to Trcdb -- may contain Billy provided by caller (check ExecTrcsh)
+	Response  TrcdbResponse // Response from Trcdb -- may contain Billy  provided by caller (check ExecTrcsh)
 }
 
 // Plugin initialization:

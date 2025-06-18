@@ -192,7 +192,7 @@ type FlowMachineContext interface {
 	GetAuthExtended(func(map[string]any) map[string]any, bool) (map[string]any, error) // Auth for communicating with other services
 	GetCacheRefreshSqlConn(FlowContext, string) (any, error)
 	CallDBQuery(FlowContext, map[string]any, map[string]any, bool, string, []FlowNameType, string) ([][]any, bool)
-	CallDBQueryN([]string, map[string]any, map[string]any, bool, string, []FlowNameType, string) ([][]any, bool)
+	CallDBQueryN(*tccore.TrcdbExchange, map[string]any, map[string]any, bool, string, []FlowNameType, string) (*tccore.TrcdbExchange, bool)
 	GetDbConn(FlowContext, string, string, map[string]any) (any, error)
 	CallAPI(map[string]string, string, string, io.Reader, bool) (map[string]any, int, error)
 	SetEncryptionSecret()

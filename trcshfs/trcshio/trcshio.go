@@ -22,4 +22,5 @@ type MemoryFileSystem interface {
 	ReadDir(path string) ([]os.FileInfo, error)
 	ClearCache(path string)
 	SerializeToMap(path string, configCache map[string]any)
+	Walk(root string, walkFn func(path string, isDir bool) error) error
 }

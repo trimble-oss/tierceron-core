@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path"
 	"strings"
 	"sync"
 
@@ -131,4 +132,25 @@ func (t *TrcshMemFs) Remove(filename string) error {
 
 func (t *TrcshMemFs) Lstat(filename string) (os.FileInfo, error) {
 	return (*t.BillyFs).Lstat(filename)
+}
+
+func (t *TrcshMemFs) Walk(root string, walkFn func(path string, isDir bool) error) error {
+	infos, err := (*t).ReadDir(root)
+	if err != nil {
+		return err
+	}
+	for _, info := range infos {
+		fullPath := path.Join(root, info.Name())
+		err := walkFn(fullPath, info.IsDir())
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			err = t.Walk(fullPath, walkFn)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }

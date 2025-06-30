@@ -3,6 +3,7 @@ package bitlock
 import (
 	"fmt"
 	"testing"
+	"time"
 )
 
 var flows *map[string]uint64
@@ -92,6 +93,5 @@ func TestBitLock(t *testing.T) {
 		Unlock((*flows)["flow4"] ^ (*flows)["flow5"])
 	}()
 
-	wait := make(chan bool)
-	wait <- true
+	time.Sleep(20 * time.Second)
 }

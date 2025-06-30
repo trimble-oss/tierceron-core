@@ -164,6 +164,8 @@ func SyncCheck(syncMode string) string {
 type FlowMachineContext interface {
 	GetEnv() string
 	GetFlowContext(FlowNameType) FlowContext
+	GetFlowID(FlowNameType) *uint64
+	SetFlowIDs()
 	GetDatabaseName() string
 	GetTableModifierLock() *sync.Mutex
 	TableCollationIdGen(string) any

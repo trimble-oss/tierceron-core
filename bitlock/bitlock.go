@@ -5,72 +5,83 @@ import (
 	"sync/atomic"
 )
 
-var bitmask *atomic.Uint64 = new(atomic.Uint64)
+// var bitmask *atomic.Uint64 = new(atomic.Uint64)
 
-var bitmaskLock *sync.RWMutex
+// var bitmaskLock *sync.RWMutex
 
-var bitmaskUpdateChan chan bool
+// var bitmaskUpdateChan chan bool
 
-var listening = false
+// var listening = false
 
-func InitBitMask(size int) {
-	if size <= 0 {
-		return
-	}
-	bitmask.Store(0)
-	bitmaskLock = &sync.RWMutex{}
-	bitmaskUpdateChan = make(chan bool)
+type BitLock struct {
+	bitmask           *atomic.Uint64
+	bitmaskLock       *sync.RWMutex
+	bitmaskUpdateChan chan bool
+	listening         bool
 }
 
-func Lock(flowID uint64) {
-	if bitmask == nil || bitmaskLock == nil {
+func InitBitMask(size int) *BitLock {
+	if size <= 0 {
+		return nil
+	}
+	b := &BitLock{
+		bitmask:     new(atomic.Uint64),
+		bitmaskLock: &sync.RWMutex{},
+	}
+	b.bitmask.Store(0)
+	b.bitmaskUpdateChan = make(chan bool)
+	return b
+}
+
+func (b *BitLock) Lock(flowID uint64) {
+	if b == nil || b.bitmask == nil || b.bitmaskLock == nil || b.bitmaskUpdateChan == nil {
 		return
 	}
 
 check:
-	conflict := checkConflict(flowID)
+	conflict := b.checkConflict(flowID)
 
 	if conflict {
-		bitmaskLock.Lock()
-		listening = true
-		bitmaskLock.Unlock()
-		<-bitmaskUpdateChan
+		b.bitmaskLock.Lock()
+		b.listening = true
+		b.bitmaskLock.Unlock()
+		<-b.bitmaskUpdateChan
 		goto check
 	}
 
-	bitmaskLock.Lock()
-	currentVal := bitmask.Load()
+	b.bitmaskLock.Lock()
+	currentVal := b.bitmask.Load()
 	result := currentVal ^ flowID
-	bitmask.Store(result)
-	if listening {
-		bitmaskUpdateChan <- true
-		listening = false
+	b.bitmask.Store(result)
+	if b.listening {
+		b.bitmaskUpdateChan <- true
+		b.listening = false
 	}
-	bitmaskLock.Unlock()
+	b.bitmaskLock.Unlock()
 }
 
-func Unlock(flowID uint64) {
-	if bitmask == nil || bitmaskLock == nil {
+func (b *BitLock) Unlock(flowID uint64) {
+	if b == nil || b.bitmask == nil || b.bitmaskLock == nil || b.bitmaskUpdateChan == nil {
 		return
 	}
 
-	bitmaskLock.Lock()
-	currentVal := bitmask.Load()
+	b.bitmaskLock.Lock()
+	currentVal := b.bitmask.Load()
 	result := currentVal ^ flowID
-	bitmask.Store(result)
-	if listening {
-		bitmaskUpdateChan <- true
-		listening = false
+	b.bitmask.Store(result)
+	if b.listening {
+		b.bitmaskUpdateChan <- true
+		b.listening = false
 	}
-	bitmaskLock.Unlock()
+	b.bitmaskLock.Unlock()
 }
 
-func checkConflict(flowID uint64) bool {
-	if bitmask == nil || bitmaskLock == nil {
+func (b *BitLock) checkConflict(flowID uint64) bool {
+	if b == nil || b.bitmask == nil || b.bitmaskLock == nil {
 		return false
 	}
-	bitmaskLock.RLock()
-	defer bitmaskLock.RUnlock()
-	currentMask := bitmask.Load()
+	b.bitmaskLock.RLock()
+	defer b.bitmaskLock.RUnlock()
+	currentMask := b.bitmask.Load()
 	return (currentMask & flowID) != 0
 }

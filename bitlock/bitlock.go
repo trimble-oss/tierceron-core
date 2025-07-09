@@ -5,14 +5,6 @@ import (
 	"sync/atomic"
 )
 
-// var bitmask *atomic.Uint64 = new(atomic.Uint64)
-
-// var bitmaskLock *sync.RWMutex
-
-// var bitmaskUpdateChan chan bool
-
-// var listening = false
-
 type BitLock struct {
 	bitmask           *atomic.Uint64
 	bitmaskLock       *sync.RWMutex

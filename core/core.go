@@ -74,6 +74,10 @@ type TrcdbExchange struct {
 	Response  TrcdbResponse // Response from Trcdb -- may contain Billy  provided by caller (check ExecTrcsh)
 }
 
+type StatisticsDoc struct {
+	StatDocs []any // Statistics documents
+}
+
 // Plugin initialization:
 // 1. Kernel calls GetConfigPaths
 // 2. Kernel calls Init
@@ -95,6 +99,7 @@ type ChatMsg struct {
 	Response      *string        // Pointer to response data (json serialized or other)
 	HookResponse  any            // Optional response for interacting plugins that require more complicated data structures.
 	TrcdbExchange *TrcdbExchange // Optional dialog for Trcdb integration
+	StatisticsDoc *StatisticsDoc // Optional statistics document
 }
 
 func Init(properties *map[string]any,

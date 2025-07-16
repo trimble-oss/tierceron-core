@@ -74,6 +74,11 @@ type TrcdbExchange struct {
 	Response  TrcdbResponse // Response from Trcdb -- may contain Billy  provided by caller (check ExecTrcsh)
 }
 
+type StatisticsDoc struct {
+	Tenants            []string   // List of tenants for which statistics are collected
+	DataFlowStatistics []TTDINode // Data flow statistics collected
+}
+
 // Plugin initialization:
 // 1. Kernel calls GetConfigPaths
 // 2. Kernel calls Init
@@ -87,14 +92,15 @@ type TrcdbExchange struct {
 //     *configContext.ChatSenderChan
 //     example: *configContext.ChatSenderChan <- &chatResultMsg
 type ChatMsg struct {
-	ChatId        *string        // Only relevant for 3rd party integration.
-	Name          *string        // Source plugin name
-	KernelId      *string        // Internal use by kernel
-	IsBroadcast   bool           // Is message intended for broadcast.
-	Query         *[]string      // List of plugins to send message to.
-	Response      *string        // Pointer to response data (json serialized or other)
-	HookResponse  any            // Optional response for interacting plugins that require more complicated data structures.
-	TrcdbExchange *TrcdbExchange // Optional dialog for Trcdb integration
+	ChatId         *string          // Only relevant for 3rd party integration.
+	Name           *string          // Source plugin name
+	KernelId       *string          // Internal use by kernel
+	IsBroadcast    bool             // Is message intended for broadcast.
+	Query          *[]string        // List of plugins to send message to.
+	Response       *string          // Pointer to response data (json serialized or other)
+	HookResponse   any              // Optional response for interacting plugins that require more complicated data structures.
+	TrcdbExchange  *TrcdbExchange   // Optional dialog for Trcdb integration
+	StatisticsDocs *[]StatisticsDoc // Optional statistics document
 }
 
 func Init(properties *map[string]any,

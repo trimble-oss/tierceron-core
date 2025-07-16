@@ -75,8 +75,7 @@ type TrcdbExchange struct {
 }
 
 type StatisticsDoc struct {
-	ArgosIds           []string   // List of ids for which statistics are collected
-	DataFlowStatistics []TTDINode // Data flow statistics collected
+	StatDocs []any // Statistics documents
 }
 
 // Plugin initialization:
@@ -92,15 +91,15 @@ type StatisticsDoc struct {
 //     *configContext.ChatSenderChan
 //     example: *configContext.ChatSenderChan <- &chatResultMsg
 type ChatMsg struct {
-	ChatId         *string          // Only relevant for 3rd party integration.
-	Name           *string          // Source plugin name
-	KernelId       *string          // Internal use by kernel
-	IsBroadcast    bool             // Is message intended for broadcast.
-	Query          *[]string        // List of plugins to send message to.
-	Response       *string          // Pointer to response data (json serialized or other)
-	HookResponse   any              // Optional response for interacting plugins that require more complicated data structures.
-	TrcdbExchange  *TrcdbExchange   // Optional dialog for Trcdb integration
-	StatisticsDocs *[]StatisticsDoc // Optional statistics document
+	ChatId        *string        // Only relevant for 3rd party integration.
+	Name          *string        // Source plugin name
+	KernelId      *string        // Internal use by kernel
+	IsBroadcast   bool           // Is message intended for broadcast.
+	Query         *[]string      // List of plugins to send message to.
+	Response      *string        // Pointer to response data (json serialized or other)
+	HookResponse  any            // Optional response for interacting plugins that require more complicated data structures.
+	TrcdbExchange *TrcdbExchange // Optional dialog for Trcdb integration
+	StatisticsDoc *StatisticsDoc // Optional statistics document
 }
 
 func Init(properties *map[string]any,

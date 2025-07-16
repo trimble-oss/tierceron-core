@@ -75,7 +75,7 @@ type TrcdbExchange struct {
 }
 
 type StatisticsDoc struct {
-	Tenants            []string   // List of tenants for which statistics are collected
+	ArgosIds           []string   // List of ids for which statistics are collected
 	DataFlowStatistics []TTDINode // Data flow statistics collected
 }
 

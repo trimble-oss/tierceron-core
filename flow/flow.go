@@ -11,29 +11,32 @@ import (
 
 type FlowType int64
 type FlowColumnType int64
-type FlowNameType struct {
-	Name      string
+
+type FlowNameType string
+
+type FlowDefinitionType struct {
+	Name      FlowNameType
 	Instances string
 }
 
-func (fnt FlowNameType) TableName() string {
+func (fnt FlowDefinitionType) TableName() string {
 	return string(fnt.Name)
 }
 
-func (fnt FlowNameType) ServiceName() string {
+func (fnt FlowDefinitionType) ServiceName() string {
 	return string(fnt.Name)
 }
 
-func (fnt FlowNameType) FlowName() string {
+func (fnt FlowDefinitionType) FlowName() string {
 	return string(fnt.Name)
 }
 
-func (fnt FlowNameType) GetInstances() string {
+func (fnt FlowDefinitionType) GetInstances() string {
 	return string(fnt.Instances)
 }
 
-var DataFlowStatConfigurationsFlow FlowNameType = FlowNameType{Name: "DataFlowStatistics", Instances: "*"}
-var ArgosSociiFlow FlowNameType = FlowNameType{Name: "ArgosSocii", Instances: "*"}
+var DataFlowStatConfigurationsFlow FlowDefinitionType = FlowDefinitionType{Name: "DataFlowStatistics", Instances: "*"}
+var ArgosSociiFlow FlowDefinitionType = FlowDefinitionType{Name: "ArgosSocii", Instances: "*"}
 
 type PermissionUpdate any
 type FlowStateUpdate interface {
@@ -176,14 +179,14 @@ type FlowMachineContext interface {
 	GetDatabaseName() string
 	GetTableModifierLock() *sync.Mutex
 	TableCollationIdGen(string) any
-	Init(map[string]map[string]any, []string, []FlowNameType, []FlowNameType) error
+	Init(map[string]map[string]any, []string, []FlowDefinitionType, []FlowDefinitionType) error
 	AddTableSchema(any, FlowContext)
 	CreateTableTriggers(FlowContext, []string)
 	CreateTable(name string, schema any, collation any) error
 	CreateCompositeTableTriggers(FlowContext, string, string, func(string, string, string, string) string, func(string, string, string, string) string, func(string, string, string, string) string)
 	CreateDataFlowTableTriggers(FlowContext, string, string, string, func(string, string, string, string, string) string, func(string, string, string, string, string) string, func(string, string, string, string, string) string)
 	GetFlowConfiguration(FlowContext, string) (map[string]any, bool)
-	ProcessFlow(FlowContext, func(FlowMachineContext, FlowContext) error, map[string]any, map[string]map[string]any, FlowNameType, FlowType) error
+	ProcessFlow(FlowContext, func(FlowMachineContext, FlowContext) error, map[string]any, map[string]map[string]any, FlowDefinitionType, FlowType) error
 	SetPermissionUpdate(FlowContext) // tfmContext.SetPermissionUpdate(tfContext)
 	//	seedVaultCycle(FlowContext, string, any, func(any, map[string]any, any, string, string, func(any, map[string]any) (string, []string, [][]any, error)) (string, error), func(FlowContext, map[string]any, map[string]any, []string) error, bool)
 	//	seedTrcDbCycle(FlowContext, string, any, func(any, map[string]any, any, string, string, func(any, map[string]any) (string, []string, [][]any, error)) (string, error), func(FlowContext, map[string]any, map[string]any, []string) error, bool, chan bool)
@@ -201,8 +204,8 @@ type FlowMachineContext interface {
 	SelectFlowChannel(FlowContext) <-chan any
 	GetAuthExtended(func(map[string]any) map[string]any, bool) (map[string]any, error) // Auth for communicating with other services
 	GetCacheRefreshSqlConn(FlowContext, string) (any, error)
-	CallDBQuery(FlowContext, map[string]any, map[string]any, bool, string, []FlowNameType, string) ([][]any, bool)
-	CallDBQueryN(*core.TrcdbExchange, map[string]any, map[string]any, bool, string, []FlowNameType, string) (*core.TrcdbExchange, bool)
+	CallDBQuery(FlowContext, map[string]any, map[string]any, bool, string, []FlowDefinitionType, string) ([][]any, bool)
+	CallDBQueryN(*core.TrcdbExchange, map[string]any, map[string]any, bool, string, []FlowDefinitionType, string) (*core.TrcdbExchange, bool)
 	GetDbConn(FlowContext, string, string, map[string]any) (any, error)
 	CallAPI(map[string]string, string, string, io.Reader, bool) (map[string]any, int, error)
 	SetEncryptionSecret()

@@ -254,14 +254,14 @@ func ProcessTableConfigurations(tfmContext FlowMachineContext, tfContext FlowCon
 				for _, table := range tableConfigurations {
 					rows, _ := tfmContext.CallDBQuery(tfContext, flowDefinitionContext.GetTableConfigurationById(tfContext.GetFlowSourceAlias(), tfContext.GetFlowName(), table["tableId"].(string)), nil, false, "SELECT", nil, "")
 					if len(rows) == 0 {
-						tfmContext.CallDBQuery(tfContext, flowDefinitionContext.GetTableConfigurationInsert(table, tfContext.GetFlowSourceAlias(), tfContext.GetFlowName()), nil, true, "INSERT", []FlowNameType{FlowNameType{Name: tfContext.GetFlowName(), Instances: "*"}}, "") //if DNE -> insert
+						tfmContext.CallDBQuery(tfContext, flowDefinitionContext.GetTableConfigurationInsert(table, tfContext.GetFlowSourceAlias(), tfContext.GetFlowName()), nil, true, "INSERT", []FlowDefinitionType{FlowDefinitionType{Name: FlowNameType(tfContext.GetFlowName()), Instances: "*"}}, "") //if DNE -> insert
 					} else {
 						for _, value := range rows {
 							// tableConfig is db, value is what's in vault...
 							if CompareRows(table, flowDefinitionContext.GetTableMapFromArray(value)) { //If equal-> do nothing
 								continue
 							} else { //If not equal -> update
-								tfmContext.CallDBQuery(tfContext, flowDefinitionContext.GetTableConfigurationUpdate(table, tfContext.GetFlowSourceAlias(), tfContext.GetFlowName()), nil, true, "UPDATE", []FlowNameType{FlowNameType{Name: tfContext.GetFlowName(), Instances: "*"}}, "")
+								tfmContext.CallDBQuery(tfContext, flowDefinitionContext.GetTableConfigurationUpdate(table, tfContext.GetFlowSourceAlias(), tfContext.GetFlowName()), nil, true, "UPDATE", []FlowDefinitionType{FlowDefinitionType{Name: FlowNameType(tfContext.GetFlowName()), Instances: "*"}}, "")
 							}
 						}
 					}

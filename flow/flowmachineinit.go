@@ -1,7 +1,7 @@
 package flow
 
 type FlowDefinition struct {
-	FlowName         FlowNameType
+	FlowName         FlowDefinitionType
 	FlowTemplatePath string
 	FlowSource       string
 	FlowType         FlowType // 0 = Flow, 1 = Business, 2 = Test
@@ -12,16 +12,16 @@ type FlowMachineInitContext struct {
 	FlowMachineInterfaceConfigs map[string]any
 	GetDatabaseName             func() string
 	GetTableFlows               func() []FlowDefinition                     // Required
-	GetBusinessFlows            func() []FlowNameType                       // Optional
-	GetTestFlows                func() []FlowNameType                       // Optional
-	GetTestFlowsByState         func(string) []FlowNameType                 // Optional
+	GetBusinessFlows            func() []FlowDefinitionType                 // Optional
+	GetTestFlows                func() []FlowDefinitionType                 // Optional
+	GetTestFlowsByState         func(string) []FlowDefinitionType           // Optional
 	FlowController              func(FlowMachineContext, FlowContext) error // Required
 	TestFlowController          func(FlowMachineContext, FlowContext) error // Required
 }
 
 var HARBINGER_INTERFACE_CONFIG = "./config.yml"
 
-func (fmic FlowMachineInitContext) GetFiltererBusinessFlows(kernelId string) []FlowNameType {
+func (fmic FlowMachineInitContext) GetFiltererBusinessFlows(kernelId string) []FlowDefinitionType {
 	hasRestrictedFlow := false
 	for _, flow := range fmic.GetBusinessFlows() {
 		if flow.Instances != "*" {
@@ -32,7 +32,7 @@ func (fmic FlowMachineInitContext) GetFiltererBusinessFlows(kernelId string) []F
 	if !hasRestrictedFlow {
 		return fmic.GetBusinessFlows()
 	} else {
-		var filteredFlows []FlowNameType
+		var filteredFlows []FlowDefinitionType
 		for _, flow := range fmic.GetBusinessFlows() {
 			if flow.Instances == kernelId || flow.Instances == "*" {
 				filteredFlows = append(filteredFlows, flow)
@@ -63,8 +63,8 @@ func (fmic FlowMachineInitContext) GetFiltererTableFlowDefinitions(kernelId stri
 	}
 }
 
-func (fmic FlowMachineInitContext) GetFiltererTableFlows(kernelId string) []FlowNameType {
-	var filteredFlowNames []FlowNameType
+func (fmic FlowMachineInitContext) GetFiltererTableFlows(kernelId string) []FlowDefinitionType {
+	var filteredFlowNames []FlowDefinitionType
 	for _, flow := range fmic.GetFiltererTableFlowDefinitions(kernelId) {
 		filteredFlowNames = append(filteredFlowNames, flow.FlowName)
 	}

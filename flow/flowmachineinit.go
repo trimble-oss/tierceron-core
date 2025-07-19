@@ -42,7 +42,7 @@ func (fmic FlowMachineInitContext) GetFiltererBusinessFlows(kernelId string) []F
 	}
 }
 
-func (fmic FlowMachineInitContext) GetFiltererTableFlows(kernelId string) []FlowDefinition {
+func (fmic FlowMachineInitContext) GetFiltererTableFlowDefinitions(kernelId string) []FlowDefinition {
 	hasRestrictedFlow := false
 	for _, flow := range fmic.GetTableFlows() {
 		if flow.FlowName.Instances != "*" {
@@ -61,6 +61,22 @@ func (fmic FlowMachineInitContext) GetFiltererTableFlows(kernelId string) []Flow
 		}
 		return filteredFlows
 	}
+}
+
+func (fmic FlowMachineInitContext) GetFiltererTableFlows(kernelId string) []FlowNameType {
+	var filteredFlowNames []FlowNameType
+	for _, flow := range fmic.GetFiltererTableFlowDefinitions(kernelId) {
+		filteredFlowNames = append(filteredFlowNames, flow.FlowName)
+	}
+	return filteredFlowNames
+}
+
+func (fmic FlowMachineInitContext) GetFiltererTableFlowNames(kernelId string) []string {
+	var filteredFlowNames []string
+	for _, flow := range fmic.GetFiltererTableFlowDefinitions(kernelId) {
+		filteredFlowNames = append(filteredFlowNames, flow.FlowName.FlowName())
+	}
+	return filteredFlowNames
 }
 
 /*

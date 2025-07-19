@@ -21,6 +21,48 @@ type FlowMachineInitContext struct {
 
 var HARBINGER_INTERFACE_CONFIG = "./config.yml"
 
+func (fmic FlowMachineInitContext) GetFiltererBusinessFlows(kernelId string) []FlowNameType {
+	hasRestrictedFlow := false
+	for _, flow := range fmic.GetBusinessFlows() {
+		if flow.Instances != "*" {
+			hasRestrictedFlow = true
+			break
+		}
+	}
+	if !hasRestrictedFlow {
+		return fmic.GetBusinessFlows()
+	} else {
+		var filteredFlows []FlowNameType
+		for _, flow := range fmic.GetBusinessFlows() {
+			if flow.Instances == kernelId || flow.Instances == "*" {
+				filteredFlows = append(filteredFlows, flow)
+			}
+		}
+		return filteredFlows
+	}
+}
+
+func (fmic FlowMachineInitContext) GetFiltererTableFlows(kernelId string) []FlowDefinition {
+	hasRestrictedFlow := false
+	for _, flow := range fmic.GetTableFlows() {
+		if flow.FlowName.Instances != "*" {
+			hasRestrictedFlow = true
+			break
+		}
+	}
+	if !hasRestrictedFlow {
+		return fmic.GetTableFlows()
+	} else {
+		var filteredFlows []FlowDefinition
+		for _, flow := range fmic.GetTableFlows() {
+			if flow.FlowName.Instances == kernelId || flow.FlowName.Instances == "*" {
+				filteredFlows = append(filteredFlows, flow)
+			}
+		}
+		return filteredFlows
+	}
+}
+
 /*
 GetTableFlows - driverConfigBasis.VersionFilter
 GetBusinessFlows - flowopts.BuildOptions.GetAdditionalFlows()

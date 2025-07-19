@@ -11,22 +11,29 @@ import (
 
 type FlowType int64
 type FlowColumnType int64
-type FlowNameType string
+type FlowNameType struct {
+	Name      string
+	Instances string
+}
 
 func (fnt FlowNameType) TableName() string {
-	return string(fnt)
+	return string(fnt.Name)
 }
 
 func (fnt FlowNameType) ServiceName() string {
-	return string(fnt)
+	return string(fnt.Name)
 }
 
 func (fnt FlowNameType) FlowName() string {
-	return string(fnt)
+	return string(fnt.Name)
 }
 
-var DataFlowStatConfigurationsFlow FlowNameType = "DataFlowStatistics"
-var ArgosSociiFlow FlowNameType = "ArgosSocii"
+func (fnt FlowNameType) GetInstances() string {
+	return string(fnt.Instances)
+}
+
+var DataFlowStatConfigurationsFlow FlowNameType = FlowNameType{Name: "DataFlowStatistics", Instances: "*"}
+var ArgosSociiFlow FlowNameType = FlowNameType{Name: "ArgosSocii", Instances: "*"}
 
 type PermissionUpdate any
 type FlowStateUpdate interface {

@@ -14,29 +14,55 @@ type FlowColumnType int64
 
 type FlowNameType string
 
-type FlowDefinitionType struct {
-	Name      FlowNameType
-	Instances string
+func (fnt FlowNameType) FlowName() string {
+	return string(fnt)
 }
 
-func (fnt FlowDefinitionType) TableName() string {
+func (fnt FlowNameType) TableName() string {
+	return string(fnt)
+}
+
+type FlowHeaderType struct {
+	Name        FlowNameType
+	Source      string
+	SourceAlias string
+	Instances   string
+}
+
+func NewFlowHeaderType(name FlowNameType,
+	source string,
+	sourceAlias string,
+	instances string) *FlowHeaderType {
+	return &FlowHeaderType{
+		Name:        name,
+		Source:      source,
+		SourceAlias: sourceAlias,
+		Instances:   instances,
+	}
+}
+
+func (fnt *FlowHeaderType) TableName() string {
 	return string(fnt.Name)
 }
 
-func (fnt FlowDefinitionType) ServiceName() string {
+func (fnt *FlowHeaderType) ServiceName() string {
 	return string(fnt.Name)
 }
 
-func (fnt FlowDefinitionType) FlowName() string {
+func (fnt *FlowHeaderType) FlowName() string {
 	return string(fnt.Name)
 }
 
-func (fnt FlowDefinitionType) GetInstances() string {
+func (fnt *FlowHeaderType) FlowNameType() FlowNameType {
+	return fnt.Name
+}
+
+func (fnt *FlowHeaderType) GetInstances() string {
 	return string(fnt.Instances)
 }
 
-var DataFlowStatConfigurationsFlow FlowDefinitionType = FlowDefinitionType{Name: "DataFlowStatistics", Instances: "*"}
-var ArgosSociiFlow FlowDefinitionType = FlowDefinitionType{Name: "ArgosSocii", Instances: "*"}
+var DataFlowStatConfigurationsFlow FlowHeaderType = FlowHeaderType{Name: "DataFlowStatistics", Instances: "*"}
+var ArgosSociiFlow FlowHeaderType = FlowHeaderType{Name: "ArgosSocii", Instances: "*"}
 
 type PermissionUpdate any
 type FlowStateUpdate interface {
@@ -82,7 +108,7 @@ type FlowColumn struct {
 	Extra          string
 }
 
-type FlowDefinitionContext struct {
+type FlowLibraryContext struct {
 	GetTableConfigurationById        func(databaseName string, tableName string, idColumnName ...string) map[string]any
 	GetTableConfigurations           func(db any, secLookup bool) ([]any, error)
 	CreateTableTriggers              func(tfmContext FlowMachineContext, tfContext FlowContext) // Optional override
@@ -107,8 +133,8 @@ type FlowContext interface {
 	SetInit(bool)
 	IsRestart() bool
 	SetRestart(bool)
-	SetFlowDefinitionContext(*FlowDefinitionContext)
-	GetFlowDefinitionContext() *FlowDefinitionContext
+	SetFlowLibraryContext(*FlowLibraryContext)
+	GetFlowLibraryContext() *FlowLibraryContext
 	NotifyFlowComponentLoaded() // Notify that a critical flow is loaded
 	WaitFlowLoaded()            // Block until all flows are loaded
 	CancelTheContext() bool
@@ -116,8 +142,6 @@ type FlowContext interface {
 	FlowSyncModeMatch(string, bool) bool
 	GetFlowSyncMode() string
 	SetFlowSyncMode(string)
-	GetFlowSourceAlias() string
-	SetFlowSourceAlias(string)
 	SetChangeFlowName(string)
 	GetFlowStateState() int64
 	GetFlowState() CurrentFlowState
@@ -129,7 +153,7 @@ type FlowContext interface {
 	HasFlowSyncFilters() bool
 	GetFlowStateSyncFilterRaw() string
 	GetFlowSyncFilters() []string
-	GetFlowName() string
+	GetFlowHeader() *FlowHeaderType
 	NewFlowStateUpdate(string, string) FlowStateUpdate
 	GetCurrentFlowStateUpdateByDataSource(string) any
 	UpdateFlowStateByDataSource(string)
@@ -179,14 +203,14 @@ type FlowMachineContext interface {
 	GetDatabaseName() string
 	GetTableModifierLock() *sync.Mutex
 	TableCollationIdGen(string) any
-	Init(map[string]map[string]any, []string, []FlowDefinitionType, []FlowDefinitionType) error
+	Init(map[string]map[string]any, []string, []FlowNameType, []FlowNameType) error
 	AddTableSchema(any, FlowContext)
 	CreateTableTriggers(FlowContext, []string)
 	CreateTable(name string, schema any, collation any) error
 	CreateCompositeTableTriggers(FlowContext, string, string, func(string, string, string, string) string, func(string, string, string, string) string, func(string, string, string, string) string)
 	CreateDataFlowTableTriggers(FlowContext, string, string, string, func(string, string, string, string, string) string, func(string, string, string, string, string) string, func(string, string, string, string, string) string)
 	GetFlowConfiguration(FlowContext, string) (map[string]any, bool)
-	ProcessFlow(FlowContext, func(FlowMachineContext, FlowContext) error, map[string]any, map[string]map[string]any, FlowDefinitionType, FlowType) error
+	ProcessFlow(FlowContext, func(FlowMachineContext, FlowContext) error, map[string]any, map[string]map[string]any, FlowNameType, FlowType) error
 	SetPermissionUpdate(FlowContext) // tfmContext.SetPermissionUpdate(tfContext)
 	//	seedVaultCycle(FlowContext, string, any, func(any, map[string]any, any, string, string, func(any, map[string]any) (string, []string, [][]any, error)) (string, error), func(FlowContext, map[string]any, map[string]any, []string) error, bool)
 	//	seedTrcDbCycle(FlowContext, string, any, func(any, map[string]any, any, string, string, func(any, map[string]any) (string, []string, [][]any, error)) (string, error), func(FlowContext, map[string]any, map[string]any, []string) error, bool, chan bool)
@@ -204,8 +228,8 @@ type FlowMachineContext interface {
 	SelectFlowChannel(FlowContext) <-chan any
 	GetAuthExtended(func(map[string]any) map[string]any, bool) (map[string]any, error) // Auth for communicating with other services
 	GetCacheRefreshSqlConn(FlowContext, string) (any, error)
-	CallDBQuery(FlowContext, map[string]any, map[string]any, bool, string, []FlowDefinitionType, string) ([][]any, bool)
-	CallDBQueryN(*core.TrcdbExchange, map[string]any, map[string]any, bool, string, []FlowDefinitionType, string) (*core.TrcdbExchange, bool)
+	CallDBQuery(FlowContext, map[string]any, map[string]any, bool, string, []FlowNameType, string) ([][]any, bool)
+	CallDBQueryN(*core.TrcdbExchange, map[string]any, map[string]any, bool, string, []FlowNameType, string) (*core.TrcdbExchange, bool)
 	GetDbConn(FlowContext, string, string, map[string]any) (any, error)
 	CallAPI(map[string]string, string, string, io.Reader, bool) (map[string]any, int, error)
 	SetEncryptionSecret()

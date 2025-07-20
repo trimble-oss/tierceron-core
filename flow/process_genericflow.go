@@ -29,7 +29,7 @@ func CompareRows(a map[string]any, b map[string]any) bool {
 
 func tableConfigurationFlowPullRemote(tfmContext FlowMachineContext, tfContext FlowContext) ([]map[string]any, error) {
 	// b. Retrieve table configurations
-	flowDefinitionContext := tfContext.GetFlowDefinitionContext()
+	flowDefinitionContext := tfContext.GetFlowLibraryContext()
 	regionSyncList := tfContext.GetDataSourceRegions(true)
 	var tableConfigMapArr []map[string]any
 	if len(regionSyncList) == 0 {
@@ -72,7 +72,7 @@ func tableConfigurationFlowPullRemote(tfmContext FlowMachineContext, tfContext F
 }
 
 func tableConfigurationFlowPushRemote(tfContext FlowContext, changedItem map[string]any) error {
-	flowDefinitionContext := tfContext.GetFlowDefinitionContext()
+	flowDefinitionContext := tfContext.GetFlowLibraryContext()
 	regionSyncList := tfContext.GetDataSourceRegions(true)
 	if len(regionSyncList) == 0 {
 		return nil
@@ -133,8 +133,8 @@ func tableConfigurationFlowPushRemote(tfContext FlowContext, changedItem map[str
 }
 
 func ProcessTableConfigurations(tfmContext FlowMachineContext, tfContext FlowContext) error {
-	flowDefinitionContext := tfContext.GetFlowDefinitionContext()
-	tfmContext.AddTableSchema(flowDefinitionContext.GetTableSchema(tfContext.GetFlowName()), tfContext)
+	flowDefinitionContext := tfContext.GetFlowLibraryContext()
+	tfmContext.AddTableSchema(flowDefinitionContext.GetTableSchema(tfContext.GetFlowHeader().FlowName()), tfContext)
 	if flowDefinitionContext.CreateTableTriggers != nil {
 		flowDefinitionContext.CreateTableTriggers(tfmContext, tfContext)
 	} else {
@@ -150,6 +150,8 @@ func ProcessTableConfigurations(tfmContext FlowMachineContext, tfContext FlowCon
 		// Implement pull from remote data source
 		// Only pull if ingest interval is set to > 0 value.
 		afterTime := time.Duration(0)
+
+		// We use time.After for dynamic intervals; for range is not suitable here.
 		for {
 			select {
 			case <-time.After(time.Millisecond * afterTime):
@@ -163,17 +165,17 @@ func ProcessTableConfigurations(tfmContext FlowMachineContext, tfContext FlowCon
 						tableDefinition, _ := tfmContext.LoadBaseTemplate(tfContext)
 						tfContext.SetFlowData(tableDefinition)
 					}
-					tfmContext.Log(fmt.Sprintf("%s flow is being stopped...", tfContext.GetFlowName()), nil)
+					tfmContext.Log(fmt.Sprintf("%s flow is being stopped...", tfContext.GetFlowHeader().FlowName()), nil)
 					tfContext.PushState("flowStateReceiver", tfContext.NewFlowStateUpdate("0", tfContext.GetFlowSyncMode()))
 					continue
 				} else if tfContext.GetFlowStateState() == 0 {
-					tfmContext.Log(fmt.Sprintf("%s flow is currently offline...", tfContext.GetFlowName()), nil)
+					tfmContext.Log(fmt.Sprintf("%s flow is currently offline...", tfContext.GetFlowHeader().FlowName()), nil)
 					continue
 				} else if tfContext.GetFlowStateState() == 1 {
-					tfmContext.Log(fmt.Sprintf("%s flow is restarting...", tfContext.GetFlowName()), nil)
+					tfmContext.Log(fmt.Sprintf("%s flow is restarting...", tfContext.GetFlowHeader().FlowName()), nil)
 					if !tfContext.IsInit() { //init vault sync cycle
 						tfContext.SetInit(true)
-						tfmContext.CallDBQuery(tfContext, map[string]any{"TrcQuery": "truncate " + tfContext.GetFlowSourceAlias() + "." + tfContext.GetFlowName()}, nil, false, "DELETE", nil, "")
+						tfmContext.CallDBQuery(tfContext, map[string]any{"TrcQuery": "truncate " + tfContext.GetFlowHeader().SourceAlias + "." + tfContext.GetFlowHeader().FlowName()}, nil, false, "DELETE", nil, "")
 					}
 					tfContext.PushState("flowStateReceiver", tfContext.NewFlowStateUpdate("2", tfContext.GetFlowSyncMode()))
 					continue
@@ -186,11 +188,11 @@ func ProcessTableConfigurations(tfmContext FlowMachineContext, tfContext FlowCon
 				if tfContext.GetFlowStateState() != 0 && (tfContext.FlowSyncModeMatchAny([]string{"pull", "pullonce", "push", "pushonce", "pusheast"}) && prod.IsProd()) { //pusheast is unique for isProd() as it pushes both east/west
 				} else if tfContext.FlowSyncModeMatch("pull", true) || tfContext.FlowSyncModeMatch("push", true) {
 				} else {
-					tfmContext.Log(fmt.Sprintf("%s is setup%s.", tfContext.GetFlowName(), SyncCheck(tfContext.GetFlowSyncMode())), nil)
+					tfmContext.Log(fmt.Sprintf("%s is setup%s.", tfContext.GetFlowHeader().FlowName(), SyncCheck(tfContext.GetFlowSyncMode())), nil)
 					continue
 				}
 
-				tfmContext.Log(fmt.Sprintf("%s is running and checking for changes %s.", tfContext.GetFlowName(), SyncCheck(tfContext.GetFlowSyncMode())), nil)
+				tfmContext.Log(fmt.Sprintf("%s is running and checking for changes %s.", tfContext.GetFlowHeader().FlowName(), SyncCheck(tfContext.GetFlowSyncMode())), nil)
 
 				//Logic for push/pull once
 				if tfContext.FlowSyncModeMatch("push", true) {
@@ -212,16 +214,16 @@ func ProcessTableConfigurations(tfmContext FlowMachineContext, tfContext FlowCon
 						}
 					}
 
-					rows, _ := tfmContext.CallDBQuery(tfContext, map[string]any{"TrcQuery": "SELECT * FROM " + tfContext.GetFlowSourceAlias() + "." + tfContext.GetFlowName()}, nil, false, "SELECT", nil, "")
+					rows, _ := tfmContext.CallDBQuery(tfContext, map[string]any{"TrcQuery": "SELECT * FROM " + tfContext.GetFlowHeader().SourceAlias + "." + tfContext.GetFlowHeader().FlowName()}, nil, false, "SELECT", nil, "")
 					if len(rows) == 0 {
-						tfmContext.Log(fmt.Sprintf("Nothing in %s table to push out yet...", tfContext.GetFlowName()), nil) //Table is not currently loaded.
+						tfmContext.Log(fmt.Sprintf("Nothing in %s table to push out yet...", tfContext.GetFlowHeader().FlowName()), nil) //Table is not currently loaded.
 						continue
 					}
 					for _, value := range rows {
 						tableMap := flowDefinitionContext.GetTableMapFromArray(value)
 						pushError := tableConfigurationFlowPushRemote(tfContext, tableMap)
 						if pushError != nil {
-							tfmContext.Log(fmt.Sprintf("Error pushing out %s", tfContext.GetFlowName()), pushError)
+							tfmContext.Log(fmt.Sprintf("Error pushing out %s", tfContext.GetFlowHeader().FlowName()), pushError)
 							continue
 						}
 					}
@@ -252,16 +254,16 @@ func ProcessTableConfigurations(tfmContext FlowMachineContext, tfContext FlowCon
 				}
 
 				for _, table := range tableConfigurations {
-					rows, _ := tfmContext.CallDBQuery(tfContext, flowDefinitionContext.GetTableConfigurationById(tfContext.GetFlowSourceAlias(), tfContext.GetFlowName(), table["tableId"].(string)), nil, false, "SELECT", nil, "")
+					rows, _ := tfmContext.CallDBQuery(tfContext, flowDefinitionContext.GetTableConfigurationById(tfContext.GetFlowHeader().SourceAlias, tfContext.GetFlowHeader().FlowName(), table["tableId"].(string)), nil, false, "SELECT", nil, "")
 					if len(rows) == 0 {
-						tfmContext.CallDBQuery(tfContext, flowDefinitionContext.GetTableConfigurationInsert(table, tfContext.GetFlowSourceAlias(), tfContext.GetFlowName()), nil, true, "INSERT", []FlowDefinitionType{FlowDefinitionType{Name: FlowNameType(tfContext.GetFlowName()), Instances: "*"}}, "") //if DNE -> insert
+						tfmContext.CallDBQuery(tfContext, flowDefinitionContext.GetTableConfigurationInsert(table, tfContext.GetFlowHeader().SourceAlias, tfContext.GetFlowHeader().FlowName()), nil, true, "INSERT", []FlowNameType{tfContext.GetFlowHeader().FlowNameType()}, "") //if DNE -> insert
 					} else {
 						for _, value := range rows {
 							// tableConfig is db, value is what's in vault...
 							if CompareRows(table, flowDefinitionContext.GetTableMapFromArray(value)) { //If equal-> do nothing
 								continue
 							} else { //If not equal -> update
-								tfmContext.CallDBQuery(tfContext, flowDefinitionContext.GetTableConfigurationUpdate(table, tfContext.GetFlowSourceAlias(), tfContext.GetFlowName()), nil, true, "UPDATE", []FlowDefinitionType{FlowDefinitionType{Name: FlowNameType(tfContext.GetFlowName()), Instances: "*"}}, "")
+								tfmContext.CallDBQuery(tfContext, flowDefinitionContext.GetTableConfigurationUpdate(table, tfContext.GetFlowHeader().SourceAlias, tfContext.GetFlowHeader().FlowName()), nil, true, "UPDATE", []FlowNameType{tfContext.GetFlowHeader().FlowNameType()}, "")
 							}
 						}
 					}

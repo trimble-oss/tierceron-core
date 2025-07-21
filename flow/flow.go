@@ -11,22 +11,58 @@ import (
 
 type FlowType int64
 type FlowColumnType int64
+
 type FlowNameType string
-
-func (fnt FlowNameType) TableName() string {
-	return string(fnt)
-}
-
-func (fnt FlowNameType) ServiceName() string {
-	return string(fnt)
-}
 
 func (fnt FlowNameType) FlowName() string {
 	return string(fnt)
 }
 
-var DataFlowStatConfigurationsFlow FlowNameType = "DataFlowStatistics"
-var ArgosSociiFlow FlowNameType = "ArgosSocii"
+func (fnt FlowNameType) TableName() string {
+	return string(fnt)
+}
+
+type FlowHeaderType struct {
+	Name        FlowNameType
+	Source      string
+	SourceAlias string
+	Instances   string
+}
+
+func NewFlowHeaderType(name FlowNameType,
+	source string,
+	sourceAlias string,
+	instances string) *FlowHeaderType {
+	return &FlowHeaderType{
+		Name:        name,
+		Source:      source,
+		SourceAlias: sourceAlias,
+		Instances:   instances,
+	}
+}
+
+func (fnt *FlowHeaderType) TableName() string {
+	return string(fnt.Name)
+}
+
+func (fnt *FlowHeaderType) ServiceName() string {
+	return string(fnt.Name)
+}
+
+func (fnt *FlowHeaderType) FlowName() string {
+	return string(fnt.Name)
+}
+
+func (fnt *FlowHeaderType) FlowNameType() FlowNameType {
+	return fnt.Name
+}
+
+func (fnt *FlowHeaderType) GetInstances() string {
+	return string(fnt.Instances)
+}
+
+var DataFlowStatConfigurationsFlow FlowHeaderType = FlowHeaderType{Name: "DataFlowStatistics", Instances: "*"}
+var ArgosSociiFlow FlowHeaderType = FlowHeaderType{Name: "ArgosSocii", Instances: "*"}
 
 type PermissionUpdate any
 type FlowStateUpdate interface {
@@ -72,7 +108,7 @@ type FlowColumn struct {
 	Extra          string
 }
 
-type FlowDefinitionContext struct {
+type FlowLibraryContext struct {
 	GetTableConfigurationById        func(databaseName string, tableName string, idColumnName ...string) map[string]any
 	GetTableConfigurations           func(db any, secLookup bool) ([]any, error)
 	CreateTableTriggers              func(tfmContext FlowMachineContext, tfContext FlowContext) // Optional override
@@ -95,10 +131,11 @@ type FlowDefinitionContext struct {
 type FlowContext interface {
 	IsInit() bool
 	SetInit(bool)
+	InitNotify()
 	IsRestart() bool
 	SetRestart(bool)
-	SetFlowDefinitionContext(*FlowDefinitionContext)
-	GetFlowDefinitionContext() *FlowDefinitionContext
+	SetFlowLibraryContext(*FlowLibraryContext)
+	GetFlowLibraryContext() *FlowLibraryContext
 	NotifyFlowComponentLoaded() // Notify that a critical flow is loaded
 	WaitFlowLoaded()            // Block until all flows are loaded
 	CancelTheContext() bool
@@ -106,8 +143,6 @@ type FlowContext interface {
 	FlowSyncModeMatch(string, bool) bool
 	GetFlowSyncMode() string
 	SetFlowSyncMode(string)
-	GetFlowSourceAlias() string
-	SetFlowSourceAlias(string)
 	SetChangeFlowName(string)
 	GetFlowStateState() int64
 	GetFlowState() CurrentFlowState
@@ -119,7 +154,7 @@ type FlowContext interface {
 	HasFlowSyncFilters() bool
 	GetFlowStateSyncFilterRaw() string
 	GetFlowSyncFilters() []string
-	GetFlowName() string
+	GetFlowHeader() *FlowHeaderType
 	NewFlowStateUpdate(string, string) FlowStateUpdate
 	GetCurrentFlowStateUpdateByDataSource(string) any
 	UpdateFlowStateByDataSource(string)

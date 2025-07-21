@@ -131,6 +131,7 @@ type FlowLibraryContext struct {
 type FlowContext interface {
 	IsInit() bool
 	SetInit(bool)
+	InitNotify()
 	IsRestart() bool
 	SetRestart(bool)
 	SetFlowLibraryContext(*FlowLibraryContext)

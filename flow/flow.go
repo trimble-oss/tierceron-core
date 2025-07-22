@@ -61,6 +61,7 @@ func (fnt *FlowHeaderType) GetInstances() string {
 	return string(fnt.Instances)
 }
 
+var TierceronControllerFlow FlowHeaderType = FlowHeaderType{Name: "TierceronFlow", Instances: "*"}
 var DataFlowStatConfigurationsFlow FlowHeaderType = FlowHeaderType{Name: "DataFlowStatistics", Instances: "*"}
 var ArgosSociiFlow FlowHeaderType = FlowHeaderType{Name: "ArgosSocii", Instances: "*"}
 

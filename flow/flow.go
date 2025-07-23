@@ -61,6 +61,13 @@ func (fnt *FlowHeaderType) GetInstances() string {
 	return string(fnt.Instances)
 }
 
+type FlumeDbType int
+
+const (
+	TrcFlumeDb FlumeDbType = iota // DB used by controller
+	TrcDb      FlumeDbType = iota + 1
+)
+
 var TierceronControllerFlow FlowHeaderType = FlowHeaderType{Name: "TierceronFlow", Instances: "*"}
 var DataFlowStatConfigurationsFlow FlowHeaderType = FlowHeaderType{Name: "DataFlowStatistics", Instances: "*"}
 var ArgosSociiFlow FlowHeaderType = FlowHeaderType{Name: "ArgosSocii", Instances: "*"}
@@ -200,9 +207,12 @@ func SyncCheck(syncMode string) string {
 type FlowMachineContext interface {
 	GetEnv() string
 	GetFlowContext(FlowNameType) FlowContext
+	NotifyFlowComponentLoaded(string) // Notify that a critical flow is loaded
 	GetFlowID(FlowNameType) *uint64
 	SetFlowIDs()
-	GetDatabaseName() string
+	SetFlumeDbType(FlumeDbType)
+	GetFlumeDbType() FlumeDbType
+	GetDatabaseName(FlumeDbType) string
 	GetTableModifierLock() *sync.Mutex
 	TableCollationIdGen(string) any
 	Init(map[string]map[string]any, []string, []FlowNameType, []FlowNameType) error

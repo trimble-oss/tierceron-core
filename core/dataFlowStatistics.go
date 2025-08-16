@@ -381,7 +381,11 @@ func (dfs *TTDINode) StatisticToMap() map[string]any {
 	if modeFloat, ok := dfsctx.Mode.(float64); ok {
 		statMap["mode"] = int(modeFloat)
 	} else {
-		statMap["mode"] = dfsctx.Mode
+		if dfsctx.Mode != nil {
+			statMap["mode"] = dfsctx.Mode
+		} else {
+			statMap["mode"] = 0
+		}
 	}
 	if ltd, ok := dfsctx.LastTestedDate.(string); ok {
 		statMap["lastTestedDate"] = ltd

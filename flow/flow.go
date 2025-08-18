@@ -252,6 +252,7 @@ type FlowMachineContext interface {
 	DeliverTheStatistic(FlowContext, *tccore.TTDINode, string, string, string, bool)
 	LoadBaseTemplate(FlowContext) (TemplateData, error) //var baseTableTemplate extract.TemplateResultData , tfContext.GoMod, tfContext.FlowSource, tfContext.Flow.ServiceName(), tfContext.FlowPath
 	WaitAllFlowsLoaded()                                // Block until all flows are loaded
+	GetDfsChan() *chan *tccore.TTDINode                 // Channel for sending data flow statistics
 
 	//	writeToTableHelper(FlowContext, map[string]string, map[string]string) []any
 }

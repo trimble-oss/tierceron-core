@@ -1,5 +1,7 @@
 package flow
 
+import "github.com/trimble-oss/tierceron-core/v2/core"
+
 type FlowDefinition struct {
 	FlowHeader       FlowHeaderType
 	FlowTemplatePath string
@@ -10,12 +12,14 @@ type FlowMachineInitContext struct {
 	GetFlowMachineTemplates     func() map[string]any
 	FlowMachineInterfaceConfigs map[string]any
 	GetDatabaseName             func(FlumeDbType) string
+	IsSupportedFlow             func(string) bool                           // Required
 	GetTableFlows               func() []FlowDefinition                     // Required
 	GetBusinessFlows            func() []FlowDefinition                     // Optional
 	GetTestFlows                func() []FlowDefinition                     // Optional
 	GetTestFlowsByState         func(string) []FlowDefinition               // Optional
 	FlowController              func(FlowMachineContext, FlowContext) error // Required
 	TestFlowController          func(FlowMachineContext, FlowContext) error // Required
+	DfsChan                     *chan *core.TTDINode                        // Channel for sending data flow statistics
 }
 
 var HARBINGER_INTERFACE_CONFIG = "./config.yml"

@@ -140,6 +140,13 @@ func Init(properties *map[string]any,
 		}
 	}
 
+	if len(region) == 0 {
+		if r, ok := (*properties)["region"].(string); ok {
+			logger.Println("received region value from kernel")
+			region = r
+		}
+	}
+
 	if len(argosId) == 0 {
 		splitEnv := strings.Split(env, "-")
 		if len(splitEnv) == 2 {

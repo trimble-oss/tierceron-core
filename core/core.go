@@ -148,12 +148,7 @@ func Init(properties *map[string]any,
 	}
 
 	if len(argosId) == 0 {
-		splitEnv := strings.Split(env, "-")
-		if len(splitEnv) == 2 {
-			argosId = fmt.Sprintf("%s-%s", dfsKeyHeader, splitEnv[1])
-		} else {
-			argosId = dfsKeyHeader
-		}
+		argosId = dfsKeyHeader
 	}
 	logger.Printf("Starting initialization for dataflow: %s\n", argosId)
 

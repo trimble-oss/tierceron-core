@@ -91,6 +91,7 @@ type StatisticsDoc struct {
 //     *configContext.ChatSenderChan
 //     example: *configContext.ChatSenderChan <- &chatResultMsg
 type ChatMsg struct {
+	RoutingId     *string        // Routing identifier
 	ChatId        *string        // Only relevant for 3rd party integration.
 	Name          *string        // Source plugin name
 	KernelId      *string        // Internal use by kernel

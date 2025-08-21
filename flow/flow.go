@@ -119,9 +119,12 @@ type FlowColumn struct {
 type FlowLibraryContext struct {
 	GetTableConfigurationById        func(databaseName string, tableName string, idColumnName ...string) map[string]any
 	GetTableConfigurations           func(db any, secLookup bool) ([]any, error)
+	GetTableConfigurationsByQuery    func(db any, query string) ([]any, error)
+	GetTableIndices                  func(db any) ([]any, error)
 	CreateTableTriggers              func(tfmContext FlowMachineContext, tfContext FlowContext) // Optional override
 	GetRefreshTableConfiguration     func(tfmContext FlowMachineContext, tfContext FlowContext, dbI any) ([]any, error)
 	GetTableMap                      func(tableConfig any) map[string]any
+	GetSparseTableMap                func(tableConfig any) map[string]any
 	GetTableFromMap                  func(tableConfigMap map[string]any) any
 	GetFilterFieldFromConfig         func(tableconfig any) string
 	GetTableMapFromArray             func(tableArray []any) map[string]any
@@ -140,6 +143,7 @@ type FlowContext interface {
 	IsInit() bool
 	SetInit(bool)
 	InitNotify()
+	IsPreloaded() bool
 	IsRestart() bool
 	SetRestart(bool)
 	SetFlowLibraryContext(*FlowLibraryContext)

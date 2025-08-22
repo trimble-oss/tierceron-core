@@ -242,6 +242,7 @@ type FlowMachineContext interface {
 		func(FlowContext, map[string]any) error,
 		bool)
 	SelectFlowChannel(FlowContext) any
+	BcastFlowChannel(FlowContext, bool)
 	GetAuthExtended(func(map[string]any) map[string]any, bool) (map[string]any, error) // Auth for communicating with other services
 	GetCacheRefreshSqlConn(FlowContext, string) (any, error)
 	CallDBQuery(FlowContext, map[string]any, map[string]any, bool, string, []FlowNameType, string) ([][]any, bool)

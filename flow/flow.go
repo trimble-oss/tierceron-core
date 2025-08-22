@@ -62,6 +62,7 @@ func (fnt *FlowHeaderType) GetInstances() string {
 }
 
 type FlumeDbType int
+type SyncRemoteMode int
 
 const (
 	TrcFlumeDb FlumeDbType = iota // DB used by controller
@@ -116,6 +117,12 @@ type FlowColumn struct {
 	Extra          string
 }
 
+const (
+	SyncRemoteModeShutdwon        SyncRemoteMode = iota // Flow shutting down
+	SyncRemoteModeFlowDataChanged SyncRemoteMode = iota + 1
+	SyncRemoteModeFlowDataCyclic  SyncRemoteMode = iota + 2 // A regular timed cycle.
+)
+
 type FlowLibraryContext struct {
 	GetTableConfigurationById        func(databaseName string, tableName string, idColumnName ...string) map[string]any
 	GetTableConfigurations           func(db any, secLookup bool) ([]any, error)
@@ -136,6 +143,7 @@ type FlowLibraryContext struct {
 	GetTableIndexColumnNames         func() []string
 	GetTableGrant                    func(string) (string, string, error)
 	GetFlowIndexComplex              func() (string, []string, string, error)
+	ShouldSyncRemote                 func(SyncRemoteMode) bool // whether to sync given flow remotely (cyclic/push (0) or change event (1))
 	TableConfigurationFlowPullRemote func(tfmContext FlowMachineContext, tfContext FlowContext) error
 }
 

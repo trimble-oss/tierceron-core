@@ -280,7 +280,8 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 		if tfContext.IsInit() { //init vault sync cycle
 			tfContext.SetInit(false)
 			tfContext.InitNotify()
-			go tfmContext.SyncTableCycle(tfContext, flowDefinitionContext.GetTableIndexColumnNames(), flowDefinitionContext.GetTableIndexColumnNames(), flowDefinitionContext.GetIndexedPathExt, tableConfigurationFlowPushRemote, tfContext.GetFlowSyncMode() == "push")
+			shouldSyncRemote := tfContext.GetFlowSyncMode() == "push" || flowDefinitionContext.ShouldSyncRemote(tfContext.GetFlowHeader().FlowName())
+			go tfmContext.SyncTableCycle(tfContext, flowDefinitionContext.GetTableIndexColumnNames(), flowDefinitionContext.GetTableIndexColumnNames(), flowDefinitionContext.GetIndexedPathExt, tableConfigurationFlowPushRemote, shouldSyncRemote)
 		}
 	}
 

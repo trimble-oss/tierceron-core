@@ -178,40 +178,28 @@ func tableConfigurationFlowPushRemote(tfContext FlowContext, changedItem map[str
 				continue
 			}
 
-			sqlIngestInterval := tfContext.GetRemoteDataSourceAttribute("dbingestinterval").(time.Duration)
-			if sqlIngestInterval > 0 && tfContext.FlowSyncModeMatch("push", true) {
-				if _, ok := changedItem["Deleted"]; ok {
-					return nil
-				} else {
-					table := flowDefinitionContext.GetTableFromMap(changedItem)
+			if _, ok := changedItem["Deleted"]; ok {
+				return nil
+			} else {
+				table := flowDefinitionContext.GetTableFromMap(changedItem)
 
-					/*
-						//region check before pushing
-						if !strings.Contains(table.Region.String, trcRemoteDataSource[region].(map[string]any)["dbsourceregion"].(string)) {
-							if trcRemoteDataSource[region].(map[string]any)["dbsourceregion"].(string) != "west" { //default to west if region doesn't match.
-								return nil
-							}
-						}
-					*/
-
-					if flowDefinitionContext.ApplyDependencies != nil {
-						if tfContext.HasFlowSyncFilters() {
-							syncFilter := tfContext.GetFlowSyncFilters()
-							for _, filter := range syncFilter {
-								if filter == flowDefinitionContext.GetFilterFieldFromConfig(table) {
-									err := flowDefinitionContext.ApplyDependencies(table, sqlConnI, tfContext.GetLogger()) //Attempts to update only the eid on push
-									if err != nil {
-										tfContext.PushState("flowStateReceiver", tfContext.NewFlowStateUpdate("2", "pusherror"))
-										return err
-									}
+				if flowDefinitionContext.ApplyDependencies != nil {
+					if tfContext.HasFlowSyncFilters() {
+						syncFilter := tfContext.GetFlowSyncFilters()
+						for _, filter := range syncFilter {
+							if filter == flowDefinitionContext.GetFilterFieldFromConfig(table) {
+								err := flowDefinitionContext.ApplyDependencies(table, sqlConnI, tfContext.GetLogger()) //Attempts to update only the eid on push
+								if err != nil {
+									tfContext.PushState("flowStateReceiver", tfContext.NewFlowStateUpdate("2", "pusherror"))
+									return err
 								}
 							}
-						} else {
-							err := flowDefinitionContext.ApplyDependencies(table, sqlConnI, tfContext.GetLogger()) //Attempts to update only the eid on push
-							if err != nil {
-								tfContext.PushState("flowStateReceiver", tfContext.NewFlowStateUpdate("2", "pusherror"))
-								return err
-							}
+						}
+					} else {
+						err := flowDefinitionContext.ApplyDependencies(table, sqlConnI, tfContext.GetLogger()) //Attempts to update only the eid on push
+						if err != nil {
+							tfContext.PushState("flowStateReceiver", tfContext.NewFlowStateUpdate("2", "pusherror"))
+							return err
 						}
 					}
 				}
@@ -280,7 +268,10 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 		if tfContext.IsInit() { //init vault sync cycle
 			tfContext.SetInit(false)
 			tfContext.InitNotify()
-			shouldSyncRemote := tfContext.GetFlowSyncMode() == "push" || flowDefinitionContext.ShouldSyncRemote(tfContext.GetFlowHeader().FlowName())
+			shouldSyncRemote := tfContext.GetFlowSyncMode() == "push"
+			if shouldSyncFunc := flowDefinitionContext.ShouldSyncRemote; shouldSyncFunc != nil {
+				shouldSyncRemote = shouldSyncRemote || shouldSyncFunc(SyncRemoteModeFlowDataCyclic)
+			}
 			go tfmContext.SyncTableCycle(tfContext, flowDefinitionContext.GetTableIndexColumnNames(), flowDefinitionContext.GetTableIndexColumnNames(), flowDefinitionContext.GetIndexedPathExt, tableConfigurationFlowPushRemote, shouldSyncRemote)
 		}
 	}

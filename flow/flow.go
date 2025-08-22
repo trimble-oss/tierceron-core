@@ -135,6 +135,7 @@ type FlowLibraryContext struct {
 	GetIndexedPathExt                func(engine any, rowDataMap map[string]any, indexColumnNames any, databaseName string, tableName string, dbCallBack func(any, map[string]any) (string, []string, [][]any, error)) (string, error)
 	GetTableIndexColumnNames         func() []string
 	GetTableGrant                    func(string) (string, string, error)
+	ShouldSyncRemote                 func(tableName string) bool
 	GetFlowIndexComplex              func() (string, []string, string, error)
 	TableConfigurationFlowPullRemote func(tfmContext FlowMachineContext, tfContext FlowContext) error
 }

@@ -29,6 +29,7 @@ func CompareRows(a map[string]any, b map[string]any) bool {
 
 func tableConfigurationIndicesFlowPullRemote(tfmContext FlowMachineContext, tfContext FlowContext) ([]map[string]any, error) {
 	// b. Retrieve table configurations
+	tfContext.WaitFlowLoaded()
 	flowDefinitionContext := tfContext.GetFlowLibraryContext()
 	regionSyncList := tfContext.GetDataSourceRegions(true)
 	var tableIndexMapArr []map[string]any
@@ -162,6 +163,7 @@ func tableConfigurationFlowPullRemote(tfmContext FlowMachineContext, tfContext F
 }
 
 func tableConfigurationFlowPushRemote(tfContext FlowContext, changedItem map[string]any) error {
+	tfContext.WaitFlowLoaded()
 	flowDefinitionContext := tfContext.GetFlowLibraryContext()
 	regionSyncList := tfContext.GetDataSourceRegions(true)
 	if len(regionSyncList) == 0 {

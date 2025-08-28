@@ -176,7 +176,11 @@ func tableConfigurationFlowPushRemote(tfContext FlowContext, changedItem map[str
 		for _, region := range regionSyncList {
 			if regionSource, ok := tfContext.GetRemoteDataSourceAttribute(region).(map[string]any); ok {
 				if conn, ok := regionSource["connection"]; ok && conn != nil {
-					sqlConnI = conn
+					if dbConn, ok := conn.(*sql.DB); ok && dbConn != nil {
+						sqlConnI = conn
+					} else {
+						continue
+					}
 				}
 			} else {
 				continue

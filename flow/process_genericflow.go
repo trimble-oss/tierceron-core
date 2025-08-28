@@ -181,6 +181,8 @@ func tableConfigurationFlowPushRemote(tfContext FlowContext, changedItem map[str
 					} else {
 						continue
 					}
+				} else {
+					continue
 				}
 			} else {
 				continue

@@ -37,7 +37,7 @@ func (fmic FlowMachineInitContext) GetFilteredBusinessFlows(kernelId string) []F
 	} else {
 		var filteredFlows []FlowDefinition
 		for _, flow := range fmic.GetBusinessFlows() {
-			if flow.FlowHeader.GetInstances() == kernelId || flow.FlowHeader.GetInstances() == "*" {
+			if kernelId == "-1" || flow.FlowHeader.GetInstances() == kernelId || flow.FlowHeader.GetInstances() == "*" {
 				filteredFlows = append(filteredFlows, flow)
 			}
 		}

@@ -9,8 +9,10 @@ import (
 	tccore "github.com/trimble-oss/tierceron-core/v2/core"
 )
 
-type FlowType int64
-type FlowColumnType int64
+type (
+	FlowType       int64
+	FlowColumnType int64
+)
 
 type FlowNameType string
 
@@ -32,7 +34,8 @@ type FlowHeaderType struct {
 func NewFlowHeaderType(name FlowNameType,
 	source string,
 	sourceAlias string,
-	instances string) *FlowHeaderType {
+	instances string,
+) *FlowHeaderType {
 	return &FlowHeaderType{
 		Name:        name,
 		Source:      source,
@@ -61,24 +64,33 @@ func (fnt *FlowHeaderType) GetInstances() string {
 	return string(fnt.Instances)
 }
 
-type FlumeDbType int
-type SyncRemoteMode int
+type (
+	FlumeDbType    int
+	SyncRemoteMode int
+)
 
 const (
 	TrcFlumeDb FlumeDbType = iota // DB used by controller
 	TrcDb      FlumeDbType = iota + 1
 )
 
-var TierceronControllerFlow FlowHeaderType = FlowHeaderType{Name: "TierceronFlow", Instances: "*"}
-var DataFlowStatConfigurationsFlow FlowHeaderType = FlowHeaderType{Name: "DataFlowStatistics", Instances: "*"}
-var ArgosSociiFlow FlowHeaderType = FlowHeaderType{Name: "ArgosSocii", Instances: "*"}
+var (
+	TierceronControllerFlow        FlowHeaderType = FlowHeaderType{Name: "TierceronFlow", Instances: "*"}
+	DataFlowStatConfigurationsFlow FlowHeaderType = FlowHeaderType{Name: "DataFlowStatistics", Instances: "*"}
+	ArgosSociiFlow                 FlowHeaderType = FlowHeaderType{Name: "ArgosSocii", Instances: "*"}
+)
 
-type PermissionUpdate any
-type FlowStateUpdate interface {
-	// NewFlowState() CurrentFlowState
-}
-type CurrentFlowState any
-type TemplateData any
+type (
+	PermissionUpdate any
+	FlowStateUpdate  interface {
+		// NewFlowState() CurrentFlowState
+	}
+)
+
+type (
+	CurrentFlowState any
+	TemplateData     any
+)
 
 const (
 	TinyText FlowColumnType = iota
@@ -218,6 +230,7 @@ func SyncCheck(syncMode string) string {
 
 type FlowMachineContext interface {
 	GetEnv() string
+	GetKernelId() string // >= 0 means it's running in the hive.
 	GetFlowContext(FlowNameType) FlowContext
 	NotifyFlowComponentLoaded(string) // Notify that a critical flow is loaded
 	GetFlowID(FlowNameType) *uint64
@@ -263,7 +276,7 @@ type FlowMachineContext interface {
 	GetLogger() *log.Logger
 	PathToTableRowHelper(FlowContext) ([]any, error)
 	DeliverTheStatistic(FlowContext, *tccore.TTDINode, string, string, string, bool)
-	LoadBaseTemplate(FlowContext) (TemplateData, error) //var baseTableTemplate extract.TemplateResultData , tfContext.GoMod, tfContext.FlowSource, tfContext.Flow.ServiceName(), tfContext.FlowPath
+	LoadBaseTemplate(FlowContext) (TemplateData, error) // var baseTableTemplate extract.TemplateResultData , tfContext.GoMod, tfContext.FlowSource, tfContext.Flow.ServiceName(), tfContext.FlowPath
 	WaitAllFlowsLoaded()                                // Block until all flows are loaded
 	GetDfsChan() *chan *tccore.TTDINode                 // Channel for sending data flow statistics
 

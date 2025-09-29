@@ -1,6 +1,8 @@
 package flow
 
-import "github.com/trimble-oss/tierceron-core/v2/core"
+import (
+	"github.com/trimble-oss/tierceron-core/v2/core"
+)
 
 type FlowDefinition struct {
 	FlowHeader       FlowHeaderType
@@ -20,6 +22,7 @@ type FlowMachineInitContext struct {
 	FlowController              func(FlowMachineContext, FlowContext) error // Required
 	TestFlowController          func(FlowMachineContext, FlowContext) error // Required
 	DfsChan                     *chan *core.TTDINode                        // Channel for sending data flow statistics
+	FlowChatMsgSenderChan       *chan *core.ChatMsg                         // Channel for sending chat messages from flow to plugin
 }
 
 var HARBINGER_INTERFACE_CONFIG = "./config.yml"

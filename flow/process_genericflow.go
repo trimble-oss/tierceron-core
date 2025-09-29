@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -293,6 +294,15 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 	} else {
 		tfmContext.Log(fmt.Sprintf("%s is setup%s.", tfContext.GetFlowHeader().FlowName(), SyncCheck(tfContext.GetFlowSyncMode())), nil)
 		return 4
+	}
+
+	kernelID := tfmContext.GetKernelId()
+	if len(kernelID) > 0 {
+		kernelIDInt, err := strconv.Atoi(fmt.Sprintf("%v", kernelID))
+		if err != nil || kernelIDInt >= 0 {
+			tfmContext.Log(fmt.Sprintf("Skipping push/pull for hive: %v", kernelID), nil)
+			return 4
+		}
 	}
 
 	tfmContext.Log(fmt.Sprintf("%s is running and checking for changes %s.", tfContext.GetFlowHeader().FlowName(), SyncCheck(tfContext.GetFlowSyncMode())), nil)

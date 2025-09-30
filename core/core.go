@@ -13,13 +13,15 @@ const (
 	PLUGIN_EVENT_STATUS
 )
 
-const PLUGIN_EVENT_CHANNELS_MAP_KEY = "PluginEventChannelsMap"
-const PLUGIN_CHANNEL_EVENT_IN = "PluginChannelEventIn"
-const PLUGIN_CHANNEL_EVENT_OUT = "PluginChannelEventOut"
-const CMD_CHANNEL = "CommandChannel"
-const CHAT_CHANNEL = "ChatChannel"
-const CHAT_BROADCAST_CHANNEL = "ChatBroadcastChannel"
-const DATA_FLOW_STAT_CHANNEL = "DataFlowStatisticsChannel"
+const (
+	PLUGIN_EVENT_CHANNELS_MAP_KEY = "PluginEventChannelsMap"
+	PLUGIN_CHANNEL_EVENT_IN       = "PluginChannelEventIn"
+	PLUGIN_CHANNEL_EVENT_OUT      = "PluginChannelEventOut"
+	CMD_CHANNEL                   = "CommandChannel"
+	CHAT_CHANNEL                  = "ChatChannel"
+	CHAT_BROADCAST_CHANNEL        = "ChatBroadcastChannel"
+	DATA_FLOW_STAT_CHANNEL        = "DataFlowStatisticsChannel"
+)
 
 const ERROR_CHANNEL = "ErrorChannel"
 
@@ -66,12 +68,13 @@ type TrcdbResponse struct {
 }
 
 type TrcdbExchange struct {
-	Flows     []string      // List of flows used in query
-	Operation string        // Operation to be performed ("SELECT", "INSERT", "UPDATE", "DELETE")
-	Query     string        // Query to be executed in trcdb
-	ExecTrcsh string        // Path to script to executed on response rows
-	Request   TrcdbRequest  // Request rows to Trcdb -- may contain Billy provided by caller (check ExecTrcsh)
-	Response  TrcdbResponse // Response from Trcdb -- may contain Billy  provided by caller (check ExecTrcsh)
+	Flows             []string            // List of flows used in query
+	FlowCacheKeyHints map[string][]string // for each flow, either concrete keys or key patterns to pull and seed TrcDb cache
+	Operation         string              // Operation to be performed ("SELECT", "INSERT", "UPDATE", "DELETE")
+	Query             string              // Query to be executed in trcdb
+	ExecTrcsh         string              // Path to script to executed on response rows
+	Request           TrcdbRequest        // Request rows to Trcdb -- may contain Billy provided by caller (check ExecTrcsh)
+	Response          TrcdbResponse       // Response from Trcdb -- may contain Billy  provided by caller (check ExecTrcsh)
 }
 
 type StatisticsDoc struct {
@@ -264,7 +267,8 @@ func Init(properties *map[string]any,
 
 func InitPost(pluginName string,
 	properties *map[string]any,
-	PostInit func(*ConfigContext)) (*ConfigContext, error) {
+	PostInit func(*ConfigContext),
+) (*ConfigContext, error) {
 	if properties == nil {
 		fmt.Println("Missing initialization components")
 		return nil, errors.New("missing initialization component")

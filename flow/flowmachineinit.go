@@ -1,6 +1,9 @@
 package flow
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/trimble-oss/tierceron-core/v2/core"
 )
 
@@ -27,7 +30,7 @@ type FlowMachineInitContext struct {
 
 var HARBINGER_INTERFACE_CONFIG = "./config.yml"
 
-func (fmic FlowMachineInitContext) GetFilteredBusinessFlows(kernelId string) []FlowDefinition {
+func (fmic FlowMachineInitContext) GetFilteredBusinessFlows(kernelId int) []FlowDefinition {
 	hasRestrictedFlow := false
 	for _, flow := range fmic.GetBusinessFlows() {
 		if flow.FlowHeader.GetInstances() != "*" {
@@ -40,15 +43,24 @@ func (fmic FlowMachineInitContext) GetFilteredBusinessFlows(kernelId string) []F
 	} else {
 		var filteredFlows []FlowDefinition
 		for _, flow := range fmic.GetBusinessFlows() {
-			if kernelId == "-1" || flow.FlowHeader.GetInstances() == kernelId || flow.FlowHeader.GetInstances() == "*" {
+			instances := flow.FlowHeader.GetInstances()
+			if kernelId == -1 || instances == "*" {
 				filteredFlows = append(filteredFlows, flow)
+			} else {
+				for _, inst := range strings.Split(instances, ",") {
+					inst = strings.TrimSpace(inst)
+					if instInt, err := strconv.Atoi(inst); err == nil && instInt == kernelId {
+						filteredFlows = append(filteredFlows, flow)
+						break
+					}
+				}
 			}
 		}
 		return filteredFlows
 	}
 }
 
-func (fmic FlowMachineInitContext) GetFilteredBusinessFlowNames(kernelId string) []FlowNameType {
+func (fmic FlowMachineInitContext) GetFilteredBusinessFlowNames(kernelId int) []FlowNameType {
 	var filteredFlowNames []FlowNameType
 	for _, flow := range fmic.GetFilteredBusinessFlows(kernelId) {
 		filteredFlowNames = append(filteredFlowNames, flow.FlowHeader.FlowNameType())
@@ -56,7 +68,7 @@ func (fmic FlowMachineInitContext) GetFilteredBusinessFlowNames(kernelId string)
 	return filteredFlowNames
 }
 
-func (fmic FlowMachineInitContext) GetFilteredTableFlowDefinitions(kernelId string) []FlowDefinition {
+func (fmic FlowMachineInitContext) GetFilteredTableFlowDefinitions(kernelId int) []FlowDefinition {
 	hasRestrictedFlow := false
 	for _, flow := range fmic.GetTableFlows() {
 		if flow.FlowHeader.GetInstances() != "*" {
@@ -69,15 +81,24 @@ func (fmic FlowMachineInitContext) GetFilteredTableFlowDefinitions(kernelId stri
 	} else {
 		var filteredFlows []FlowDefinition
 		for _, flow := range fmic.GetTableFlows() {
-			if flow.FlowHeader.GetInstances() == kernelId || flow.FlowHeader.GetInstances() == "*" {
+			instances := flow.FlowHeader.GetInstances()
+			if kernelId == -1 || instances == "*" {
 				filteredFlows = append(filteredFlows, flow)
+			} else {
+				for _, inst := range strings.Split(instances, ",") {
+					inst = strings.TrimSpace(inst)
+					if instInt, err := strconv.Atoi(inst); err == nil && instInt == kernelId {
+						filteredFlows = append(filteredFlows, flow)
+						break
+					}
+				}
 			}
 		}
 		return filteredFlows
 	}
 }
 
-func (fmic FlowMachineInitContext) GetFilteredTableFlows(kernelId string) []FlowDefinition {
+func (fmic FlowMachineInitContext) GetFilteredTableFlows(kernelId int) []FlowDefinition {
 	var filteredFlowDefinitions []FlowDefinition
 	for _, flow := range fmic.GetFilteredTableFlowDefinitions(kernelId) {
 		filteredFlowDefinitions = append(filteredFlowDefinitions, flow)
@@ -85,7 +106,7 @@ func (fmic FlowMachineInitContext) GetFilteredTableFlows(kernelId string) []Flow
 	return filteredFlowDefinitions
 }
 
-func (fmic FlowMachineInitContext) GetFilteredTableFlowNames(kernelId string) []string {
+func (fmic FlowMachineInitContext) GetFilteredTableFlowNames(kernelId int) []string {
 	var filteredFlowNames []string
 	for _, flow := range fmic.GetFilteredTableFlowDefinitions(kernelId) {
 		filteredFlowNames = append(filteredFlowNames, flow.FlowHeader.FlowName())
@@ -93,7 +114,7 @@ func (fmic FlowMachineInitContext) GetFilteredTableFlowNames(kernelId string) []
 	return filteredFlowNames
 }
 
-func (fmic FlowMachineInitContext) GetFilteredTestFlowNames(kernelId string) []FlowNameType {
+func (fmic FlowMachineInitContext) GetFilteredTestFlowNames(kernelId int) []FlowNameType {
 	var filteredFlowNames []FlowNameType
 	for _, flow := range fmic.GetTestFlows() {
 		filteredFlowNames = append(filteredFlowNames, flow.FlowHeader.FlowNameType())

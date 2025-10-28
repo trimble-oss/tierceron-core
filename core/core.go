@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 )
 
@@ -119,7 +120,7 @@ func Init(properties *map[string]any,
 		startHandler == nil ||
 		receiverHandler == nil ||
 		chatHandler == nil {
-		fmt.Println("Missing initialization components")
+		fmt.Fprintln(os.Stderr, "Missing initialization components")
 		return nil, errors.New("missing initialization components")
 	}
 	var logger *log.Logger
@@ -132,7 +133,7 @@ func Init(properties *map[string]any,
 	if e, ok := (*properties)["env"].(string); ok {
 		env = e
 	} else {
-		fmt.Println("Missing env from kernel")
+		fmt.Fprintln(os.Stderr, "Missing env from kernel")
 		logger.Println("Missing env from kernel")
 		return nil, errors.New("missing env from kernel")
 	}
@@ -169,7 +170,7 @@ func Init(properties *map[string]any,
 		if common, ok := (*properties)[commonPath]; ok {
 			config_properties = common.(*map[string]any)
 		} else {
-			fmt.Println("Missing config components")
+			fmt.Fprintln(os.Stderr, "Missing config components")
 			return nil, errors.New("missing config components")
 		}
 	} else {
@@ -270,7 +271,7 @@ func InitPost(pluginName string,
 	PostInit func(*ConfigContext),
 ) (*ConfigContext, error) {
 	if properties == nil {
-		fmt.Println("Missing initialization components")
+		fmt.Fprintln(os.Stderr, "Missing initialization components")
 		return nil, errors.New("missing initialization component")
 	}
 	var logger *log.Logger

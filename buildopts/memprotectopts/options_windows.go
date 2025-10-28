@@ -15,9 +15,11 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-const MEM_COMMIT = 0x1000
-const MEM_RESERVE = 0x2000
-const PAGE_READWRITE = 0x40
+const (
+	MEM_COMMIT     = 0x1000
+	MEM_RESERVE    = 0x2000
+	PAGE_READWRITE = 0x40
+)
 
 // MemProtectInit -- initialization of memory protection not required on Windows
 func MemProtectInit(logger *log.Logger) error {
@@ -77,7 +79,7 @@ func MemProtect(logger *log.Logger, sensitive *string) error {
 			kernel32 = nil
 			return verifyErr
 		}
-		fmt.Println("Trusting the kernel.")
+		fmt.Fprintln(os.Stderr, "Trusting the kernel.")
 	}
 	virtualAllocProc := kernel32.MustFindProc("VirtualAlloc")
 	var sensitiveLen int = (len(*sensitive))

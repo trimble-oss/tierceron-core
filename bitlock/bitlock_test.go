@@ -2,6 +2,7 @@ package bitlock
 
 import (
 	"fmt"
+	"os"
 	"testing"
 	"time"
 )
@@ -26,70 +27,70 @@ func TestBitLock(t *testing.T) {
 	b := InitBitMask(len(*flows))
 
 	b.Lock((*flows)["flow1"] ^ (*flows)["flow2"] ^ (*flows)["flow3"])
-	fmt.Println("Locking flow1, flow2, flow3")
+	fmt.Fprintln(os.Stderr, "Locking flow1, flow2, flow3")
 	b.Unlock((*flows)["flow1"] ^ (*flows)["flow2"] ^ (*flows)["flow3"])
 
 	go func() {
 		b.Lock((*flows)["flow1"] ^ (*flows)["flow6"])
-		fmt.Println("Locking flow1, flow6")
+		fmt.Fprintln(os.Stderr, "Locking flow1, flow6")
 		b.Unlock((*flows)["flow1"] ^ (*flows)["flow6"])
 	}()
 
 	go func() {
 		b.Lock((*flows)["flow4"] ^ (*flows)["flow5"])
-		fmt.Println("Locking flow4, flow5")
+		fmt.Fprintln(os.Stderr, "Locking flow4, flow5")
 		b.Unlock((*flows)["flow4"] ^ (*flows)["flow5"])
 	}()
 
 	go func() {
 		b.Lock((*flows)["flow1"] ^ (*flows)["flow6"])
-		fmt.Println("Locking flow1, flow6")
+		fmt.Fprintln(os.Stderr, "Locking flow1, flow6")
 		b.Unlock((*flows)["flow1"] ^ (*flows)["flow6"])
 	}()
 	go func() {
 		b.Lock((*flows)["flow1"] ^ (*flows)["flow6"])
-		fmt.Println("Locking flow1, flow6")
+		fmt.Fprintln(os.Stderr, "Locking flow1, flow6")
 		b.Unlock((*flows)["flow1"] ^ (*flows)["flow6"])
 	}()
 	go func() {
 		b.Lock((*flows)["flow1"] ^ (*flows)["flow6"])
-		fmt.Println("Locking flow1, flow6")
+		fmt.Fprintln(os.Stderr, "Locking flow1, flow6")
 		b.Unlock((*flows)["flow1"] ^ (*flows)["flow6"])
 	}()
 	go func() {
 		b.Lock((*flows)["flow4"] ^ (*flows)["flow5"])
-		fmt.Println("Locking flow4, flow5")
+		fmt.Fprintln(os.Stderr, "Locking flow4, flow5")
 		b.Unlock((*flows)["flow4"] ^ (*flows)["flow5"])
 	}()
 	go func() {
 		b.Lock((*flows)["flow4"] ^ (*flows)["flow5"])
-		fmt.Println("Locking flow4, flow5")
+		fmt.Fprintln(os.Stderr, "Locking flow4, flow5")
 		b.Unlock((*flows)["flow4"] ^ (*flows)["flow5"])
 	}()
 
 	go func() {
 		b.Lock((*flows)["flow1"] ^ (*flows)["flow6"])
-		fmt.Println("Locking flow1, flow6")
+		fmt.Fprintln(os.Stderr, "Locking flow1, flow6")
 		b.Unlock((*flows)["flow1"] ^ (*flows)["flow6"])
 	}()
 	go func() {
 		b.Lock((*flows)["flow4"] ^ (*flows)["flow5"])
-		fmt.Println("Locking flow4, flow5")
+		fmt.Fprintln(os.Stderr, "Locking flow4, flow5")
 		b.Unlock((*flows)["flow4"] ^ (*flows)["flow5"])
 	}()
 	go func() {
 		b.Lock((*flows)["flow4"] ^ (*flows)["flow5"])
-		fmt.Println("Locking flow4, flow5")
+		fmt.Fprintln(os.Stderr, "Locking flow4, flow5")
 		b.Unlock((*flows)["flow4"] ^ (*flows)["flow5"])
 	}()
 	go func() {
 		b.Lock((*flows)["flow4"] ^ (*flows)["flow5"])
-		fmt.Println("Locking flow4, flow5")
+		fmt.Fprintln(os.Stderr, "Locking flow4, flow5")
 		b.Unlock((*flows)["flow4"] ^ (*flows)["flow5"])
 	}()
 	go func() {
 		b.Lock((*flows)["flow4"] ^ (*flows)["flow5"])
-		fmt.Println("Locking flow4, flow5")
+		fmt.Fprintln(os.Stderr, "Locking flow4, flow5")
 		b.Unlock((*flows)["flow4"] ^ (*flows)["flow5"])
 	}()
 

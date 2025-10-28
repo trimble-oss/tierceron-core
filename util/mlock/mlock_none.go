@@ -14,7 +14,7 @@ func Mlock(logger *log.Logger) error {
 	if logger != nil {
 		logger.Println("Mlock not supported.")
 	} else {
-		fmt.Println("Mlock not supported.")
+		fmt.Fprintln(os.Stderr, "Mlock not supported.")
 	}
 	os.Exit(1)
 	return nil
@@ -24,7 +24,7 @@ func Mlock2(logger *log.Logger, sensitive *string) error {
 	if logger != nil {
 		logger.Println("Mlock2 not supported.")
 	} else {
-		fmt.Println("Mlock2 not supported.")
+		fmt.Fprintln(os.Stderr, "Mlock2 not supported.")
 	}
 	os.Exit(1)
 	return nil
@@ -34,7 +34,7 @@ func MunlockAll(logger *log.Logger) error {
 	if logger != nil {
 		logger.Println("MunlockAll not supported.")
 	} else {
-		fmt.Println("MunlockAll not supported.")
+		fmt.Fprintln(os.Stderr, "MunlockAll not supported.")
 	}
 	os.Exit(1)
 	return nil

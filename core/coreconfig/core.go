@@ -10,9 +10,8 @@ import (
 
 // This structure contains core properties central to Secrets engine access
 type CoreConfig struct {
-	IsProdPtr *bool
-	IsShell   bool // If tool running in shell.
-	IsEditor  bool
+	IsShell  bool // If tool running in shell.
+	IsEditor bool
 
 	// Vault Configurations...
 	Insecure             bool
@@ -27,20 +26,6 @@ type CoreConfig struct {
 	WantCerts         bool
 	ExitOnFailure     bool // Exit on a failure or try to continue
 	Log               *log.Logger
-}
-
-func (cc *CoreConfig) IsProd() bool {
-	if cc.IsProdPtr == nil {
-		cc.IsProdPtr = new(bool)
-		var envCheck string
-		if len(cc.EnvBasis) > 0 {
-			envCheck = cc.EnvBasis
-		} else {
-			envCheck = cc.Env
-		}
-		*cc.IsProdPtr = strings.Contains(envCheck, "staging") || strings.Contains(envCheck, "prod")
-	}
-	return *cc.IsProdPtr
 }
 
 func (cc *CoreConfig) GetCurrentToken(tokenPattern string) *string {

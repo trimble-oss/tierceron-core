@@ -5,7 +5,6 @@ import (
 	"log"
 	"sync"
 
-	"github.com/trimble-oss/tierceron-core/v2/core"
 	tccore "github.com/trimble-oss/tierceron-core/v2/core"
 )
 
@@ -116,7 +115,7 @@ const (
 	Timestamp
 )
 
-// The following are mappable types to go-mysql-server/sql column
+// FlowColumn - The following are mappable types to go-mysql-server/sql column
 type FlowColumn struct {
 	Name           string
 	Type           FlowColumnType
@@ -268,7 +267,7 @@ type FlowMachineContext interface {
 	GetAuthExtended(func(map[string]any) map[string]any, bool) (map[string]any, error) // Auth for communicating with other services
 	GetCacheRefreshSqlConn(FlowContext, string) (any, error)
 	CallDBQuery(FlowContext, map[string]any, map[string]any, bool, string, []FlowNameType, string) ([][]any, bool)
-	CallDBQueryN(*core.TrcdbExchange, map[string]any, map[string]any, bool, string, []FlowNameType, string) (*core.TrcdbExchange, bool)
+	CallDBQueryN(*tccore.TrcdbExchange, map[string]any, map[string]any, bool, string, []FlowNameType, string) (*tccore.TrcdbExchange, bool)
 	GetDbConn(FlowContext, string, string, map[string]any) (any, error)
 	CallAPI(map[string]string, string, string, io.Reader, bool) (map[string]any, int, error)
 	SetEncryptionSecret()

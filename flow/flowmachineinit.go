@@ -30,7 +30,7 @@ type FlowMachineInitContext struct {
 
 var HARBINGER_INTERFACE_CONFIG = "./config.yml"
 
-func (fmic FlowMachineInitContext) GetFilteredBusinessFlows(kernelId int) []FlowDefinition {
+func (fmic FlowMachineInitContext) GetFilteredBusinessFlows(kernelID int) []FlowDefinition {
 	hasRestrictedFlow := false
 	for _, flow := range fmic.GetBusinessFlows() {
 		if flow.FlowHeader.GetInstances() != "*" {
@@ -44,12 +44,12 @@ func (fmic FlowMachineInitContext) GetFilteredBusinessFlows(kernelId int) []Flow
 		var filteredFlows []FlowDefinition
 		for _, flow := range fmic.GetBusinessFlows() {
 			instances := flow.FlowHeader.GetInstances()
-			if kernelId == -1 || instances == "*" {
+			if kernelID == -1 || instances == "*" {
 				filteredFlows = append(filteredFlows, flow)
 			} else {
 				for _, inst := range strings.Split(instances, ",") {
 					inst = strings.TrimSpace(inst)
-					if instInt, err := strconv.Atoi(inst); err == nil && instInt == kernelId {
+					if instInt, err := strconv.Atoi(inst); err == nil && instInt == kernelID {
 						filteredFlows = append(filteredFlows, flow)
 						break
 					}
@@ -60,15 +60,15 @@ func (fmic FlowMachineInitContext) GetFilteredBusinessFlows(kernelId int) []Flow
 	}
 }
 
-func (fmic FlowMachineInitContext) GetFilteredBusinessFlowNames(kernelId int) []FlowNameType {
+func (fmic FlowMachineInitContext) GetFilteredBusinessFlowNames(kernelID int) []FlowNameType {
 	var filteredFlowNames []FlowNameType
-	for _, flow := range fmic.GetFilteredBusinessFlows(kernelId) {
+	for _, flow := range fmic.GetFilteredBusinessFlows(kernelID) {
 		filteredFlowNames = append(filteredFlowNames, flow.FlowHeader.FlowNameType())
 	}
 	return filteredFlowNames
 }
 
-func (fmic FlowMachineInitContext) GetFilteredTableFlowDefinitions(kernelId int) []FlowDefinition {
+func (fmic FlowMachineInitContext) GetFilteredTableFlowDefinitions(kernelID int) []FlowDefinition {
 	hasRestrictedFlow := false
 	for _, flow := range fmic.GetTableFlows() {
 		if flow.FlowHeader.GetInstances() != "*" {
@@ -82,12 +82,12 @@ func (fmic FlowMachineInitContext) GetFilteredTableFlowDefinitions(kernelId int)
 		var filteredFlows []FlowDefinition
 		for _, flow := range fmic.GetTableFlows() {
 			instances := flow.FlowHeader.GetInstances()
-			if kernelId == -1 || instances == "*" {
+			if kernelID == -1 || instances == "*" {
 				filteredFlows = append(filteredFlows, flow)
 			} else {
 				for _, inst := range strings.Split(instances, ",") {
 					inst = strings.TrimSpace(inst)
-					if instInt, err := strconv.Atoi(inst); err == nil && instInt == kernelId {
+					if instInt, err := strconv.Atoi(inst); err == nil && instInt == kernelID {
 						filteredFlows = append(filteredFlows, flow)
 						break
 					}
@@ -98,23 +98,21 @@ func (fmic FlowMachineInitContext) GetFilteredTableFlowDefinitions(kernelId int)
 	}
 }
 
-func (fmic FlowMachineInitContext) GetFilteredTableFlows(kernelId int) []FlowDefinition {
+func (fmic FlowMachineInitContext) GetFilteredTableFlows(kernelID int) []FlowDefinition {
 	var filteredFlowDefinitions []FlowDefinition
-	for _, flow := range fmic.GetFilteredTableFlowDefinitions(kernelId) {
-		filteredFlowDefinitions = append(filteredFlowDefinitions, flow)
-	}
+	filteredFlowDefinitions = append(filteredFlowDefinitions, fmic.GetFilteredTableFlowDefinitions(kernelID)...)
 	return filteredFlowDefinitions
 }
 
-func (fmic FlowMachineInitContext) GetFilteredTableFlowNames(kernelId int) []string {
+func (fmic FlowMachineInitContext) GetFilteredTableFlowNames(kernelID int) []string {
 	var filteredFlowNames []string
-	for _, flow := range fmic.GetFilteredTableFlowDefinitions(kernelId) {
+	for _, flow := range fmic.GetFilteredTableFlowDefinitions(kernelID) {
 		filteredFlowNames = append(filteredFlowNames, flow.FlowHeader.FlowName())
 	}
 	return filteredFlowNames
 }
 
-func (fmic FlowMachineInitContext) GetFilteredTestFlowNames(kernelId int) []FlowNameType {
+func (fmic FlowMachineInitContext) GetFilteredTestFlowNames(kernelID int) []FlowNameType {
 	var filteredFlowNames []FlowNameType
 	for _, flow := range fmic.GetTestFlows() {
 		filteredFlowNames = append(filteredFlowNames, flow.FlowHeader.FlowNameType())

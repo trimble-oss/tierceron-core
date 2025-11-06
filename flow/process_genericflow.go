@@ -10,7 +10,7 @@ import (
 	prod "github.com/trimble-oss/tierceron-core/v2/prod"
 )
 
-// True == equal, false = not equal
+// CompareRows returns true when equal, false otherwise
 func CompareRows(a map[string]any, b map[string]any) bool {
 	for key, value := range a {
 		if _, ok := b[key].(string); ok {
@@ -95,12 +95,12 @@ func tableConfigurationFlowPullRemoteByIndices(tfmContext FlowMachineContext, tf
 		}
 
 		tfmContext.Log("Attempting to pull in table configurations from "+region, nil)
-		for _, tableId := range tableIndices {
+		for _, tableID := range tableIndices {
 			if flowDefinitionContext.GetTableConfigurationById != nil {
 				tableQueryMap := flowDefinitionContext.GetTableConfigurationById(
 					tfmContext.GetDatabaseName(TrcDb),
 					string(tfContext.GetFlowHeader().Name),
-					tableId,
+					tableID,
 				)
 				tableConfigurations, err := flowDefinitionContext.GetTableConfigurationsByQuery(sqlConn, tableQueryMap["TrcQuery"].(string)) // Staging is a special case that needs to be keyed off existing SEC eids to avoid prod data being pulled in.
 				if err != nil {

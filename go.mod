@@ -1,6 +1,6 @@
 module github.com/trimble-oss/tierceron-core/v2
 
-go 1.24.4
+go 1.25.4
 
 require (
 	github.com/go-git/go-billy/v5 v5.6.2

@@ -240,7 +240,7 @@ type FlowMachineContext interface {
 	GetDatabaseName(FlumeDbType) string
 	GetTableModifierLock() *sync.Mutex
 	TableCollationIdGen(string) any
-	Init(map[string]map[string]any, []string, []FlowNameType, []FlowNameType) error
+	Init(*FlowMachineInitContext, map[string]map[string]any, []string, []FlowNameType, []FlowNameType) error
 	AddTableSchema(any, FlowContext)
 	CreateTableTriggers(FlowContext, []string)
 	CreateTable(name string, schema any, collation any) error

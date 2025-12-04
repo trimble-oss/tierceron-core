@@ -15,6 +15,9 @@ type FlowDefinition struct {
 
 type FlowMachineInitContext struct {
 	GetFlowMachineTemplates     func() map[string]any
+	GetIdColumnType             func(string) any
+	TableGrantNotify            func(FlowMachineContext, string)
+	BuildTableGrant             func(string) (string, error)
 	FlowMachineInterfaceConfigs map[string]any
 	GetDatabaseName             func(FlumeDbType) string
 	IsSupportedFlow             func(string) bool                           // Required

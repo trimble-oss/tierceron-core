@@ -415,7 +415,7 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 		}
 		tableConfigurations = filterTableConfigurations
 	}
-
+	updatedFlowTables := false
 	for _, table := range tableConfigurations {
 		rows, _ := tfmContext.CallDBQuery(tfContext, flowDefinitionContext.GetTableConfigurationById(tfContext.GetFlowHeader().SourceAlias, tfContext.GetFlowHeader().FlowName(), table[tableIndexKey].(string)), nil, false, "SELECT", nil, "")
 		if len(rows) == 0 {
@@ -427,7 +427,7 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 					continue
 				} else { // If not equal -> update
 					tfmContext.CallDBQuery(tfContext, flowDefinitionContext.GetTableConfigurationUpdate(table, tfContext.GetFlowHeader().SourceAlias, tfContext.GetFlowHeader().FlowName()), nil, true, "UPDATE", []FlowNameType{tfContext.GetFlowHeader().FlowNameType()}, "")
-					tfContext.SetLastModifiedTime(time.Now().Format(time.RFC3339))
+					updatedFlowTables = true
 				}
 			}
 		}
@@ -440,7 +440,9 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 		} else {
 			tfContext.SetFlowSyncMode("pullcomplete")
 		}
-		tfContext.PushState("flowStateReceiver", tfContext.NewFlowStateUpdate("2", tfContext.GetFlowSyncMode()))
+		if updatedFlowTables || tfContext.GetFlowSyncMode() != "refreshingDaily" {
+			tfContext.PushState("flowStateReceiver", tfContext.NewFlowStateUpdate("2", tfContext.GetFlowSyncMode()))
+		}
 		// Now go to vault.
 		// tfContext.Restart = true
 		// tfContext.CancelTheContext() // Anti pattern...

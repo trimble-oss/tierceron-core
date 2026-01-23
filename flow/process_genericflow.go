@@ -8,6 +8,7 @@ import (
 	"time"
 
 	prod "github.com/trimble-oss/tierceron-core/v2/prod"
+	"github.com/trimble-oss/tierceron/buildopts/kernelopts"
 )
 
 // CompareRows returns true when equal, false otherwise
@@ -288,16 +289,13 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 		}
 	}
 	var previousFlowSyncMode string
-	// TODO: if kernel -- no refreshingDaily
 	lastRefreshed, _ := time.Parse(time.RFC3339, tfContext.GetLastRefreshedTime())
-	if tfContext.GetFlowStateState() != 0 &&
-		(!prod.IsProd() &&
-			(tfContext.FlowSyncModeMatchAny([]string{"refreshingDaily"}) &&
-				time.Since(lastRefreshed) > 24*time.Hour && time.Now().Hour() == 0) ||
-			tfContext.FlowSyncModeMatchAny([]string{"refreshingDaily", "pull", "pullonce", "push", "pushonce", "pusheast"})) { // pusheast is unique for isProd() as it pushes both east/west
+	if !kernelopts.BuildOptions.IsKernel() &&
+		tfContext.FlowSyncModeMatchAny([]string{"refreshingDaily"}) &&
+		time.Since(lastRefreshed) > 24*time.Hour && time.Now().Hour() == 0 {
 		previousFlowSyncMode = tfContext.GetFlowSyncMode()
+	} else if tfContext.GetFlowStateState() != 0 && (tfContext.FlowSyncModeMatchAny([]string{"pull", "pullonce", "push", "pushonce", "pusheast"}) && prod.IsProd()) { // pusheast is unique for isProd() as it pushes both east/west
 	} else if (tfContext.FlowSyncModeMatch("pull", true) || tfContext.FlowSyncModeMatch("push", true)) && tfContext.GetFlowSyncMode() != "pullerror" && tfContext.GetFlowSyncMode() != "pullcomplete" {
-		previousFlowSyncMode = tfContext.GetFlowSyncMode()
 	} else {
 		tfmContext.Log(fmt.Sprintf("%s is setup%s.", tfContext.GetFlowHeader().FlowName(), SyncCheck(tfContext.GetFlowSyncMode())), nil)
 		return 4
@@ -429,6 +427,7 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 					continue
 				} else { // If not equal -> update
 					tfmContext.CallDBQuery(tfContext, flowDefinitionContext.GetTableConfigurationUpdate(table, tfContext.GetFlowHeader().SourceAlias, tfContext.GetFlowHeader().FlowName()), nil, true, "UPDATE", []FlowNameType{tfContext.GetFlowHeader().FlowNameType()}, "")
+					tfContext.SetLastModifiedTime(time.Now().Format(time.RFC3339))
 				}
 			}
 		}
@@ -437,8 +436,7 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 	if tfContext.GetFlowSyncMode() != "pullerror" && tfContext.GetFlowSyncMode() != "pullcomplete" && tfContext.GetFlowSyncMode() != "pull" {
 		if previousFlowSyncMode == "refreshingDaily" {
 			tfContext.SetFlowSyncMode("refreshingDaily")
-			// TODO: Only update last modified time if changes were made
-			tfContext.SetLastModifiedTime(time.Now().Format(time.RFC3339))
+			tfContext.SetLastRefreshedTime(time.Now().Format(time.RFC3339))
 		} else {
 			tfContext.SetFlowSyncMode("pullcomplete")
 		}

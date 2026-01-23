@@ -288,8 +288,14 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 		}
 	}
 	var previousFlowSyncMode string
-
-	if tfContext.GetFlowStateState() != 0 && (tfContext.FlowSyncModeMatchAny([]string{"refreshing", "pull", "pullonce", "push", "pushonce", "pusheast"}) && prod.IsProd()) { // pusheast is unique for isProd() as it pushes both east/west
+	// TODO: if kernel -- no refreshingDaily
+	lastRefreshed, _ := time.Parse(time.RFC3339, tfContext.GetLastRefreshedTime())
+	if tfContext.GetFlowStateState() != 0 &&
+		(!prod.IsProd() &&
+			(tfContext.FlowSyncModeMatchAny([]string{"refreshingDaily"}) &&
+				time.Since(lastRefreshed) > 24*time.Hour && time.Now().Hour() == 0) ||
+			tfContext.FlowSyncModeMatchAny([]string{"refreshingDaily", "pull", "pullonce", "push", "pushonce", "pusheast"})) { // pusheast is unique for isProd() as it pushes both east/west
+		previousFlowSyncMode = tfContext.GetFlowSyncMode()
 	} else if (tfContext.FlowSyncModeMatch("pull", true) || tfContext.FlowSyncModeMatch("push", true)) && tfContext.GetFlowSyncMode() != "pullerror" && tfContext.GetFlowSyncMode() != "pullcomplete" {
 		previousFlowSyncMode = tfContext.GetFlowSyncMode()
 	} else {
@@ -431,10 +437,12 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 	if tfContext.GetFlowSyncMode() != "pullerror" && tfContext.GetFlowSyncMode() != "pullcomplete" && tfContext.GetFlowSyncMode() != "pull" {
 		if previousFlowSyncMode == "refreshingDaily" {
 			tfContext.SetFlowSyncMode("refreshingDaily")
+			// TODO: Only update last modified time if changes were made
+			tfContext.SetLastModifiedTime(time.Now().Format(time.RFC3339))
+		} else {
+			tfContext.SetFlowSyncMode("pullcomplete")
 		}
-
-		tfContext.SetFlowSyncMode("pullcomplete")
-		tfContext.PushState("flowStateReceiver", tfContext.NewFlowStateUpdate("2", "pullcomplete"))
+		tfContext.PushState("flowStateReceiver", tfContext.NewFlowStateUpdate("2", tfContext.GetFlowSyncMode()))
 		// Now go to vault.
 		// tfContext.Restart = true
 		// tfContext.CancelTheContext() // Anti pattern...

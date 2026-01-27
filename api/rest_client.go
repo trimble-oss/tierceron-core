@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 )
 
 // RESTClient implements the Client interface for REST APIs
@@ -31,21 +30,17 @@ func NewRESTClient(endpoint Endpoint, config *APICallerConfig) (*RESTClient, err
 	}
 
 	// Load CA certificate if provided
-	if config.CACertPath != "" {
-		caCert, err := os.ReadFile(config.CACertPath)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read CA certificate: %w", err)
-		}
+	if len(config.CACertData) > 0 {
 		caCertPool := x509.NewCertPool()
-		if !caCertPool.AppendCertsFromPEM(caCert) {
+		if !caCertPool.AppendCertsFromPEM(config.CACertData) {
 			return nil, fmt.Errorf("failed to parse CA certificate")
 		}
 		tlsConfig.RootCAs = caCertPool
 	}
 
 	// Load client certificate if provided
-	if config.TLSCertPath != "" && config.TLSKeyPath != "" {
-		cert, err := tls.LoadX509KeyPair(config.TLSCertPath, config.TLSKeyPath)
+	if len(config.TLSCertData) > 0 && len(config.TLSKeyData) > 0 {
+		cert, err := tls.X509KeyPair(config.TLSCertData, config.TLSKeyData)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load client certificate: %w", err)
 		}

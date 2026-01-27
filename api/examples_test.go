@@ -142,15 +142,16 @@ func ExampleNewAPICaller_tls() {
 		URL:          "https://secure-api.example.com/v1/data",
 		Type:         api.EndpointTypeREST,
 		Timeout:      25 * time.Second,
+		Config: &api.APICallerConfig{
+			InsecureSkipVerify: false,
+			// In real usage, read cert/key data from files:
+			// TLSCertData: certBytes,
+			// TLSKeyData: keyBytes,
+			// CACertData: caBytes,
+		},
 	}
 
-	config := &api.APICallerConfig{
-		TLSCertPath: "/path/to/client-cert.pem",
-		TLSKeyPath:  "/path/to/client-key.pem",
-		CACertPath:  "/path/to/ca-cert.pem",
-	}
-
-	caller, _ := api.NewAPICaller(endpoint, config)
+	caller, _ := api.NewAPICaller(endpoint, endpoint.Config)
 	// Note: No need to close - callers are cached globally
 
 	response, err := caller.Call(&api.CallOptions{

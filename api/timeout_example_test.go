@@ -18,7 +18,7 @@ func ExampleEndpoint_timeout_default() {
 
 	result, err := endpoint.Call(map[string]any{
 		"method": "GET",
-	}, nil)
+	})
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		return
@@ -38,7 +38,7 @@ func ExampleEndpoint_timeout_custom() {
 
 	result, err := endpoint.Call(map[string]any{
 		"method": "GET",
-	}, nil)
+	})
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		return
@@ -58,7 +58,7 @@ func ExampleEndpoint_timeout_none() {
 
 	result, err := endpoint.Call(map[string]any{
 		"method": "GET",
-	}, nil)
+	})
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		return
@@ -78,7 +78,7 @@ func ExampleEndpoint_timeout_short() {
 
 	result, err := endpoint.Call(map[string]any{
 		"method": "GET",
-	}, nil)
+	})
 	if err != nil {
 		fmt.Printf("Expected timeout error: %v\n", err)
 		return

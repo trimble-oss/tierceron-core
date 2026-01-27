@@ -39,7 +39,7 @@ func Example_grpcEndpoint() {
 		},
 	}
 
-	response, err := endpoint.Call(params, config)
+	response, err := endpoint.Call(params)
 	if err != nil {
 		log.Fatalf("gRPC call failed: %v", err)
 	}
@@ -69,10 +69,9 @@ func Example_grpcStreamingEndpoint() {
 		Type:         api.EndpointTypeGRPC,
 		MethodName:   "/chat.ChatService/SendMessage",
 		Timeout:      30 * time.Second,
-	}
-
-	config := &api.APICallerConfig{
-		InsecureSkipVerify: true,
+		Config: &api.APICallerConfig{
+			InsecureSkipVerify: true,
+		},
 	}
 
 	// Send a message via gRPC
@@ -84,7 +83,7 @@ func Example_grpcStreamingEndpoint() {
 		},
 	}
 
-	response, err := endpoint.Call(params, config)
+	response, err := endpoint.Call(params)
 	if err != nil {
 		log.Fatalf("gRPC call failed: %v", err)
 	}
@@ -108,13 +107,13 @@ func Example_grpcWithTLS() {
 		Type:         api.EndpointTypeGRPC,
 		MethodName:   "/api.SecureService/GetData",
 		Timeout:      20 * time.Second,
-	}
-
-	// Configure with TLS certificates
-	config := &api.APICallerConfig{
-		CACertPath:  "/path/to/ca.crt",
-		TLSCertPath: "/path/to/client.crt",
-		TLSKeyPath:  "/path/to/client.key",
+		Config: &api.APICallerConfig{
+			InsecureSkipVerify: false,
+			// In real usage, read cert/key data from files:
+			// CACertData: caBytes,
+			// TLSCertData: certBytes,
+			// TLSKeyData: keyBytes,
+		},
 	}
 
 	params := map[string]any{
@@ -124,7 +123,7 @@ func Example_grpcWithTLS() {
 		},
 	}
 
-	response, err := endpoint.Call(params, config)
+	response, err := endpoint.Call(params)
 	if err != nil {
 		log.Fatalf("gRPC call failed: %v", err)
 	}
@@ -143,10 +142,9 @@ func Example_grpcWithTimeout() {
 		Type:         api.EndpointTypeGRPC,
 		MethodName:   "/slow.SlowService/ProcessData",
 		Timeout:      2 * time.Second, // 2 second timeout
-	}
-
-	config := &api.APICallerConfig{
-		InsecureSkipVerify: true,
+		Config: &api.APICallerConfig{
+			InsecureSkipVerify: true,
+		},
 	}
 
 	params := map[string]any{
@@ -155,7 +153,7 @@ func Example_grpcWithTimeout() {
 		},
 	}
 
-	response, err := endpoint.Call(params, config)
+	response, err := endpoint.Call(params)
 	if err != nil {
 		// Handle timeout error
 		fmt.Printf("Call timed out: %v\n", err)
@@ -173,10 +171,9 @@ func Example_grpcComplexData() {
 		Type:         api.EndpointTypeGRPC,
 		MethodName:   "/order.OrderService/CreateOrder",
 		Timeout:      15 * time.Second,
-	}
-
-	config := &api.APICallerConfig{
-		InsecureSkipVerify: true,
+		Config: &api.APICallerConfig{
+			InsecureSkipVerify: true,
+		},
 	}
 
 	// Complex nested structure - automatically converted to protobuf
@@ -210,7 +207,7 @@ func Example_grpcComplexData() {
 		},
 	}
 
-	response, err := endpoint.Call(params, config)
+	response, err := endpoint.Call(params)
 	if err != nil {
 		log.Fatalf("Failed to create order: %v", err)
 	}

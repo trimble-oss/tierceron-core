@@ -27,7 +27,7 @@ func ExampleEndpoint_Call_rest() {
 	}
 
 	// Make the call - context is managed internally
-	result, err := endpoint.Call(params, nil)
+	result, err := endpoint.Call(params)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		return
@@ -65,7 +65,7 @@ func ExampleEndpoint_Call_restPost() {
 		},
 	}
 
-	result, err := endpoint.Call(params, nil)
+	result, err := endpoint.Call(params)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		return
@@ -98,7 +98,7 @@ func ExampleEndpoint_Call_soap() {
 		},
 	}
 
-	result, err := endpoint.Call(params, nil)
+	result, err := endpoint.Call(params)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		return
@@ -118,13 +118,13 @@ func ExampleEndpoint_Call_withTLS() {
 		URL:          "https://secure-api.example.com/data",
 		Type:         api.EndpointTypeREST,
 		Timeout:      20 * time.Second,
-	}
-
-	// Configure TLS
-	config := &api.APICallerConfig{
-		TLSCertPath: "/path/to/client-cert.pem",
-		TLSKeyPath:  "/path/to/client-key.pem",
-		CACertPath:  "/path/to/ca-cert.pem",
+		Config: &api.APICallerConfig{
+			InsecureSkipVerify: false,
+			// In real usage, read cert/key data from files:
+			// TLSCertData: certBytes,
+			// TLSKeyData: keyBytes,
+			// CACertData: caBytes,
+		},
 	}
 
 	params := map[string]any{
@@ -134,7 +134,7 @@ func ExampleEndpoint_Call_withTLS() {
 		},
 	}
 
-	result, err := endpoint.Call(params, config)
+	result, err := endpoint.Call(params)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		return
@@ -153,7 +153,7 @@ func ExampleEndpoint_Call_minimal() {
 	}
 
 	// Minimal call - method defaults to GET, context and config use defaults
-	result, err := endpoint.Call(nil, nil)
+	result, err := endpoint.Call(nil)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		return
@@ -175,7 +175,7 @@ func ExampleEndpoint_Call_errorHandling() {
 		"method": "GET",
 	}
 
-	result, err := endpoint.Call(params, nil)
+	result, err := endpoint.Call(params)
 	// Check for errors
 	if err != nil {
 		fmt.Printf("Call failed: %v\n", err)
@@ -209,7 +209,7 @@ func ExampleEndpoint_Call_responseBody() {
 		"method": "GET",
 	}
 
-	result, err := endpoint.Call(params, nil)
+	result, err := endpoint.Call(params)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		return

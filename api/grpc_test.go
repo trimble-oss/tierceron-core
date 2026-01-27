@@ -37,10 +37,9 @@ func TestGRPCEndpointWithLocalServer(t *testing.T) {
 		Type:         EndpointTypeGRPC,
 		MethodName:   "/user.UserService/GetUser",
 		Timeout:      10 * time.Second,
-	}
-
-	config := &APICallerConfig{
-		InsecureSkipVerify: true,
+		Config: &APICallerConfig{
+			InsecureSkipVerify: true,
+		},
 	}
 
 	// Test with user_id parameter
@@ -50,7 +49,7 @@ func TestGRPCEndpointWithLocalServer(t *testing.T) {
 		},
 	}
 
-	result, err := endpoint.Call(params, config)
+	result, err := endpoint.Call(params)
 	if err != nil {
 		t.Fatalf("gRPC call failed: %v", err)
 	}

@@ -54,11 +54,14 @@ type Endpoint struct {
 	// If set to 0 or unset, no retries are attempted
 	// Retries use exponential backoff: 1s, 2s, 4s, 8s, etc.
 	MaxRetries int
+	// Config is the optional API caller configuration (TLS, certificates, etc.)
+	// If set on the Endpoint, it will be used as the default for all calls
+	// Can be overridden by passing a non-nil config to Call()
+	Config *APICallerConfig
 }
 
 // Call makes a generic API call to this endpoint
 // Parameters:
-//   - ctx: Context for the request (optional, will create a default 30s timeout if nil)
 //   - params: Map of parameters that will be mapped based on endpoint type
 //     Common parameters across all types:
 //   - "method" (string): HTTP method for REST, operation name for SOAP/gRPC
@@ -68,14 +71,15 @@ type Endpoint struct {
 //     SOAP-specific parameters:
 //   - "soapAction" (string): SOAP action header
 //   - "headers" (map[string]string): Additional HTTP headers
-//   - config: Optional API caller configuration (TLS, certificates, etc.)
 //
 // Returns a map with the following keys:
 //   - "statusCode" (int): HTTP status code (REST/SOAP only)
 //   - "body" (any): Response body (parsed as JSON if possible, otherwise raw bytes)
 //   - "headers" (map[string][]string): Response headers (REST/SOAP only)
 //   - "error" (string): Error message if the call failed
-func (e *Endpoint) Call(params map[string]any, config *APICallerConfig) (map[string]any, error) {
+//
+// Configuration is taken from e.Config. Set e.Config before calling.
+func (e *Endpoint) Call(params map[string]any) (map[string]any, error) {
 	// Create and manage context internally based on Timeout setting
 	var ctx context.Context
 	var cancel context.CancelFunc
@@ -97,6 +101,8 @@ func (e *Endpoint) Call(params map[string]any, config *APICallerConfig) (map[str
 		params = make(map[string]any)
 	}
 
+	// Use endpoint's config or empty config if not set
+	config := e.Config
 	if config == nil {
 		config = &APICallerConfig{}
 	}
@@ -276,12 +282,15 @@ type Client interface {
 type APICallerConfig struct {
 	// InsecureSkipVerify skips TLS certificate verification (use with caution)
 	InsecureSkipVerify bool
-	// TLSCertPath is the path to TLS certificate file
-	TLSCertPath string
-	// TLSKeyPath is the path to TLS key file
-	TLSKeyPath string
-	// CACertPath is the path to CA certificate file
-	CACertPath string
+	// TLSCertData is the TLS certificate data as bytes
+	// This is the recommended approach for hive plugins using ConfigContext.ConfigCerts
+	TLSCertData []byte
+	// TLSKeyData is the TLS key data as bytes
+	// This is the recommended approach for hive plugins using ConfigContext.ConfigCerts
+	TLSKeyData []byte
+	// CACertData is the CA certificate data as bytes
+	// This is the recommended approach for hive plugins using ConfigContext.ConfigCerts
+	CACertData []byte
 }
 
 // APICaller provides a generic interface for calling different types of APIs
@@ -294,14 +303,19 @@ type APICaller struct {
 
 // generateCacheKey creates a unique key for caching based on endpoint and config
 func generateCacheKey(endpoint Endpoint, config *APICallerConfig) string {
-	key := fmt.Sprintf("%s|%s|%s|%t|%s|%s|%s",
+	// Create hash of cert/key data
+	certHash := sha256.Sum256(config.TLSCertData)
+	keyHash := sha256.Sum256(config.TLSKeyData)
+	caHash := sha256.Sum256(config.CACertData)
+
+	key := fmt.Sprintf("%s|%s|%s|%t|%x|%x|%x",
 		endpoint.FriendlyName,
 		endpoint.URL,
 		endpoint.Type,
 		config.InsecureSkipVerify,
-		config.TLSCertPath,
-		config.TLSKeyPath,
-		config.CACertPath,
+		certHash,
+		keyHash,
+		caHash,
 	)
 	hash := sha256.Sum256([]byte(key))
 	return fmt.Sprintf("%x", hash)

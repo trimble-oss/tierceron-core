@@ -51,9 +51,7 @@ func TestRetryOnTimeout(t *testing.T) {
 		"test": "data",
 	}
 
-	config := &APICallerConfig{}
-
-	result, err := endpoint.Call(params, config)
+	result, err := endpoint.Call(params)
 
 	t.Logf("Result error: %v", err)
 	if result != nil {
@@ -103,9 +101,8 @@ func TestNoRetryOnNonTimeoutError(t *testing.T) {
 	}
 
 	params := map[string]any{}
-	config := &APICallerConfig{}
 
-	result, _ := endpoint.Call(params, config)
+	result, _ := endpoint.Call(params)
 
 	// Should only attempt once (no retries for non-timeout errors)
 	attemptNum := atomic.LoadInt32(&attempts)
@@ -146,10 +143,9 @@ func TestMaxRetriesExceeded(t *testing.T) {
 	}
 
 	params := map[string]any{}
-	config := &APICallerConfig{}
 
 	start := time.Now()
-	_, err := endpoint.Call(params, config)
+	_, err := endpoint.Call(params)
 	duration := time.Since(start)
 
 	if err == nil {
@@ -195,9 +191,8 @@ func TestZeroRetriesDisabled(t *testing.T) {
 	}
 
 	params := map[string]any{}
-	config := &APICallerConfig{}
 
-	_, err := endpoint.Call(params, config)
+	_, err := endpoint.Call(params)
 	if err == nil {
 		t.Fatal("Expected timeout error")
 	}

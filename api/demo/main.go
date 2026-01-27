@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"time"
 
 	"github.com/trimble-oss/tierceron-core/v2/api"
@@ -19,6 +20,41 @@ import (
 )
 
 func main() {
+	// NOTE: For TLS certificate configuration, read cert files from disk in your application
+	// and pass the bytes to APICallerConfig. Example:
+	//
+	//   certData, _ := os.ReadFile("/path/to/client.crt")
+	//   keyData, _ := os.ReadFile("/path/to/client.key")
+	//   caData, _ := os.ReadFile("/path/to/ca.crt")
+	//
+	//   // Set config once on the endpoint (cleaner!)
+	//   endpoint := api.Endpoint{
+	//       FriendlyName: "My API",
+	//       URL: "https://api.example.com",
+	//       Type: api.EndpointTypeREST,
+	//       Config: &api.APICallerConfig{
+	//           TLSCertData: certData,
+	//           TLSKeyData:  keyData,
+	//           CACertData:  caData,
+	//       },
+	//   }
+	//
+	//   // No config parameter needed on calls!
+	//   result, _ := endpoint.Call(params)
+	//
+	// For hive plugins, use ConfigContext.ConfigCerts directly:
+	//
+	//   endpoint := api.Endpoint{
+	//       FriendlyName: "Plugin API",
+	//       URL: "https://api.example.com",
+	//       Type: api.EndpointTypeREST,
+	//       Config: &api.APICallerConfig{
+	//           TLSCertData: (*configContext.ConfigCerts)[tccore.TRCSHHIVEK_CERT],
+	//           TLSKeyData:  (*configContext.ConfigCerts)[tccore.TRCSHHIVEK_KEY],
+	//       },
+	//   }
+	_ = os.ReadFile // Suppress unused import (see comment above for usage)
+
 	// Start a local gRPC server for testing
 	fmt.Println("=== Starting gRPC Test Server ===")
 	grpcServer, err := StartGRPCServer("50051")
@@ -48,7 +84,7 @@ func main() {
 		},
 	}
 
-	result, err := restEndpoint.Call(params, nil)
+	result, err := restEndpoint.Call(params)
 	if err != nil {
 		log.Printf("REST GET Error: %v\n", err)
 	} else {
@@ -77,7 +113,7 @@ func main() {
 		},
 	}
 
-	postResult, err := postEndpoint.Call(postParams, nil)
+	postResult, err := postEndpoint.Call(postParams)
 	if err != nil {
 		log.Printf("REST POST Error: %v\n", err)
 	} else {
@@ -180,7 +216,7 @@ func main() {
 			"body":       soapTest.params,
 		}
 
-		soapResult, err := soapEndpoint.Call(soapParams, nil)
+		soapResult, err := soapEndpoint.Call(soapParams)
 
 		if err == nil && soapResult != nil {
 			if statusCode, ok := soapResult["statusCode"].(int); ok && statusCode == 200 {
@@ -218,10 +254,9 @@ func main() {
 		Type:         api.EndpointTypeGRPC,
 		MethodName:   "/user.UserService/GetUser", // Full method path
 		Timeout:      15 * time.Second,
-	}
-
-	grpcConfig := &api.APICallerConfig{
-		InsecureSkipVerify: true, // Use proper TLS in production
+		Config: &api.APICallerConfig{
+			InsecureSkipVerify: true, // Use proper TLS in production
+		},
 	}
 
 	// Simple parameter map - automatically converted to protobuf
@@ -231,7 +266,7 @@ func main() {
 		},
 	}
 
-	grpcResult, err := grpcEndpoint.Call(grpcParams, grpcConfig)
+	grpcResult, err := grpcEndpoint.Call(grpcParams)
 	if err != nil {
 		log.Printf("gRPC Error: %v\n", err)
 		fmt.Println("Note: gRPC test server may not have started properly")
@@ -267,7 +302,7 @@ func main() {
 	fmt.Println("Making call to endpoint that delays 2s with 1s timeout...")
 	fmt.Println("This may timeout and retry with exponential backoff (1s, 2s delays)")
 	retryStart := time.Now()
-	retryResult, retryErr := retryEndpoint.Call(retryParams, nil)
+	retryResult, retryErr := retryEndpoint.Call(retryParams)
 	retryDuration := time.Since(retryStart)
 
 	if retryErr != nil {

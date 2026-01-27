@@ -18,7 +18,7 @@ func ExampleEndpoint_Call_rest() {
 	}
 
 	// Create request parameters
-	params := map[string]interface{}{
+	params := map[string]any{
 		"method": "GET",
 		"headers": map[string]string{
 			"Accept":     "application/json",
@@ -52,13 +52,13 @@ func ExampleEndpoint_Call_restPost() {
 	}
 
 	// Create request with JSON body
-	params := map[string]interface{}{
+	params := map[string]any{
 		"method": "POST",
 		"headers": map[string]string{
 			"Content-Type":  "application/json",
 			"Authorization": "Bearer token123",
 		},
-		"body": map[string]interface{}{
+		"body": map[string]any{
 			"name":  "John Doe",
 			"email": "john@example.com",
 			"age":   30,
@@ -90,9 +90,9 @@ func ExampleEndpoint_Call_soap() {
 	}
 
 	// Simple parameter map - SOAP envelope generated automatically
-	params := map[string]interface{}{
+	params := map[string]any{
 		"method": "GetWeather",
-		"body": map[string]interface{}{
+		"body": map[string]any{
 			"City":    "New York",
 			"Country": "USA",
 		},
@@ -127,7 +127,7 @@ func ExampleEndpoint_Call_withTLS() {
 		CACertPath:  "/path/to/ca-cert.pem",
 	}
 
-	params := map[string]interface{}{
+	params := map[string]any{
 		"method": "GET",
 		"headers": map[string]string{
 			"Authorization": "Bearer secure-token",
@@ -171,7 +171,7 @@ func ExampleEndpoint_Call_errorHandling() {
 		Timeout:      10 * time.Second,
 	}
 
-	params := map[string]interface{}{
+	params := map[string]any{
 		"method": "GET",
 	}
 
@@ -205,7 +205,7 @@ func ExampleEndpoint_Call_responseBody() {
 		Timeout:      10 * time.Second,
 	}
 
-	params := map[string]interface{}{
+	params := map[string]any{
 		"method": "GET",
 	}
 
@@ -216,7 +216,7 @@ func ExampleEndpoint_Call_responseBody() {
 	}
 
 	// The body is automatically parsed as JSON if possible
-	if body, ok := result["body"].(map[string]interface{}); ok {
+	if body, ok := result["body"].(map[string]any); ok {
 		// Access JSON fields
 		if name, ok := body["name"].(string); ok {
 			fmt.Printf("User name: %s\n", name)

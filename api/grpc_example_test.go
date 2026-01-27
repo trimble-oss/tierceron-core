@@ -33,8 +33,8 @@ func Example_grpcEndpoint() {
 
 	// Call the gRPC endpoint with map parameters
 	// The map will be automatically converted to the appropriate protobuf message
-	params := map[string]interface{}{
-		"body": map[string]interface{}{
+	params := map[string]any{
+		"body": map[string]any{
 			"user_id": "12345",
 		},
 	}
@@ -46,7 +46,7 @@ func Example_grpcEndpoint() {
 
 	// Access the response
 	statusCode := response["statusCode"].(int)
-	body := response["body"].(map[string]interface{})
+	body := response["body"].(map[string]any)
 
 	fmt.Printf("Status: %d\n", statusCode)
 	fmt.Printf("User Name: %s\n", body["name"])
@@ -76,8 +76,8 @@ func Example_grpcStreamingEndpoint() {
 	}
 
 	// Send a message via gRPC
-	params := map[string]interface{}{
-		"body": map[string]interface{}{
+	params := map[string]any{
+		"body": map[string]any{
 			"message": "Hello from gRPC!",
 			"user_id": "user123",
 			"room_id": "room456",
@@ -95,7 +95,7 @@ func Example_grpcStreamingEndpoint() {
 		return
 	}
 
-	body := response["body"].(map[string]interface{})
+	body := response["body"].(map[string]any)
 	fmt.Printf("Message sent successfully: %v\n", body["success"])
 	fmt.Printf("Message ID: %s\n", body["message_id"])
 }
@@ -117,8 +117,8 @@ func Example_grpcWithTLS() {
 		TLSKeyPath:  "/path/to/client.key",
 	}
 
-	params := map[string]interface{}{
-		"body": map[string]interface{}{
+	params := map[string]any{
+		"body": map[string]any{
 			"query": "SELECT * FROM users",
 			"limit": 100,
 		},
@@ -129,8 +129,8 @@ func Example_grpcWithTLS() {
 		log.Fatalf("gRPC call failed: %v", err)
 	}
 
-	body := response["body"].(map[string]interface{})
-	results := body["results"].([]interface{})
+	body := response["body"].(map[string]any)
+	results := body["results"].([]any)
 	fmt.Printf("Retrieved %d results\n", len(results))
 }
 
@@ -149,8 +149,8 @@ func Example_grpcWithTimeout() {
 		InsecureSkipVerify: true,
 	}
 
-	params := map[string]interface{}{
-		"body": map[string]interface{}{
+	params := map[string]any{
+		"body": map[string]any{
 			"data": "large dataset",
 		},
 	}
@@ -180,29 +180,29 @@ func Example_grpcComplexData() {
 	}
 
 	// Complex nested structure - automatically converted to protobuf
-	params := map[string]interface{}{
-		"body": map[string]interface{}{
+	params := map[string]any{
+		"body": map[string]any{
 			"customer_id": "cust_12345",
-			"items": []interface{}{
-				map[string]interface{}{
+			"items": []any{
+				map[string]any{
 					"product_id": "prod_001",
 					"quantity":   2,
 					"price":      29.99,
 				},
-				map[string]interface{}{
+				map[string]any{
 					"product_id": "prod_002",
 					"quantity":   1,
 					"price":      49.99,
 				},
 			},
-			"shipping_address": map[string]interface{}{
+			"shipping_address": map[string]any{
 				"street":  "123 Main St",
 				"city":    "Springfield",
 				"state":   "IL",
 				"zip":     "62701",
 				"country": "USA",
 			},
-			"payment_method": map[string]interface{}{
+			"payment_method": map[string]any{
 				"type":       "credit_card",
 				"last_four":  "1234",
 				"expiration": "12/25",
@@ -215,7 +215,7 @@ func Example_grpcComplexData() {
 		log.Fatalf("Failed to create order: %v", err)
 	}
 
-	body := response["body"].(map[string]interface{})
+	body := response["body"].(map[string]any)
 	fmt.Printf("Order created: %s\n", body["order_id"])
 	fmt.Printf("Total amount: $%.2f\n", body["total_amount"])
 	fmt.Printf("Status: %s\n", body["status"])

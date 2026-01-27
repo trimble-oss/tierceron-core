@@ -88,7 +88,7 @@ func TestContextManagement(t *testing.T) {
 	}
 
 	// Call without any context - should create and manage its own
-	result, err := endpoint.Call(map[string]interface{}{
+	result, err := endpoint.Call(map[string]any{
 		"method": "GET",
 	}, nil)
 
@@ -182,7 +182,7 @@ func TestEndpointCallWithContext(t *testing.T) {
 	}
 
 	// Call creates and manages context internally
-	result, err := endpoint.Call(map[string]interface{}{
+	result, err := endpoint.Call(map[string]any{
 		"method": "GET",
 	}, nil)
 	if err != nil {
@@ -202,7 +202,7 @@ func TestEndpointTimeout(t *testing.T) {
 		Timeout:      5 * time.Second,
 	}
 
-	result1, err := endpoint1.Call(map[string]interface{}{
+	result1, err := endpoint1.Call(map[string]any{
 		"method": "GET",
 	}, nil)
 	if err != nil {
@@ -219,7 +219,7 @@ func TestEndpointTimeout(t *testing.T) {
 		Timeout:      -1,
 	}
 
-	result2, err := endpoint2.Call(map[string]interface{}{
+	result2, err := endpoint2.Call(map[string]any{
 		"method": "GET",
 	}, nil)
 	if err != nil {
@@ -236,7 +236,7 @@ func TestEndpointTimeout(t *testing.T) {
 		Timeout:      0, // Uses default 30s
 	}
 
-	result3, err := endpoint3.Call(map[string]interface{}{
+	result3, err := endpoint3.Call(map[string]any{
 		"method": "GET",
 	}, nil)
 	if err != nil {

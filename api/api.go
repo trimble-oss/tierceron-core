@@ -62,7 +62,7 @@ type Endpoint struct {
 //   - params: Map of parameters that will be mapped based on endpoint type
 //     Common parameters across all types:
 //   - "method" (string): HTTP method for REST, operation name for SOAP/gRPC
-//   - "body" (interface{}): Request body
+//   - "body" (any): Request body
 //     REST-specific parameters:
 //   - "headers" (map[string]string): HTTP headers
 //     SOAP-specific parameters:
@@ -72,10 +72,10 @@ type Endpoint struct {
 //
 // Returns a map with the following keys:
 //   - "statusCode" (int): HTTP status code (REST/SOAP only)
-//   - "body" (interface{}): Response body (parsed as JSON if possible, otherwise raw bytes)
+//   - "body" (any): Response body (parsed as JSON if possible, otherwise raw bytes)
 //   - "headers" (map[string][]string): Response headers (REST/SOAP only)
 //   - "error" (string): Error message if the call failed
-func (e *Endpoint) Call(params map[string]interface{}, config *APICallerConfig) (map[string]interface{}, error) {
+func (e *Endpoint) Call(params map[string]any, config *APICallerConfig) (map[string]any, error) {
 	// Create and manage context internally based on Timeout setting
 	var ctx context.Context
 	var cancel context.CancelFunc
@@ -94,7 +94,7 @@ func (e *Endpoint) Call(params map[string]interface{}, config *APICallerConfig) 
 	}
 
 	if params == nil {
-		params = make(map[string]interface{})
+		params = make(map[string]any)
 	}
 
 	if config == nil {
@@ -186,7 +186,7 @@ func (e *Endpoint) Call(params map[string]interface{}, config *APICallerConfig) 
 	}
 
 	// Build response map
-	result := make(map[string]interface{})
+	result := make(map[string]any)
 
 	if response != nil {
 		result["statusCode"] = response.StatusCode
@@ -195,7 +195,7 @@ func (e *Endpoint) Call(params map[string]interface{}, config *APICallerConfig) 
 		// Handle response body based on endpoint type
 		if response.Body != nil {
 			// Check if body is already parsed (e.g., from gRPC)
-			if bodyMap, ok := response.Body.(map[string]interface{}); ok {
+			if bodyMap, ok := response.Body.(map[string]any); ok {
 				result["body"] = bodyMap
 			} else if bodyBytes, ok := response.Body.([]byte); ok && len(bodyBytes) > 0 {
 				if e.Type == EndpointTypeSOAP {
@@ -209,7 +209,7 @@ func (e *Endpoint) Call(params map[string]interface{}, config *APICallerConfig) 
 					}
 				} else {
 					// For REST, try to parse as JSON
-					var jsonBody interface{}
+					var jsonBody any
 					if jsonErr := json.Unmarshal(bodyBytes, &jsonBody); jsonErr == nil {
 						result["body"] = jsonBody
 					} else {
@@ -247,17 +247,17 @@ type CallOptions struct {
 	// Headers for REST/SOAP requests
 	Headers map[string]string
 	// Body is the request body
-	Body interface{}
+	Body any
 	// Timeout for the request (optional, will use context deadline if set)
-	Timeout interface{}
+	Timeout any
 }
 
 // Response represents an API response
 type Response struct {
 	// StatusCode is the HTTP status code for REST/SOAP
 	StatusCode int
-	// Body is the response body (can be []byte, map[string]interface{}, or other types)
-	Body interface{}
+	// Body is the response body (can be []byte, map[string]any, or other types)
+	Body any
 	// Headers are the response headers for REST/SOAP
 	Headers map[string][]string
 	// Error if the call failed
@@ -462,7 +462,7 @@ func (ac *APICaller) GetCacheKey() string {
 }
 
 // parseSOAPResponse extracts key-value pairs from SOAP response XML
-func parseSOAPResponse(xmlData []byte) (map[string]interface{}, error) {
+func parseSOAPResponse(xmlData []byte) (map[string]any, error) {
 	// Define minimal SOAP envelope structure for parsing
 	type SOAPEnvelope struct {
 		XMLName xml.Name `xml:"Envelope"`
@@ -479,14 +479,14 @@ func parseSOAPResponse(xmlData []byte) (map[string]interface{}, error) {
 
 	// Parse the inner XML of the body
 	if len(envelope.Body.Inner) == 0 {
-		return map[string]interface{}{}, nil
+		return map[string]any{}, nil
 	}
 
 	// Parse the inner body content into a generic map
 	result, err := parseXMLToMap(envelope.Body.Inner)
 	if err != nil {
 		// If parsing fails, return raw string
-		return map[string]interface{}{
+		return map[string]any{
 			"raw": string(envelope.Body.Inner),
 		}, nil
 	}
@@ -494,10 +494,10 @@ func parseSOAPResponse(xmlData []byte) (map[string]interface{}, error) {
 	return result, nil
 }
 
-// parseXMLToMap converts XML to a map[string]interface{}
-func parseXMLToMap(data []byte) (map[string]interface{}, error) {
+// parseXMLToMap converts XML to a map[string]any
+func parseXMLToMap(data []byte) (map[string]any, error) {
 	decoder := xml.NewDecoder(bytes.NewReader(data))
-	result := make(map[string]interface{})
+	result := make(map[string]any)
 	var current string
 	var textBuf bytes.Buffer
 

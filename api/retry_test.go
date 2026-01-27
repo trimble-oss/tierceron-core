@@ -32,7 +32,7 @@ func TestRetryOnTimeout(t *testing.T) {
 		// Third attempt - respond quickly
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]interface{}{
+		json.NewEncoder(w).Encode(map[string]any{
 			"message": "success",
 			"attempt": current,
 		})
@@ -47,7 +47,7 @@ func TestRetryOnTimeout(t *testing.T) {
 		MaxRetries:   3,                      // Allow 3 retries
 	}
 
-	params := map[string]interface{}{
+	params := map[string]any{
 		"test": "data",
 	}
 
@@ -65,7 +65,7 @@ func TestRetryOnTimeout(t *testing.T) {
 	}
 
 	// Check that we got a successful response
-	body, ok := result["body"].(map[string]interface{})
+	body, ok := result["body"].(map[string]any)
 	if !ok {
 		t.Fatal("Expected body to be a map")
 	}
@@ -102,7 +102,7 @@ func TestNoRetryOnNonTimeoutError(t *testing.T) {
 		MaxRetries:   3, // Should not retry on 500 error
 	}
 
-	params := map[string]interface{}{}
+	params := map[string]any{}
 	config := &APICallerConfig{}
 
 	result, _ := endpoint.Call(params, config)
@@ -145,7 +145,7 @@ func TestMaxRetriesExceeded(t *testing.T) {
 		MaxRetries:   2,                      // Only 2 retries
 	}
 
-	params := map[string]interface{}{}
+	params := map[string]any{}
 	config := &APICallerConfig{}
 
 	start := time.Now()
@@ -194,7 +194,7 @@ func TestZeroRetriesDisabled(t *testing.T) {
 		MaxRetries:   0, // No retries
 	}
 
-	params := map[string]interface{}{}
+	params := map[string]any{}
 	config := &APICallerConfig{}
 
 	_, err := endpoint.Call(params, config)

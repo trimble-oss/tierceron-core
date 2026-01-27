@@ -58,7 +58,7 @@ func ExampleNewAPICaller_rest() {
 	// Note: No need to close - callers are cached globally
 
 	// POST request with JSON body
-	requestBody := map[string]interface{}{
+	requestBody := map[string]any{
 		"name":  "John Doe",
 		"email": "john@example.com",
 	}
@@ -118,7 +118,7 @@ func ExampleNewAPICaller_soap() {
 	// Note: No need to close - callers are cached globally
 
 	// Simple parameter map - SOAP envelope generated automatically
-	params := map[string]interface{}{
+	params := map[string]any{
 		"City":    "New York",
 		"Country": "USA",
 	}

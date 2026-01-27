@@ -44,8 +44,8 @@ func TestGRPCEndpointWithLocalServer(t *testing.T) {
 	}
 
 	// Test with user_id parameter
-	params := map[string]interface{}{
-		"body": map[string]interface{}{
+	params := map[string]any{
+		"body": map[string]any{
 			"user_id": "test123",
 		},
 	}
@@ -65,7 +65,7 @@ func TestGRPCEndpointWithLocalServer(t *testing.T) {
 	}
 
 	// Verify body
-	body, ok := result["body"].(map[string]interface{})
+	body, ok := result["body"].(map[string]any)
 	if !ok {
 		t.Fatalf("Body not found or not a map")
 	}
@@ -205,7 +205,7 @@ func registerTestUserService(server *grpc.Server) error {
 	methodDesc := methods.Get(0)
 
 	// Create handler
-	handler := func(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	handler := func(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 		reqMsg := dynamicpb.NewMessage(methodDesc.Input())
 		if err := dec(reqMsg); err != nil {
 			return nil, err
@@ -234,7 +234,7 @@ func registerTestUserService(server *grpc.Server) error {
 	// Register service
 	serviceInfo := &grpc.ServiceDesc{
 		ServiceName: string(serviceDesc.FullName()),
-		HandlerType: (*interface{})(nil),
+		HandlerType: (*any)(nil),
 		Methods: []grpc.MethodDesc{
 			{
 				MethodName: string(methodDesc.Name()),

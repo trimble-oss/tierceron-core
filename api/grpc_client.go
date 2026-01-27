@@ -87,7 +87,7 @@ func NewGRPCClient(endpoint Endpoint, config *APICallerConfig) (*GRPCClient, err
 }
 
 // Call makes a gRPC call using reflection and dynamic messages
-// Accepts map[string]interface{} as body and returns parsed response
+// Accepts map[string]any as body and returns parsed response
 func (gc *GRPCClient) Call(options *CallOptions) (*Response, error) {
 	if options.Method == "" {
 		return nil, fmt.Errorf("method is required for gRPC calls")
@@ -114,7 +114,7 @@ func (gc *GRPCClient) Call(options *CallOptions) (*Response, error) {
 		return nil, fmt.Errorf("failed to get method descriptor: %w", err)
 	}
 
-	// Convert map[string]interface{} to dynamic protobuf message
+	// Convert map[string]any to dynamic protobuf message
 	request := dynamicpb.NewMessage(methodDesc.Input())
 	if err := gc.mapToProtoMessage(options.Body, request); err != nil {
 		return nil, fmt.Errorf("failed to convert request to protobuf: %w", err)
@@ -132,7 +132,7 @@ func (gc *GRPCClient) Call(options *CallOptions) (*Response, error) {
 		}, err
 	}
 
-	// Convert response to map[string]interface{}
+	// Convert response to map[string]any
 	responseMap, err := gc.protoMessageToMap(response)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert response to map: %w", err)
@@ -242,8 +242,8 @@ func parseMethodName(fullMethod string) (string, string, error) {
 	return fullMethod[:lastSlash], fullMethod[lastSlash+1:], nil
 }
 
-// mapToProtoMessage converts map[string]interface{} to a protobuf message
-func (gc *GRPCClient) mapToProtoMessage(data interface{}, msg protoreflect.Message) error {
+// mapToProtoMessage converts map[string]any to a protobuf message
+func (gc *GRPCClient) mapToProtoMessage(data any, msg protoreflect.Message) error {
 	// Convert map to JSON, then use protojson to unmarshal into message
 	jsonData, err := json.Marshal(data)
 	if err != nil {
@@ -261,8 +261,8 @@ func (gc *GRPCClient) mapToProtoMessage(data interface{}, msg protoreflect.Messa
 	return nil
 }
 
-// protoMessageToMap converts a protobuf message to map[string]interface{}
-func (gc *GRPCClient) protoMessageToMap(msg protoreflect.Message) (map[string]interface{}, error) {
+// protoMessageToMap converts a protobuf message to map[string]any
+func (gc *GRPCClient) protoMessageToMap(msg protoreflect.Message) (map[string]any, error) {
 	// Use protojson to marshal to JSON
 	marshaler := protojson.MarshalOptions{
 		EmitUnpopulated: true,
@@ -274,7 +274,7 @@ func (gc *GRPCClient) protoMessageToMap(msg protoreflect.Message) (map[string]in
 	}
 
 	// Unmarshal JSON to map
-	var result map[string]interface{}
+	var result map[string]any
 	if err := json.Unmarshal(jsonData, &result); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal JSON to map: %w", err)
 	}

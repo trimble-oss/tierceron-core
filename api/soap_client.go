@@ -21,12 +21,12 @@ type SOAPEnvelope struct {
 
 // SOAPHeader represents the SOAP header
 type SOAPHeader struct {
-	Content interface{} `xml:",omitempty"`
+	Content any `xml:",omitempty"`
 }
 
 // SOAPBody represents the SOAP body
 type SOAPBody struct {
-	Content interface{} `xml:",omitempty"`
+	Content any `xml:",omitempty"`
 	Fault   *SOAPFault  `xml:"Fault,omitempty"`
 }
 
@@ -106,7 +106,7 @@ func (sc *SOAPClient) Call(options *CallOptions) (*Response, error) {
 	case string:
 		// If body is a string (legacy support), use it directly
 		bodyBytes = []byte(v)
-	case map[string]interface{}:
+	case map[string]any:
 		// Generate SOAP envelope from parameter map
 		bodyBytes, err = sc.generateSOAPEnvelope(options.Method, v)
 		if err != nil {
@@ -213,7 +213,7 @@ func (sc *SOAPClient) Close() error {
 }
 
 // generateSOAPEnvelope creates a SOAP envelope from a parameter map
-func (sc *SOAPClient) generateSOAPEnvelope(operationName string, params map[string]interface{}) ([]byte, error) {
+func (sc *SOAPClient) generateSOAPEnvelope(operationName string, params map[string]any) ([]byte, error) {
 	// Determine namespace from WSDL URL or use default
 	namespace := "http://tempuri.org/"
 	if sc.endpoint.WSDLUrl != "" {
@@ -272,8 +272,8 @@ func extractNamespaceFromURL(wsdlURL string) string {
 }
 
 // CreateSOAPEnvelope is a helper function to create a SOAP envelope with the given body content
-// Deprecated: Use map[string]interface{} parameters instead for automatic envelope generation
-func CreateSOAPEnvelope(bodyContent interface{}, header interface{}) *SOAPEnvelope {
+// Deprecated: Use map[string]any parameters instead for automatic envelope generation
+func CreateSOAPEnvelope(bodyContent any, header any) *SOAPEnvelope {
 	envelope := &SOAPEnvelope{
 		Body: SOAPBody{
 			Content: bodyContent,

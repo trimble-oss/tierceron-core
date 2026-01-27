@@ -16,7 +16,7 @@ func ExampleEndpoint_timeout_default() {
 		// Timeout not set = uses default 30 seconds
 	}
 
-	result, err := endpoint.Call(map[string]interface{}{
+	result, err := endpoint.Call(map[string]any{
 		"method": "GET",
 	}, nil)
 	if err != nil {
@@ -36,7 +36,7 @@ func ExampleEndpoint_timeout_custom() {
 		Timeout:      5 * time.Second, // Custom 5 second timeout
 	}
 
-	result, err := endpoint.Call(map[string]interface{}{
+	result, err := endpoint.Call(map[string]any{
 		"method": "GET",
 	}, nil)
 	if err != nil {
@@ -56,7 +56,7 @@ func ExampleEndpoint_timeout_none() {
 		Timeout:      -1, // -1 = no timeout, wait indefinitely
 	}
 
-	result, err := endpoint.Call(map[string]interface{}{
+	result, err := endpoint.Call(map[string]any{
 		"method": "GET",
 	}, nil)
 	if err != nil {
@@ -76,7 +76,7 @@ func ExampleEndpoint_timeout_short() {
 		Timeout:      1 * time.Second, // Only wait 1 second
 	}
 
-	result, err := endpoint.Call(map[string]interface{}{
+	result, err := endpoint.Call(map[string]any{
 		"method": "GET",
 	}, nil)
 	if err != nil {

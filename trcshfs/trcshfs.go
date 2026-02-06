@@ -30,7 +30,6 @@ func NewTrcshMemFs() *TrcshMemFs {
 }
 
 func (t *TrcshMemFs) WriteToMemFile(coreConfig *coreconfig.CoreConfig, byteData *[]byte, path string) {
-
 	t.MemCacheLock.Lock()
 	if _, err := (*t.BillyFs).Stat(path); errors.Is(err, os.ErrNotExist) {
 		if strings.HasPrefix(path, "./") {
@@ -116,6 +115,10 @@ func (t *TrcshMemFs) Create(filename string) (trcshio.TrcshReadWriteCloser, erro
 
 func (t *TrcshMemFs) Open(filename string) (trcshio.TrcshReadWriteCloser, error) {
 	return (*t.BillyFs).Open(filename)
+}
+
+func (t *TrcshMemFs) OpenFile(filename string, flag int, perm os.FileMode) (trcshio.TrcshReadWriteCloser, error) {
+	return (*t.BillyFs).OpenFile(filename, flag, perm)
 }
 
 func (t *TrcshMemFs) Stat(filename string) (os.FileInfo, error) {

@@ -17,6 +17,7 @@ type MemoryFileSystem interface {
 	Lstat(filename string) (os.FileInfo, error)
 	Create(string) (TrcshReadWriteCloser, error)
 	Open(string) (TrcshReadWriteCloser, error)
+	OpenFile(filename string, flag int, perm os.FileMode) (TrcshReadWriteCloser, error)
 	Stat(string) (os.FileInfo, error)
 	WriteToMemFile(coreConfig *coreconfig.CoreConfig, byteData *[]byte, path string)
 	ReadDir(path string) ([]os.FileInfo, error)

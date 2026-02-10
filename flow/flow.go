@@ -168,7 +168,8 @@ type FlowContext interface {
 	SetFlowLibraryContext(*FlowLibraryContext)
 	GetFlowLibraryContext() *FlowLibraryContext
 	NotifyFlowComponentLoaded() // Notify that a critical flow is loaded
-	WaitFlowLoaded()            // Block until all flows are loaded
+	NotifyFlowComponentNeedsRestart()
+	WaitFlowLoaded() // Block until all flows are loaded
 	CancelTheContext() bool
 	FlowSyncModeMatchAny([]string) bool
 	FlowSyncModeMatch(string, bool) bool
@@ -239,6 +240,8 @@ type FlowMachineContext interface {
 	NotifyFlowComponentLoaded(string) // Notify that a critical flow is loaded
 	GetFlowID(FlowNameType) *uint64
 	SetFlowIDs()
+	LockFlow(FlowNameType)
+	UnlockFlow(FlowNameType)
 	SetFlumeDbType(FlumeDbType)
 	GetFlumeDbType() FlumeDbType
 	GetDatabaseName(FlumeDbType) string

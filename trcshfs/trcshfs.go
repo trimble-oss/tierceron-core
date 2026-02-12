@@ -2,7 +2,6 @@ package trcshfs
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -31,22 +30,24 @@ func NewTrcshMemFs() *TrcshMemFs {
 
 func (t *TrcshMemFs) WriteToMemFile(coreConfig *coreconfig.CoreConfig, byteData *[]byte, path string) {
 	t.MemCacheLock.Lock()
-	if _, err := (*t.BillyFs).Stat(path); errors.Is(err, os.ErrNotExist) {
-		if strings.HasPrefix(path, "./") {
-			path = strings.TrimLeft(path, "./")
-		}
-		memFile, err := t.Create(path)
-		if err != nil {
-			coreConfig.Log.Printf("Error creating memfile %s: %v", path, err)
-		}
-		memFile.Write(*byteData)
-		memFile.Close()
-		t.MemCacheLock.Unlock()
-		coreConfig.Log.Printf("Wrote memfile: %s", path)
-	} else {
-		t.MemCacheLock.Unlock()
-		coreConfig.Log.Printf("Memfile already exists: %s", path)
+	if strings.HasPrefix(path, "./") {
+		path = strings.TrimLeft(path, "./")
 	}
+	// Remove the file if it exists, ignoring errors if it doesn't
+	t.Remove(path)
+	memFile, err := t.Create(path)
+	if err != nil {
+		coreConfig.Log.Printf("Error creating memfile %s: %v", path, err)
+		t.MemCacheLock.Unlock()
+		return
+	}
+	_, writeErr := memFile.Write(*byteData)
+	if writeErr != nil {
+		coreConfig.Log.Printf("Error writing to memfile %s: %v", path, writeErr)
+	}
+	memFile.Close()
+	t.MemCacheLock.Unlock()
+	coreConfig.Log.Printf("Wrote memfile: %s", path)
 }
 
 func (t *TrcshMemFs) ReadDir(path string) ([]os.FileInfo, error) {

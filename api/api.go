@@ -26,6 +26,8 @@ type EndpointType string
 const (
 	// EndpointTypeREST represents a REST API endpoint
 	EndpointTypeREST EndpointType = "rest"
+	// EndpointTypeFormURLEncoded represents a REST API endpoint using application/x-www-form-urlencoded
+	EndpointTypeFormURLEncoded EndpointType = "form-urlencoded"
 	// EndpointTypeGRPC represents a gRPC API endpoint
 	EndpointTypeGRPC EndpointType = "grpc"
 	// EndpointTypeSOAP represents a SOAP API endpoint
@@ -38,7 +40,7 @@ type Endpoint struct {
 	FriendlyName string
 	// URL is the endpoint URL/address
 	URL string
-	// Type is the type of endpoint (REST, gRPC, SOAP)
+	// Type is the type of endpoint (REST, form-urlencoded REST, gRPC, SOAP)
 	Type EndpointType
 	// Timeout is the timeout duration for API calls
 	// If set to 0 or unset, defaults to 30 seconds
@@ -54,6 +56,11 @@ type Endpoint struct {
 	// If set to 0 or unset, no retries are attempted
 	// Retries use exponential backoff: 1s, 2s, 4s, 8s, etc.
 	MaxRetries int
+	// RetryErrorRange is the hundredths place of the error code range for which retries should be attempted
+	// If set to 0 or unset, retries are attempted for all error codes based on MaxRetries
+	// For example, if set to 5, retries will only be attempted for 5xx error codes (e.g., 500-599)
+	// This allows for more granular control over which errors should trigger retries
+	RetryErrorRange int
 	// Config is the optional API caller configuration (TLS, certificates, etc.)
 	// If set on the Endpoint, it will be used as the default for all calls
 	// Can be overridden by passing a non-nil config to Call()
@@ -68,6 +75,8 @@ type Endpoint struct {
 //   - "body" (any): Request body
 //     REST-specific parameters:
 //   - "headers" (map[string]string): HTTP headers
+//     Form-urlencoded REST parameters:
+//   - "body" should be url.Values, map[string]string, map[string][]string, or map[string]any
 //     SOAP-specific parameters:
 //   - "soapAction" (string): SOAP action header
 //   - "headers" (map[string]string): Additional HTTP headers
@@ -154,6 +163,10 @@ func (e *Endpoint) Call(params map[string]any) (map[string]any, error) {
 	if maxRetries < 0 {
 		maxRetries = 0
 	}
+	retryErrRange := e.RetryErrorRange
+	if retryErrRange < 0 {
+		retryErrRange = 0
+	}
 
 	for attempt := 0; attempt <= maxRetries; attempt++ {
 		// Recreate context for each retry attempt
@@ -184,6 +197,13 @@ func (e *Endpoint) Call(params map[string]any) (map[string]any, error) {
 				(response != nil && response.Error != nil && errors.Is(response.Error, context.DeadlineExceeded)) {
 				// Timeout occurred, will retry
 				continue
+			}
+			// Check for HTTP error codes if response is available and RetryErrorRange is set
+			if retryErrRange > 0 && response != nil {
+				if response.StatusCode >= retryErrRange*100 && response.StatusCode < (retryErrRange+1)*100 {
+					// Error code is within the specified retry range, will retry
+					continue
+				}
 			}
 		}
 
@@ -386,6 +406,8 @@ func newAPICallerInternal(endpoint Endpoint, config *APICallerConfig, cacheKey s
 	var err error
 	switch endpoint.Type {
 	case EndpointTypeREST:
+		caller.client, err = NewRESTClient(endpoint, config)
+	case EndpointTypeFormURLEncoded:
 		caller.client, err = NewRESTClient(endpoint, config)
 	case EndpointTypeGRPC:
 		caller.client, err = NewGRPCClient(endpoint, config)

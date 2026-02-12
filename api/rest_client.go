@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"strings"
 )
 
 // RESTClient implements the Client interface for REST APIs
@@ -66,20 +68,28 @@ func (rc *RESTClient) Call(options *CallOptions) (*Response, error) {
 	// Prepare request body
 	var bodyReader io.Reader
 	if options.Body != nil {
-		switch v := options.Body.(type) {
-		case []byte:
-			bodyReader = bytes.NewReader(v)
-		case string:
-			bodyReader = bytes.NewReader([]byte(v))
-		case io.Reader:
-			bodyReader = v
-		default:
-			// Try to marshal as JSON
-			jsonBody, err := json.Marshal(options.Body)
+		if rc.endpoint.Type == EndpointTypeFormURLEncoded {
+			formReader, err := encodeFormBody(options.Body)
 			if err != nil {
-				return nil, fmt.Errorf("failed to marshal request body: %w", err)
+				return nil, err
 			}
-			bodyReader = bytes.NewReader(jsonBody)
+			bodyReader = formReader
+		} else {
+			switch v := options.Body.(type) {
+			case []byte:
+				bodyReader = bytes.NewReader(v)
+			case string:
+				bodyReader = bytes.NewReader([]byte(v))
+			case io.Reader:
+				bodyReader = v
+			default:
+				// Try to marshal as JSON
+				jsonBody, err := json.Marshal(options.Body)
+				if err != nil {
+					return nil, fmt.Errorf("failed to marshal request body: %w", err)
+				}
+				bodyReader = bytes.NewReader(jsonBody)
+			}
 		}
 	}
 
@@ -98,7 +108,11 @@ func (rc *RESTClient) Call(options *CallOptions) (*Response, error) {
 
 	// Set default Content-Type if not specified and body is present
 	if bodyReader != nil && req.Header.Get("Content-Type") == "" {
-		req.Header.Set("Content-Type", "application/json")
+		if rc.endpoint.Type == EndpointTypeFormURLEncoded {
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		} else {
+			req.Header.Set("Content-Type", "application/json")
+		}
 	}
 
 	// Make the request
@@ -132,6 +146,39 @@ func (rc *RESTClient) Call(options *CallOptions) (*Response, error) {
 	}
 
 	return response, response.Error
+}
+
+func encodeFormBody(body any) (io.Reader, error) {
+	switch v := body.(type) {
+	case url.Values:
+		return strings.NewReader(v.Encode()), nil
+	case map[string]string:
+		values := url.Values{}
+		for key, value := range v {
+			values.Set(key, value)
+		}
+		return strings.NewReader(values.Encode()), nil
+	case map[string][]string:
+		values := url.Values{}
+		for key, value := range v {
+			values[key] = value
+		}
+		return strings.NewReader(values.Encode()), nil
+	case map[string]any:
+		values := url.Values{}
+		for key, value := range v {
+			values.Set(key, fmt.Sprint(value))
+		}
+		return strings.NewReader(values.Encode()), nil
+	case []byte:
+		return bytes.NewReader(v), nil
+	case string:
+		return strings.NewReader(v), nil
+	case io.Reader:
+		return v, nil
+	default:
+		return nil, fmt.Errorf("unsupported form body type: %T", body)
+	}
 }
 
 // Close closes the REST client

@@ -199,8 +199,6 @@ type FlowContext interface {
 	// tfContext.NewFlowStateUpdate(strconv.Itoa(int(previousState.State)), tfContext.GetPreviousFlowSyncMode())
 	SetCustomSeedTrcdbFunc(func(FlowMachineContext, FlowContext) error)
 	GetLogger() *log.Logger
-	GetLastModifiedTime() string
-	SetLastModifiedTime(string)
 	GetLastRefreshedTime() string
 	SetLastRefreshedTime(string)
 	Log(string, error)

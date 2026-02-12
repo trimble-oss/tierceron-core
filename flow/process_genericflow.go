@@ -289,7 +289,7 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 		}
 	}
 	var previousFlowSyncMode string
-	lastRefreshed, _ := time.Parse(time.RFC3339, tfContext.GetLastRefreshedTime())
+	lastRefreshed, _ := time.Parse("2006-01-02 15:04:05 -0700 MST", tfContext.GetLastRefreshedTime())
 	if !kernelopts.BuildOptions.IsKernel() &&
 		tfContext.FlowSyncModeMatchAny([]string{"refreshingDaily"}) &&
 		time.Since(lastRefreshed) > 24*time.Hour && time.Now().Hour() == 0 {
@@ -436,7 +436,7 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 	if tfContext.GetFlowSyncMode() != "pullerror" && tfContext.GetFlowSyncMode() != "pullcomplete" && tfContext.GetFlowSyncMode() != "pull" {
 		if previousFlowSyncMode == "refreshingDaily" {
 			tfContext.SetFlowSyncMode("refreshingDaily")
-			tfContext.SetLastRefreshedTime(time.Now().Format(time.RFC3339))
+			tfContext.SetLastRefreshedTime(time.Now().Format("2006-01-02 15:04:05 -0700 MST"))
 		} else {
 			tfContext.SetFlowSyncMode("pullcomplete")
 		}

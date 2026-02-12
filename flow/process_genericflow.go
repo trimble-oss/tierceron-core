@@ -8,6 +8,7 @@ import (
 	"time"
 
 	prod "github.com/trimble-oss/tierceron-core/v2/prod"
+	"github.com/trimble-oss/tierceron/buildopts/kernelopts"
 )
 
 // CompareRows returns true when equal, false otherwise
@@ -287,8 +288,13 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 			go tfmContext.SyncTableCycle(tfContext, flowDefinitionContext.GetTableIndexColumnNames(), flowDefinitionContext.GetTableIndexColumnNames(), flowDefinitionContext.GetIndexedPathExt, tableConfigurationFlowPushRemote, shouldSyncRemote)
 		}
 	}
-
-	if tfContext.GetFlowStateState() != 0 && (tfContext.FlowSyncModeMatchAny([]string{"pull", "pullonce", "push", "pushonce", "pusheast"}) && prod.IsProd()) { // pusheast is unique for isProd() as it pushes both east/west
+	var previousFlowSyncMode string
+	lastRefreshed, _ := time.Parse("2006-01-02 15:04:05 -0700 MST", tfContext.GetLastRefreshedTime())
+	if !kernelopts.BuildOptions.IsKernel() &&
+		tfContext.FlowSyncModeMatchAny([]string{"refreshingDaily"}) &&
+		time.Since(lastRefreshed) > 24*time.Hour && time.Now().Hour() == 0 {
+		previousFlowSyncMode = tfContext.GetFlowSyncMode()
+	} else if tfContext.GetFlowStateState() != 0 && (tfContext.FlowSyncModeMatchAny([]string{"pull", "pullonce", "push", "pushonce", "pusheast"}) && prod.IsProd()) { // pusheast is unique for isProd() as it pushes both east/west
 	} else if (tfContext.FlowSyncModeMatch("pull", true) || tfContext.FlowSyncModeMatch("push", true)) && tfContext.GetFlowSyncMode() != "pullerror" && tfContext.GetFlowSyncMode() != "pullcomplete" {
 	} else {
 		tfmContext.Log(fmt.Sprintf("%s is setup%s.", tfContext.GetFlowHeader().FlowName(), SyncCheck(tfContext.GetFlowSyncMode())), nil)
@@ -409,7 +415,7 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 		}
 		tableConfigurations = filterTableConfigurations
 	}
-
+	updatedFlowTables := false
 	for _, table := range tableConfigurations {
 		rows, _ := tfmContext.CallDBQuery(tfContext, flowDefinitionContext.GetTableConfigurationById(tfContext.GetFlowHeader().SourceAlias, tfContext.GetFlowHeader().FlowName(), table[tableIndexKey].(string)), nil, false, "SELECT", nil, "")
 		if len(rows) == 0 {
@@ -421,14 +427,22 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 					continue
 				} else { // If not equal -> update
 					tfmContext.CallDBQuery(tfContext, flowDefinitionContext.GetTableConfigurationUpdate(table, tfContext.GetFlowHeader().SourceAlias, tfContext.GetFlowHeader().FlowName()), nil, true, "UPDATE", []FlowNameType{tfContext.GetFlowHeader().FlowNameType()}, "")
+					updatedFlowTables = true
 				}
 			}
 		}
 	}
 
 	if tfContext.GetFlowSyncMode() != "pullerror" && tfContext.GetFlowSyncMode() != "pullcomplete" && tfContext.GetFlowSyncMode() != "pull" {
-		tfContext.SetFlowSyncMode("pullcomplete")
-		tfContext.PushState("flowStateReceiver", tfContext.NewFlowStateUpdate("2", "pullcomplete"))
+		if previousFlowSyncMode == "refreshingDaily" {
+			tfContext.SetFlowSyncMode("refreshingDaily")
+			tfContext.SetLastRefreshedTime(time.Now().Format("2006-01-02 15:04:05 -0700 MST"))
+		} else {
+			tfContext.SetFlowSyncMode("pullcomplete")
+		}
+		if updatedFlowTables || tfContext.GetFlowSyncMode() != "refreshingDaily" {
+			tfContext.PushState("flowStateReceiver", tfContext.NewFlowStateUpdate("2", tfContext.GetFlowSyncMode()))
+		}
 		// Now go to vault.
 		// tfContext.Restart = true
 		// tfContext.CancelTheContext() // Anti pattern...

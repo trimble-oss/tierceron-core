@@ -17,7 +17,6 @@ type FlowMachineInitContext struct {
 	GetFlowMachineTemplates     func() map[string]any
 	GetIdColumnType             func(string) any
 	TableGrantNotify            func(FlowMachineContext, string)
-	FlowRefreshedNotify         func(FlowMachineContext, string)
 	BuildTableGrant             func(string) (string, error)
 	FlowMachineInterfaceConfigs map[string]any
 	GetDatabaseName             func(FlumeDbType) string

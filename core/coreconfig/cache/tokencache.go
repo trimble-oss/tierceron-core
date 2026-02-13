@@ -137,3 +137,9 @@ func (tc *TokenCache) GetTokenStr(tokenKeyPtr *string) *string {
 func (tc *TokenCache) Clear() {
 	tc.cache.Clear()
 }
+
+func (tc *TokenCache) RemoveToken(tokenKey string) {
+	if len(tokenKey) > 0 && tc.cache != nil {
+		tc.cache.Remove(tokenKey)
+	}
+}

@@ -130,6 +130,25 @@ func tableConfigurationFlowPullRemote(tfmContext FlowMachineContext, tfContext F
 		return tableConfigMapArr, nil
 	}
 
+	// During refreshingDaily, filter regions to respect data isolation
+	// Only apply filtering when running in single-region deployments (hive pods: only east or only west)
+	// Multi-region deployments (standalone plugins with both east and west) should pull from all configured regions
+	if tfContext.FlowSyncModeMatchAny([]string{"refreshingDaily"}) && len(regionSyncList) == 1 {
+		validRegions := []string{}
+		for _, region := range regionSyncList {
+			// Check if this region has a configured remote data source
+			// This respects the region configuration of the current instance
+			if _, ok := tfContext.GetRemoteDataSourceAttribute("region-" + region).(map[string]any); ok {
+				validRegions = append(validRegions, region)
+			}
+		}
+		if len(validRegions) == 0 {
+			tfmContext.Log("No configured regions found for daily refresh", nil)
+			return tableConfigMapArr, nil
+		}
+		regionSyncList = validRegions
+	}
+
 	var sqlConn *sql.DB
 	sort.Strings(regionSyncList) // Puts west at the end
 	for _, region := range regionSyncList {

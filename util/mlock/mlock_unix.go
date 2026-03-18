@@ -1,5 +1,4 @@
 //go:build dragonfly || freebsd || linux || openbsd || solaris
-// +build dragonfly freebsd linux openbsd solaris
 
 package mlock
 

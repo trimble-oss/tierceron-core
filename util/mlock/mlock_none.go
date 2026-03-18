@@ -1,5 +1,4 @@
 //go:build android || nacl || netbsd || plan9 || windows
-// +build android nacl netbsd plan9 windows
 
 package mlock
 

@@ -1,6 +1,6 @@
 module github.com/trimble-oss/tierceron-core/v2
 
-go 1.26.0
+go 1.26.1
 
 require (
 	github.com/glycerine/bchan v0.0.0-20170210221909-ad30cd867e1c

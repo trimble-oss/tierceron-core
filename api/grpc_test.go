@@ -123,14 +123,14 @@ func startTestGRPCServer() (*grpc.Server, string, error) {
 func registerTestUserService(server *grpc.Server) error {
 	// Create service descriptor
 	fileDesc := &descriptorpb.FileDescriptorProto{
-		Name:    proto.String("user.proto"),
-		Package: proto.String("user"),
+		Name:    new("user.proto"),
+		Package: new("user"),
 		MessageType: []*descriptorpb.DescriptorProto{
 			{
-				Name: proto.String("GetUserRequest"),
+				Name: new("GetUserRequest"),
 				Field: []*descriptorpb.FieldDescriptorProto{
 					{
-						Name:   proto.String("user_id"),
+						Name:   new("user_id"),
 						Number: proto.Int32(1),
 						Type:   descriptorpb.FieldDescriptorProto_TYPE_STRING.Enum(),
 						Label:  descriptorpb.FieldDescriptorProto_LABEL_OPTIONAL.Enum(),
@@ -138,28 +138,28 @@ func registerTestUserService(server *grpc.Server) error {
 				},
 			},
 			{
-				Name: proto.String("GetUserResponse"),
+				Name: new("GetUserResponse"),
 				Field: []*descriptorpb.FieldDescriptorProto{
 					{
-						Name:   proto.String("user_id"),
+						Name:   new("user_id"),
 						Number: proto.Int32(1),
 						Type:   descriptorpb.FieldDescriptorProto_TYPE_STRING.Enum(),
 						Label:  descriptorpb.FieldDescriptorProto_LABEL_OPTIONAL.Enum(),
 					},
 					{
-						Name:   proto.String("name"),
+						Name:   new("name"),
 						Number: proto.Int32(2),
 						Type:   descriptorpb.FieldDescriptorProto_TYPE_STRING.Enum(),
 						Label:  descriptorpb.FieldDescriptorProto_LABEL_OPTIONAL.Enum(),
 					},
 					{
-						Name:   proto.String("email"),
+						Name:   new("email"),
 						Number: proto.Int32(3),
 						Type:   descriptorpb.FieldDescriptorProto_TYPE_STRING.Enum(),
 						Label:  descriptorpb.FieldDescriptorProto_LABEL_OPTIONAL.Enum(),
 					},
 					{
-						Name:   proto.String("message"),
+						Name:   new("message"),
 						Number: proto.Int32(4),
 						Type:   descriptorpb.FieldDescriptorProto_TYPE_STRING.Enum(),
 						Label:  descriptorpb.FieldDescriptorProto_LABEL_OPTIONAL.Enum(),
@@ -169,12 +169,12 @@ func registerTestUserService(server *grpc.Server) error {
 		},
 		Service: []*descriptorpb.ServiceDescriptorProto{
 			{
-				Name: proto.String("UserService"),
+				Name: new("UserService"),
 				Method: []*descriptorpb.MethodDescriptorProto{
 					{
-						Name:       proto.String("GetUser"),
-						InputType:  proto.String(".user.GetUserRequest"),
-						OutputType: proto.String(".user.GetUserResponse"),
+						Name:       new("GetUser"),
+						InputType:  new(".user.GetUserRequest"),
+						OutputType: new(".user.GetUserResponse"),
 					},
 				},
 			},

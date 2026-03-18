@@ -50,7 +50,7 @@ func (fmic FlowMachineInitContext) GetFilteredBusinessFlows(kernelID int) []Flow
 			if kernelID == -1 || instances == "*" {
 				filteredFlows = append(filteredFlows, flow)
 			} else {
-				for _, inst := range strings.Split(instances, ",") {
+				for inst := range strings.SplitSeq(instances, ",") {
 					inst = strings.TrimSpace(inst)
 					if instInt, err := strconv.Atoi(inst); err == nil && instInt == kernelID {
 						filteredFlows = append(filteredFlows, flow)
@@ -88,7 +88,7 @@ func (fmic FlowMachineInitContext) GetFilteredTableFlowDefinitions(kernelID int)
 			if kernelID == -1 || instances == "*" {
 				filteredFlows = append(filteredFlows, flow)
 			} else {
-				for _, inst := range strings.Split(instances, ",") {
+				for inst := range strings.SplitSeq(instances, ",") {
 					inst = strings.TrimSpace(inst)
 					if instInt, err := strconv.Atoi(inst); err == nil && instInt == kernelID {
 						filteredFlows = append(filteredFlows, flow)

@@ -81,9 +81,7 @@ var (
 
 type (
 	PermissionUpdate any
-	FlowStateUpdate  interface {
-		// NewFlowState() CurrentFlowState
-	}
+	FlowStateUpdate  any
 )
 
 type (

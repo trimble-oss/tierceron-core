@@ -1,6 +1,6 @@
 module github.com/trimble-oss/tierceron-core/v2
 
-go 1.26.1
+go 1.26.2
 
 require (
 	github.com/glycerine/bchan v0.0.0-20170210221909-ad30cd867e1c
@@ -13,6 +13,8 @@ require (
 )
 
 require (
+	github.com/stretchr/testify v1.11.1 // indirect
+	go.opentelemetry.io/otel v1.43.0 // indirect
 	golang.org/x/net v0.49.0 // indirect
 	golang.org/x/text v0.34.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251202230838-ff82c1b0f217 // indirect

@@ -1,5 +1,4 @@
 //go:build !hardwired
-// +build !hardwired
 
 package plugincoreopts
 

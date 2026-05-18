@@ -76,7 +76,7 @@ func main() {
 		Timeout:      10 * time.Second,
 	}
 
-	params := map[string]interface{}{
+	params := map[string]any{
 		"method": "GET",
 		"headers": map[string]string{
 			"Accept":     "application/json",
@@ -101,12 +101,12 @@ func main() {
 		Timeout:      15 * time.Second,
 	}
 
-	postParams := map[string]interface{}{
+	postParams := map[string]any{
 		"method": "POST",
 		"headers": map[string]string{
 			"Content-Type": "application/json",
 		},
-		"body": map[string]interface{}{
+		"body": map[string]any{
 			"name":    "John Doe",
 			"email":   "john@example.com",
 			"message": "Hello from API caller!",
@@ -118,7 +118,7 @@ func main() {
 		log.Printf("REST POST Error: %v\n", err)
 	} else {
 		fmt.Printf("Status: %d\n", postResult["statusCode"])
-		if body, ok := postResult["body"].(map[string]interface{}); ok {
+		if body, ok := postResult["body"].(map[string]any); ok {
 			if json, ok := body["json"]; ok {
 				fmt.Printf("Echoed JSON: %v\n", json)
 			}
@@ -170,7 +170,7 @@ func main() {
 		wsdl   string
 		method string
 		action string
-		params map[string]interface{}
+		params map[string]any
 	}{
 		{
 			name:   "W3Schools Temperature Converter",
@@ -178,7 +178,7 @@ func main() {
 			wsdl:   "https://www.w3schools.com/xml/tempconvert.asmx?WSDL",
 			method: "CelsiusToFahrenheit",
 			action: "https://www.w3schools.com/xml/CelsiusToFahrenheit",
-			params: map[string]interface{}{"Celsius": "100"},
+			params: map[string]any{"Celsius": "100"},
 		},
 		{
 			name:   "DNEOnline Calculator",
@@ -186,7 +186,7 @@ func main() {
 			wsdl:   "http://www.dneonline.com/calculator.asmx?WSDL",
 			method: "Add",
 			action: "http://tempuri.org/Add",
-			params: map[string]interface{}{"intA": "25", "intB": "17"},
+			params: map[string]any{"intA": "25", "intB": "17"},
 		},
 		{
 			name:   "Thomas Bayer Blz Service",
@@ -194,7 +194,7 @@ func main() {
 			wsdl:   "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl",
 			method: "getBank",
 			action: "",
-			params: map[string]interface{}{"blz": "66050000"},
+			params: map[string]any{"blz": "66050000"},
 		},
 	}
 
@@ -210,7 +210,7 @@ func main() {
 			WSDLUrl:      soapTest.wsdl,
 		}
 
-		soapParams := map[string]interface{}{
+		soapParams := map[string]any{
 			"method":     soapTest.method,
 			"soapAction": soapTest.action,
 			"body":       soapTest.params,
@@ -223,7 +223,7 @@ func main() {
 				fmt.Printf("✓ SOAP call succeeded!\n")
 				fmt.Printf("Status: %d\n", statusCode)
 
-				if body, ok := soapResult["body"].(map[string]interface{}); ok {
+				if body, ok := soapResult["body"].(map[string]any); ok {
 					fmt.Printf("Parsed SOAP Response (key-value pairs):\n")
 					for key, value := range body {
 						fmt.Printf("  %s: %v\n", key, value)
@@ -260,8 +260,8 @@ func main() {
 	}
 
 	// Simple parameter map - automatically converted to protobuf
-	grpcParams := map[string]interface{}{
-		"body": map[string]interface{}{
+	grpcParams := map[string]any{
+		"body": map[string]any{
 			"user_id": "12345",
 		},
 	}
@@ -273,7 +273,7 @@ func main() {
 	} else {
 		fmt.Printf("Status: %d\n", grpcResult["statusCode"])
 		// Body is automatically parsed from protobuf to map!
-		if body, ok := grpcResult["body"].(map[string]interface{}); ok {
+		if body, ok := grpcResult["body"].(map[string]any); ok {
 			fmt.Printf("Parsed gRPC Response:\n")
 			for key, value := range body {
 				fmt.Printf("  %s: %v\n", key, value)
@@ -292,7 +292,7 @@ func main() {
 		MaxRetries:   2,               // Retry up to 2 times on timeout
 	}
 
-	retryParams := map[string]interface{}{
+	retryParams := map[string]any{
 		"method": "GET",
 		"headers": map[string]string{
 			"Accept": "application/json",
@@ -363,14 +363,14 @@ func registerTestService(server *grpc.Server) error {
 	// Create a simple service descriptor programmatically
 	// This creates a UserService with a GetUser method
 	fileDesc := &descriptorpb.FileDescriptorProto{
-		Name:    proto.String("user.proto"),
-		Package: proto.String("user"),
+		Name:    new("user.proto"),
+		Package: new("user"),
 		MessageType: []*descriptorpb.DescriptorProto{
 			{
-				Name: proto.String("GetUserRequest"),
+				Name: new("GetUserRequest"),
 				Field: []*descriptorpb.FieldDescriptorProto{
 					{
-						Name:   proto.String("user_id"),
+						Name:   new("user_id"),
 						Number: proto.Int32(1),
 						Type:   descriptorpb.FieldDescriptorProto_TYPE_STRING.Enum(),
 						Label:  descriptorpb.FieldDescriptorProto_LABEL_OPTIONAL.Enum(),
@@ -378,28 +378,28 @@ func registerTestService(server *grpc.Server) error {
 				},
 			},
 			{
-				Name: proto.String("GetUserResponse"),
+				Name: new("GetUserResponse"),
 				Field: []*descriptorpb.FieldDescriptorProto{
 					{
-						Name:   proto.String("user_id"),
+						Name:   new("user_id"),
 						Number: proto.Int32(1),
 						Type:   descriptorpb.FieldDescriptorProto_TYPE_STRING.Enum(),
 						Label:  descriptorpb.FieldDescriptorProto_LABEL_OPTIONAL.Enum(),
 					},
 					{
-						Name:   proto.String("name"),
+						Name:   new("name"),
 						Number: proto.Int32(2),
 						Type:   descriptorpb.FieldDescriptorProto_TYPE_STRING.Enum(),
 						Label:  descriptorpb.FieldDescriptorProto_LABEL_OPTIONAL.Enum(),
 					},
 					{
-						Name:   proto.String("email"),
+						Name:   new("email"),
 						Number: proto.Int32(3),
 						Type:   descriptorpb.FieldDescriptorProto_TYPE_STRING.Enum(),
 						Label:  descriptorpb.FieldDescriptorProto_LABEL_OPTIONAL.Enum(),
 					},
 					{
-						Name:   proto.String("message"),
+						Name:   new("message"),
 						Number: proto.Int32(4),
 						Type:   descriptorpb.FieldDescriptorProto_TYPE_STRING.Enum(),
 						Label:  descriptorpb.FieldDescriptorProto_LABEL_OPTIONAL.Enum(),
@@ -409,12 +409,12 @@ func registerTestService(server *grpc.Server) error {
 		},
 		Service: []*descriptorpb.ServiceDescriptorProto{
 			{
-				Name: proto.String("UserService"),
+				Name: new("UserService"),
 				Method: []*descriptorpb.MethodDescriptorProto{
 					{
-						Name:       proto.String("GetUser"),
-						InputType:  proto.String(".user.GetUserRequest"),
-						OutputType: proto.String(".user.GetUserResponse"),
+						Name:       new("GetUser"),
+						InputType:  new(".user.GetUserRequest"),
+						OutputType: new(".user.GetUserResponse"),
 					},
 				},
 			},
@@ -449,7 +449,7 @@ func registerTestService(server *grpc.Server) error {
 	methodDesc := methods.Get(0)
 
 	// Create a handler for the method
-	handler := func(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	handler := func(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 		// Create a dynamic request message
 		reqMsg := dynamicpb.NewMessage(methodDesc.Input())
 		if err := dec(reqMsg); err != nil {
@@ -479,7 +479,7 @@ func registerTestService(server *grpc.Server) error {
 	// Register the service and handler
 	serviceInfo := &grpc.ServiceDesc{
 		ServiceName: string(serviceDesc.FullName()),
-		HandlerType: (*interface{})(nil),
+		HandlerType: (*any)(nil),
 		Methods: []grpc.MethodDesc{
 			{
 				MethodName: string(methodDesc.Name()),

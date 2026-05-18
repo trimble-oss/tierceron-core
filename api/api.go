@@ -159,14 +159,8 @@ func (e *Endpoint) Call(params map[string]any) (map[string]any, error) {
 	// Make the call with retry logic for timeouts
 	var response *Response
 	var callErr error
-	maxRetries := e.MaxRetries
-	if maxRetries < 0 {
-		maxRetries = 0
-	}
-	retryErrRange := e.RetryErrorRange
-	if retryErrRange < 0 {
-		retryErrRange = 0
-	}
+	maxRetries := max(e.MaxRetries, 0)
+	retryErrRange := max(e.RetryErrorRange, 0)
 
 	for attempt := 0; attempt <= maxRetries; attempt++ {
 		// Recreate context for each retry attempt

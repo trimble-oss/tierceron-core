@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
 	"net/url"
 	"strings"
@@ -160,9 +161,7 @@ func encodeFormBody(body any) (io.Reader, error) {
 		return strings.NewReader(values.Encode()), nil
 	case map[string][]string:
 		values := url.Values{}
-		for key, value := range v {
-			values[key] = value
-		}
+		maps.Copy(values, v)
 		return strings.NewReader(values.Encode()), nil
 	case map[string]any:
 		values := url.Values{}

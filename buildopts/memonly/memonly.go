@@ -1,5 +1,4 @@
 //go:build memonly
-// +build memonly
 
 package memonly
 

@@ -274,6 +274,12 @@ func ProcessTableConfigurations(tfmContext FlowMachineContext, tfContext FlowCon
 }
 
 func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineContext, flowDefinitionContext *FlowLibraryContext, regionList []string) int {
+	// Acquire the pullOnceMu so that synchronous ExecuteFilteredPullOnce calls block
+	// all async push/pull activity for this flow until they complete.
+	mu := tfContext.GetPullOnceMu()
+	mu.Lock()
+	defer mu.Unlock()
+
 	if tfContext.GetFlowStateState() == 3 {
 		tfContext.SetRestart(false)
 		tfmContext.SetPermissionUpdate(tfContext)
@@ -330,12 +336,6 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 	if !tfContext.IsPreloaded() {
 		return 0
 	}
-
-	// Acquire the pullOnceMu so that synchronous ExecuteFilteredPullOnce calls block
-	// all async push/pull activity for this flow until they complete.
-	mu := tfContext.GetPullOnceMu()
-	mu.Lock()
-	defer mu.Unlock()
 
 	// Logic for push/pull once
 	if tfContext.FlowSyncModeMatch("push", true) {
@@ -484,6 +484,14 @@ func ExecuteFilteredPullOnce(tfmContext FlowMachineContext, tfContext FlowContex
 		return
 	}
 
+	// Acquire the mutex before mutating state so the async path cannot race with us.
+	mu := tfContext.GetPullOnceMu()
+	mu.Lock()
+	defer mu.Unlock()
+
+	tfContext.SetFlowSyncFilter(syncFilter)
+	tfContext.SetFlowSyncMode("pullonce")
+
 	var tableIndexKey string
 	if flowDefinitionContext.GetTableIndexColumnNames != nil {
 		if keys := flowDefinitionContext.GetTableIndexColumnNames(); len(keys) == 1 {
@@ -494,14 +502,6 @@ func ExecuteFilteredPullOnce(tfmContext FlowMachineContext, tfContext FlowContex
 		tfmContext.Log("ExecuteFilteredPullOnce: missing GetTableIndexColumnNames", nil)
 		return
 	}
-
-	// Acquire the mutex before mutating state so the async path cannot race with us.
-	mu := tfContext.GetPullOnceMu()
-	mu.Lock()
-	defer mu.Unlock()
-
-	tfContext.SetFlowSyncFilter(syncFilter)
-	tfContext.SetFlowSyncMode("pullonce")
 
 	tableConfigurations, err := tableConfigurationFlowPullRemote(tfmContext, tfContext)
 	if err != nil {
@@ -533,6 +533,7 @@ func ExecuteFilteredPullOnce(tfmContext FlowMachineContext, tfContext FlowContex
 		}
 	}
 
+	tfContext.SetFlowSyncFilter("")
 	tfContext.SetFlowSyncMode("pullcomplete")
 	tfContext.PushState("flowStateReceiver", tfContext.NewFlowStateUpdate("2", "pullcomplete"))
 }

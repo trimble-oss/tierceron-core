@@ -184,6 +184,7 @@ type FlowContext interface {
 	HasFlowSyncFilters() bool
 	GetFlowStateSyncFilterRaw() string
 	GetFlowSyncFilters() []string
+	SetFlowSyncFilter(string)
 	GetFlowHeader() *FlowHeaderType
 	NewFlowStateUpdate(string, string) FlowStateUpdate
 	GetCurrentFlowStateUpdateByDataSource(string) any

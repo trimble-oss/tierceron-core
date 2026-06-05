@@ -274,6 +274,12 @@ func ProcessTableConfigurations(tfmContext FlowMachineContext, tfContext FlowCon
 }
 
 func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineContext, flowDefinitionContext *FlowLibraryContext, regionList []string) int {
+	// Acquire the pullOnceMu so that synchronous ExecuteFilteredPullOnce calls block
+	// all async push/pull activity for this flow until they complete.
+	mu := tfContext.GetPullOnceMu()
+	mu.Lock()
+	defer mu.Unlock()
+
 	if tfContext.GetFlowStateState() == 3 {
 		tfContext.SetRestart(false)
 		tfmContext.SetPermissionUpdate(tfContext)
@@ -467,4 +473,67 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 		// tfContext.CancelTheContext() // Anti pattern...
 	}
 	return 0
+}
+
+// ExecuteFilteredPullOnce synchronously performs a pullonce for a flow filtered by
+// the given syncFilter value.  It acquires the flow's pullOnceMu before setting state,
+// ensuring that no async push/pull activity races with the synchronous operation.
+func ExecuteFilteredPullOnce(tfmContext FlowMachineContext, tfContext FlowContext, syncFilter string) {
+	flowDefinitionContext := tfContext.GetFlowLibraryContext()
+	if flowDefinitionContext == nil {
+		return
+	}
+
+	// Acquire the mutex before mutating state so the async path cannot race with us.
+	mu := tfContext.GetPullOnceMu()
+	mu.Lock()
+	defer mu.Unlock()
+
+	tfContext.SetFlowSyncFilter(syncFilter)
+	tfContext.SetFlowSyncMode("pullonce")
+
+	var tableIndexKey string
+	if flowDefinitionContext.GetTableIndexColumnNames != nil {
+		if keys := flowDefinitionContext.GetTableIndexColumnNames(); len(keys) == 1 {
+			tableIndexKey = keys[0]
+		}
+	}
+	if len(tableIndexKey) == 0 {
+		tfmContext.Log("ExecuteFilteredPullOnce: missing GetTableIndexColumnNames", nil)
+		return
+	}
+
+	tableConfigurations, err := tableConfigurationFlowPullRemote(tfmContext, tfContext)
+	if err != nil {
+		tfmContext.Log("ExecuteFilteredPullOnce: error pulling configurations", err)
+		return
+	}
+
+	var filtered []map[string]any
+	for _, filter := range tfContext.GetFlowSyncFilters() {
+		for _, table := range tableConfigurations {
+			if filter == table[tableIndexKey].(string) {
+				filtered = append(filtered, table)
+			}
+		}
+	}
+	tableConfigurations = filtered
+
+	for _, table := range tableConfigurations {
+		rows, _ := tfmContext.CallDBQuery(tfContext, flowDefinitionContext.GetTableConfigurationById(tfContext.GetFlowHeader().SourceAlias, tfContext.GetFlowHeader().FlowName(), table[tableIndexKey].(string)), nil, false, "SELECT", nil, "")
+		if len(rows) == 0 {
+			tfmContext.CallDBQuery(tfContext, flowDefinitionContext.GetTableConfigurationInsert(table, tfContext.GetFlowHeader().SourceAlias, tfContext.GetFlowHeader().FlowName()), nil, true, "INSERT", []FlowNameType{tfContext.GetFlowHeader().FlowNameType()}, "")
+		} else {
+			for _, value := range rows {
+				if CompareRows(table, flowDefinitionContext.GetTableMapFromArray(value)) {
+					continue
+				}
+				tfmContext.CallDBQuery(tfContext, flowDefinitionContext.GetTableConfigurationUpdate(table, tfContext.GetFlowHeader().SourceAlias, tfContext.GetFlowHeader().FlowName()), nil, true, "UPDATE", []FlowNameType{tfContext.GetFlowHeader().FlowNameType()}, "")
+			}
+		}
+	}
+
+	tfContext.SetFlowSyncFilter("")
+	tfContext.SetFlowSyncMode("pullcomplete")
+	tfContext.PushState("flowStateReceiver", tfContext.NewFlowStateUpdate("2", "pullcomplete"))
 }

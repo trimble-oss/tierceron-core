@@ -185,6 +185,7 @@ type FlowContext interface {
 	GetFlowStateSyncFilterRaw() string
 	GetFlowSyncFilters() []string
 	SetFlowSyncFilter(string)
+	GetPullOnceMu() *sync.Mutex
 	GetFlowHeader() *FlowHeaderType
 	NewFlowStateUpdate(string, string) FlowStateUpdate
 	GetCurrentFlowStateUpdateByDataSource(string) any

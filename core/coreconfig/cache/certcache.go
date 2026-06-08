@@ -57,3 +57,7 @@ func (cc *CertCache) Items() map[string]*CertValue {
 	}
 	return cc.cache.Items()
 }
+
+func (cc *CertCache) IsEmpty() bool {
+	return cc.cache.IsEmpty() || len(cc.cache.Items()) == 0
+}

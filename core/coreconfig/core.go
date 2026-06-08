@@ -18,6 +18,7 @@ type CoreConfig struct {
 	CurrentTokenNamePtr  *string // Pointer to one of the tokens in the cache...  changes depending on context.
 	CurrentRoleEntityPtr *string // Pointer to one of the roles in the cache...  changes depending on context.
 	TokenCache           *cache.TokenCache
+	CertCache            *cache.CertCache
 	EnvBasis             string // dev,QA, etc....
 	Env                  string // dev-1, dev-2, etc...
 	Regions              []string

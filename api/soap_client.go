@@ -53,6 +53,7 @@ func NewSOAPClient(endpoint Endpoint, config *APICallerConfig) (*SOAPClient, err
 
 	// Create HTTP client with TLS configuration
 	tlsConfig := &tls.Config{
+		MinVersion:         tls.VersionTLS12,
 		InsecureSkipVerify: config.InsecureSkipVerify,
 	}
 

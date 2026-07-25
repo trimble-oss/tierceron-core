@@ -43,6 +43,7 @@ func NewGRPCClient(endpoint Endpoint, config *APICallerConfig) (*GRPCClient, err
 	} else {
 		// Create TLS configuration
 		tlsConfig := &tls.Config{
+			MinVersion:         tls.VersionTLS12,
 			InsecureSkipVerify: false,
 		}
 

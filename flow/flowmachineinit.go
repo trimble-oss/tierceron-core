@@ -27,8 +27,9 @@ type FlowMachineInitContext struct {
 	GetTestFlowsByState         func(string) []FlowDefinition               // Optional
 	FlowController              func(FlowMachineContext, FlowContext) error // Required
 	TestFlowController          func(FlowMachineContext, FlowContext) error // Required
-	DfsChan                     *chan *core.TTDINode                        // Channel for sending data flow statistics
-	FlowChatMsgSenderChan       *chan *core.ChatMsg                         // Channel for sending chat messages from flow to plugin
+	ShouldLoadRow               func(FlowMachineContext, FlowContext, map[string]string) (bool, error)
+	DfsChan                     *chan *core.TTDINode // Channel for sending data flow statistics
+	FlowChatMsgSenderChan       *chan *core.ChatMsg  // Channel for sending chat messages from flow to plugin
 }
 
 var HARBINGER_INTERFACE_CONFIG = "./config.yml"

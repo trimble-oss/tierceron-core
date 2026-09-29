@@ -230,8 +230,8 @@ func InitWithPlugin(pluginName string,
 				}
 				if cr, ok := rchan[CHAT_CHANNEL].(*chan *ChatMsg); ok && cr != nil {
 					configContext.Log.Println("Chat Receiver initialized.")
-					configContext.ChatReceiverChan = cr
-					go chatHandler(*cr)
+					pluginChatReceiver := configurePluginChatReceiver(configContext, cr)
+					go chatHandler(*pluginChatReceiver)
 				} else {
 					configContext.Log.Println("Unsupported chat message receiving channel passed")
 					return nil, errors.New("unsupported chat message receiving channel passed")
@@ -294,8 +294,10 @@ func InitPost(pluginName string,
 	if _, ok := (*properties)["log"].(*log.Logger); ok {
 		logger = (*properties)["log"].(*log.Logger)
 	}
+	logger = NewPluginLogger(pluginName, logger)
 
 	configContext := &ConfigContext{
+		PluginName:  pluginName,
 		Config:      properties,
 		ConfigCerts: &map[string][]byte{},
 		Log:         logger,
@@ -314,7 +316,7 @@ func InitPost(pluginName string,
 
 				if cr, ok := rchan[CHAT_CHANNEL].(*chan *ChatMsg); ok {
 					configContext.Log.Println("Chat Receiver initialized.")
-					configContext.ChatReceiverChan = cr
+					configurePluginChatReceiver(configContext, cr)
 					//					go chatHandler(*cr)
 				} else {
 					configContext.Log.Println("Unsupported chat message receiving channel passed")

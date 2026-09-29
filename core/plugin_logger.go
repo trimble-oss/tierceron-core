@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"strings"
@@ -48,4 +49,45 @@ func NewPluginLogger(pluginName string, logger *log.Logger) *log.Logger {
 		prefix += "[" + pluginName + "] "
 	}
 	return log.New(&pluginLogWriter{pluginName: pluginName, writer: logger.Writer()}, prefix, logger.Flags())
+}
+
+func configurePluginChatReceiver(configContext *ConfigContext, kernelChatReceiver *chan *ChatMsg) *chan *ChatMsg {
+	pluginChatReceiver := make(chan *ChatMsg)
+	configContext.ChatReceiverChan = &pluginChatReceiver
+	go func() {
+		for event := range *kernelChatReceiver {
+			if !handlePluginLoggingDirective(configContext, event) {
+				pluginChatReceiver <- event
+			}
+		}
+	}()
+	return &pluginChatReceiver
+}
+
+func handlePluginLoggingDirective(configContext *ConfigContext, event *ChatMsg) bool {
+	if configContext == nil || configContext.PluginName == "" || event == nil || event.Name == nil || *event.Name != "trcshtalk" || event.ChatId == nil {
+		return false
+	}
+
+	fields := strings.Fields(strings.ToLower(*event.ChatId))
+	if len(fields) != 2 || fields[0] != "log" || (fields[1] != "start" && fields[1] != "stop") {
+		return false
+	}
+
+	active := fields[1] == "start"
+	SetPluginLoggingActive(configContext.PluginName, active)
+	if configContext.ChatSenderChan == nil || *configContext.ChatSenderChan == nil {
+		return true
+	}
+
+	pluginName := configContext.PluginName
+	response := fmt.Sprintf("logging %s for %s", fields[1], pluginName)
+	query := []string{pluginName}
+	*configContext.ChatSenderChan <- &ChatMsg{
+		RoutingId: event.RoutingId,
+		Name:      &pluginName,
+		Query:     &query,
+		Response:  &response,
+	}
+	return true
 }

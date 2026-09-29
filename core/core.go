@@ -42,6 +42,7 @@ type KernelCmd struct {
 
 type ConfigContext struct {
 	PluginName        string
+	KernelID          string
 	Config            *map[string]any
 	Env               string // Env being processed
 	Region            string // Region processed

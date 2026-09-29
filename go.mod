@@ -1,6 +1,6 @@
 module github.com/trimble-oss/tierceron-core/v2
 
-go 1.27.0
+go 1.27.1
 
 require (
 	github.com/glycerine/bchan v0.0.0-20170210221909-ad30cd867e1c
@@ -9,7 +9,7 @@ require (
 	github.com/trimble-oss/tierceron-nute-core v1.0.8
 	golang.org/x/sys v0.47.0
 	google.golang.org/grpc v1.83.2
-	google.golang.org/protobuf v1.36.11
+	google.golang.org/protobuf v1.36.12
 )
 
 require (

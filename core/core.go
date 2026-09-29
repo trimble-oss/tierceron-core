@@ -101,6 +101,7 @@ type ChatMsg struct {
 	ChatId        *string        // Only relevant for 3rd party integration.
 	Name          *string        // Source plugin name
 	KernelId      *string        // Internal use by kernel
+	TargetPod     *string        // Optional target kernel ID.
 	IsBroadcast   bool           // Is message intended for broadcast.
 	Query         *[]string      // List of plugins to send message to.
 	Response      *string        // Pointer to response data (json serialized or other)

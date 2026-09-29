@@ -41,6 +41,7 @@ type KernelCmd struct {
 }
 
 type ConfigContext struct {
+	PluginName        string
 	Config            *map[string]any
 	Env               string // Env being processed
 	Region            string // Region processed
@@ -116,6 +117,19 @@ func Init(properties *map[string]any,
 	receiverHandler func(chan KernelCmd),
 	chatHandler func(chan *ChatMsg),
 ) (*ConfigContext, error) {
+	return InitWithPlugin("", properties, commonCertPath, commonKeyPath, commonPath, dfsKeyHeader, startHandler, receiverHandler, chatHandler)
+}
+
+func InitWithPlugin(pluginName string,
+	properties *map[string]any,
+	commonCertPath string,
+	commonKeyPath string,
+	commonPath string,
+	dfsKeyHeader string,
+	startHandler func(string),
+	receiverHandler func(chan KernelCmd),
+	chatHandler func(chan *ChatMsg),
+) (*ConfigContext, error) {
 	if properties == nil ||
 		startHandler == nil ||
 		receiverHandler == nil ||
@@ -127,6 +141,7 @@ func Init(properties *map[string]any,
 	if _, ok := (*properties)["log"].(*log.Logger); ok {
 		logger = (*properties)["log"].(*log.Logger)
 	}
+	logger = NewPluginLogger(pluginName, logger)
 
 	var env string
 	var argosId string
@@ -185,6 +200,7 @@ func Init(properties *map[string]any,
 	}
 
 	configContext := &ConfigContext{
+		PluginName:  pluginName,
 		Env:         env,
 		Region:      region,
 		Config:      config_properties,

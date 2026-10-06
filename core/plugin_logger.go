@@ -65,7 +65,7 @@ func configurePluginChatReceiver(configContext *ConfigContext, kernelChatReceive
 }
 
 func handlePluginLoggingDirective(configContext *ConfigContext, event *ChatMsg) bool {
-	if configContext == nil || configContext.PluginName == "" || event == nil || event.Name == nil || *event.Name != "trcshtalk" || event.ChatId == nil {
+	if configContext == nil || configContext.PluginName == "" || event == nil || event.Response != nil || event.Name == nil || *event.Name != configContext.PluginName || event.Query == nil || len(*event.Query) == 0 || (*event.Query)[0] != "trcshtalk" || event.ChatId == nil {
 		return false
 	}
 
@@ -81,8 +81,12 @@ func handlePluginLoggingDirective(configContext *ConfigContext, event *ChatMsg) 
 	}
 
 	pluginName := configContext.PluginName
-	response := fmt.Sprintf("logging %s for %s", fields[1], pluginName)
-	query := []string{pluginName}
+	state := "disabled"
+	if active {
+		state = "enabled"
+	}
+	response := fmt.Sprintf("logging %s for %s", state, pluginName)
+	query := []string{(*event.Query)[0]}
 	*configContext.ChatSenderChan <- &ChatMsg{
 		RoutingId: event.RoutingId,
 		Name:      &pluginName,

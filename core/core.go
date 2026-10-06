@@ -211,6 +211,9 @@ func InitWithPlugin(pluginName string,
 		ConfigCerts: configCerts,
 		Log:         logger,
 	}
+	if kernelID, ok := (*properties)["kernelID"].(string); ok {
+		configContext.KernelID = kernelID
+	}
 
 	if channels, ok := (*properties)[PLUGIN_EVENT_CHANNELS_MAP_KEY]; ok {
 		if chans, ok := channels.(map[string]any); ok {
@@ -303,6 +306,9 @@ func InitPost(pluginName string,
 		Config:      properties,
 		ConfigCerts: &map[string][]byte{},
 		Log:         logger,
+	}
+	if kernelID, ok := (*properties)["kernelID"].(string); ok {
+		configContext.KernelID = kernelID
 	}
 
 	if channels, ok := (*properties)[PLUGIN_EVENT_CHANNELS_MAP_KEY]; ok {

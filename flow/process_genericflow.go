@@ -326,7 +326,7 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 		return 4
 	}
 
-	kernelID := tfmContext.GetKernelId()
+	kernelID := tfmContext.GetId()
 	if kernelID > 0 {
 		tfmContext.Log(fmt.Sprintf("Skipping push/pull for hive: %v", kernelID), nil)
 		return 4

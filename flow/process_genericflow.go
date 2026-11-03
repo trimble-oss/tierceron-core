@@ -44,21 +44,21 @@ func tableConfigurationIndicesFlowPullRemote(tfmContext FlowMachineContext, tfCo
 		var ok bool
 		sqlConnI, sqlConnErr := tfmContext.GetCacheRefreshSqlConn(tfContext, region)
 		if sqlConnErr != nil {
-			tfmContext.Log("Unable to obtain data source connection for tableConfiguration for "+region+" during pull", nil)
+			tfContext.Log("Unable to obtain data source connection for tableConfiguration for "+region+" during pull", nil)
 		}
 		sqlConn, ok = sqlConnI.(*sql.DB)
 		if !ok {
-			tfmContext.Log("Unable to obtain data source connection for tableConfiguration for "+region+" during pull", nil)
+			tfContext.Log("Unable to obtain data source connection for tableConfiguration for "+region+" during pull", nil)
 		}
 
-		tfmContext.Log("Attempting to pull in table configurations from "+region, nil)
+		tfContext.Log("Attempting to pull in table configurations from "+region, nil)
 		if flowDefinitionContext.GetTableIndices != nil {
 			tableIndices, err := flowDefinitionContext.GetTableIndices(sqlConn) // Staging is a special case that needs to be keyed off existing SEC eids to avoid prod data being pulled in.
 			if err != nil {
 				return nil, err
 			}
 			if len(tableIndices) > 0 {
-				tfmContext.Log("Found "+fmt.Sprintf("%d", len(tableIndices))+" tableindex rows from "+region, nil)
+				tfContext.Log("Found "+fmt.Sprintf("%d", len(tableIndices))+" tableindex rows from "+region, nil)
 			}
 			for _, tableConfiguration := range tableIndices {
 				tableIndexMapArr = append(tableIndexMapArr, flowDefinitionContext.GetSparseTableMap(tableConfiguration))
@@ -66,7 +66,7 @@ func tableConfigurationIndicesFlowPullRemote(tfmContext FlowMachineContext, tfCo
 
 		}
 
-		tfmContext.Log("Finished pulling in table configurations indices from "+region, nil)
+		tfContext.Log("Finished pulling in table configurations indices from "+region, nil)
 
 	}
 	return tableIndexMapArr, nil
@@ -88,14 +88,14 @@ func tableConfigurationFlowPullRemoteByIndices(tfmContext FlowMachineContext, tf
 		var ok bool
 		sqlConnI, sqlConnErr := tfmContext.GetCacheRefreshSqlConn(tfContext, region)
 		if sqlConnErr != nil {
-			tfmContext.Log("Unable to obtain data source connection for tableConfiguration for "+region+" during pull", nil)
+			tfContext.Log("Unable to obtain data source connection for tableConfiguration for "+region+" during pull", nil)
 		}
 		sqlConn, ok = sqlConnI.(*sql.DB)
 		if !ok {
-			tfmContext.Log("Unable to obtain data source connection for tableConfiguration for "+region+" during pull", nil)
+			tfContext.Log("Unable to obtain data source connection for tableConfiguration for "+region+" during pull", nil)
 		}
 
-		tfmContext.Log("Attempting to pull in table configurations from "+region, nil)
+		tfContext.Log("Attempting to pull in table configurations from "+region, nil)
 		for _, tableID := range tableIndices {
 			if flowDefinitionContext.GetTableConfigurationById != nil {
 				tableQueryMap := flowDefinitionContext.GetTableConfigurationById(
@@ -108,14 +108,14 @@ func tableConfigurationFlowPullRemoteByIndices(tfmContext FlowMachineContext, tf
 					return nil, err
 				}
 				if len(tableConfigurations) > 0 {
-					tfmContext.Log("Found "+fmt.Sprintf("%d", len(tableConfigurations))+" tableconfiguration rows from "+region, nil)
+					tfContext.Log("Found "+fmt.Sprintf("%d", len(tableConfigurations))+" tableconfiguration rows from "+region, nil)
 					for _, tableConfig := range tableConfigurations {
 						tableConfigMapArr = append(tableConfigMapArr, flowDefinitionContext.GetTableMap(tableConfig))
 					}
 				}
 			}
 		}
-		tfmContext.Log("Finished pulling in table configurations from "+region, nil)
+		tfContext.Log("Finished pulling in table configurations from "+region, nil)
 	}
 	return tableConfigMapArr, nil
 }
@@ -143,7 +143,7 @@ func tableConfigurationFlowPullRemote(tfmContext FlowMachineContext, tfContext F
 			}
 		}
 		if len(validRegions) == 0 {
-			tfmContext.Log("No configured regions found for daily refresh", nil)
+			tfContext.Log("No configured regions found for daily refresh", nil)
 			return tableConfigMapArr, nil
 		}
 		regionSyncList = validRegions
@@ -155,23 +155,23 @@ func tableConfigurationFlowPullRemote(tfmContext FlowMachineContext, tfContext F
 		var ok bool
 		sqlConnI, sqlConnErr := tfmContext.GetCacheRefreshSqlConn(tfContext, region)
 		if sqlConnI == nil || sqlConnErr != nil {
-			tfmContext.Log("Unable to obtain data source connection for tableConfiguration for "+region+" during pull", nil)
+			tfContext.Log("Unable to obtain data source connection for tableConfiguration for "+region+" during pull", nil)
 			continue
 		}
 		sqlConn, ok = sqlConnI.(*sql.DB)
 		if !ok {
-			tfmContext.Log("Unable to obtain data source connection for tableConfiguration for "+region+" during pull", nil)
+			tfContext.Log("Unable to obtain data source connection for tableConfiguration for "+region+" during pull", nil)
 			continue
 		}
 
-		tfmContext.Log("Attempting to pull in table configurations from "+region, nil)
+		tfContext.Log("Attempting to pull in table configurations from "+region, nil)
 		if flowDefinitionContext.GetTableConfigurationById != nil {
 			tableConfigurations, err := flowDefinitionContext.GetTableConfigurations(sqlConn, tfmContext.GetEnv() == "staging") // Staging is a special case that needs to be keyed off existing SEC eids to avoid prod data being pulled in.
 			if err != nil {
 				return nil, err
 			}
 			if len(tableConfigurations) > 0 {
-				tfmContext.Log("Found "+fmt.Sprintf("%d", len(tableConfigurations))+" tableconfiguration rows from "+region, nil)
+				tfContext.Log("Found "+fmt.Sprintf("%d", len(tableConfigurations))+" tableconfiguration rows from "+region, nil)
 			}
 			for _, tableConfiguration := range tableConfigurations {
 				tableConfigMapArr = append(tableConfigMapArr, flowDefinitionContext.GetTableMap(tableConfiguration))
@@ -180,7 +180,7 @@ func tableConfigurationFlowPullRemote(tfmContext FlowMachineContext, tfContext F
 			flowDefinitionContext.GetRefreshTableConfiguration(tfmContext, tfContext, sqlConn) // Staging is a special case that needs to be keyed off existing SEC eids to avoid prod data being pulled in.
 		}
 
-		tfmContext.Log("Finished pulling in table configurations from "+region, nil)
+		tfContext.Log("Finished pulling in table configurations from "+region, nil)
 
 	}
 	return tableConfigMapArr, nil
@@ -288,14 +288,14 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 			tableDefinition, _ := tfmContext.LoadBaseTemplate(tfContext)
 			tfContext.SetFlowData(tableDefinition)
 		}
-		tfmContext.Log(fmt.Sprintf("%s flow is being stopped...", tfContext.GetFlowHeader().FlowName()), nil)
+		tfContext.Log(fmt.Sprintf("%s flow is being stopped...", tfContext.GetFlowHeader().FlowName()), nil)
 		tfContext.PushState("flowStateReceiver", tfContext.NewFlowStateUpdate("0", tfContext.GetFlowSyncMode()))
 		return 1
 	} else if tfContext.GetFlowStateState() == 0 {
-		tfmContext.Log(fmt.Sprintf("%s flow is currently offline...", tfContext.GetFlowHeader().FlowName()), nil)
+		tfContext.Log(fmt.Sprintf("%s flow is currently offline...", tfContext.GetFlowHeader().FlowName()), nil)
 		return 2
 	} else if tfContext.GetFlowStateState() == 1 {
-		tfmContext.Log(fmt.Sprintf("%s flow is restarting...", tfContext.GetFlowHeader().FlowName()), nil)
+		tfContext.Log(fmt.Sprintf("%s flow is restarting...", tfContext.GetFlowHeader().FlowName()), nil)
 		if !tfContext.IsInit() { // init vault sync cycle
 			tfContext.SetInit(true)
 			tfmContext.CallDBQuery(tfContext, map[string]any{"TrcQuery": "truncate " + tfContext.GetFlowHeader().SourceAlias + "." + tfContext.GetFlowHeader().FlowName()}, nil, false, "DELETE", nil, "")
@@ -322,17 +322,17 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 	} else if tfContext.GetFlowStateState() != 0 && (tfContext.FlowSyncModeMatchAny([]string{"pull", "pullonce", "push", "pushonce", "pusheast"}) && prod.IsProd()) { // pusheast is unique for isProd() as it pushes both east/west
 	} else if (tfContext.FlowSyncModeMatch("pull", true) || tfContext.FlowSyncModeMatch("push", true)) && tfContext.GetFlowSyncMode() != "pullerror" && tfContext.GetFlowSyncMode() != "pullcomplete" {
 	} else {
-		tfmContext.Log(fmt.Sprintf("%s is setup%s.", tfContext.GetFlowHeader().FlowName(), SyncCheck(tfContext.GetFlowSyncMode())), nil)
+		tfContext.Log(fmt.Sprintf("%s is setup%s.", tfContext.GetFlowHeader().FlowName(), SyncCheck(tfContext.GetFlowSyncMode())), nil)
 		return 4
 	}
 
 	kernelID := tfmContext.GetId()
 	if kernelID > 0 {
-		tfmContext.Log(fmt.Sprintf("Skipping push/pull for hive: %v", kernelID), nil)
+		tfContext.Log(fmt.Sprintf("Skipping push/pull for hive: %v", kernelID), nil)
 		return 4
 	}
 
-	tfmContext.Log(fmt.Sprintf("%s is running and checking for changes %s.", tfContext.GetFlowHeader().FlowName(), SyncCheck(tfContext.GetFlowSyncMode())), nil)
+	tfContext.Log(fmt.Sprintf("%s is running and checking for changes %s.", tfContext.GetFlowHeader().FlowName(), SyncCheck(tfContext.GetFlowSyncMode())), nil)
 	if !tfContext.IsPreloaded() {
 		return 0
 	}
@@ -359,14 +359,14 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 
 		rows, _ := tfmContext.CallDBQuery(tfContext, map[string]any{"TrcQuery": "SELECT * FROM " + tfContext.GetFlowHeader().SourceAlias + "." + tfContext.GetFlowHeader().FlowName()}, nil, false, "SELECT", nil, "")
 		if len(rows) == 0 {
-			tfmContext.Log(fmt.Sprintf("Nothing in %s table to push out yet...", tfContext.GetFlowHeader().FlowName()), nil) // Table is not currently loaded.
+			tfContext.Log(fmt.Sprintf("Nothing in %s table to push out yet...", tfContext.GetFlowHeader().FlowName()), nil) // Table is not currently loaded.
 			return 5
 		}
 		for _, value := range rows {
 			tableMap := flowDefinitionContext.GetTableMapFromArray(value)
 			pushError := tableConfigurationFlowPushRemote(tfContext, tableMap)
 			if pushError != nil {
-				tfmContext.Log(fmt.Sprintf("Error pushing out %s", tfContext.GetFlowHeader().FlowName()), pushError)
+				tfContext.Log(fmt.Sprintf("Error pushing out %s", tfContext.GetFlowHeader().FlowName()), pushError)
 				continue
 			}
 		}
@@ -383,7 +383,7 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 	}
 
 	if len(tableIndexKey) == 0 {
-		tfmContext.Log("Error pulling table configurations.  Missing required GetTableIndexColumnNames", nil)
+		tfContext.Log("Error pulling table configurations.  Missing required GetTableIndexColumnNames", nil)
 		tfContext.PushState("flowStateReceiver", tfContext.NewFlowStateUpdate("2", "pullerror"))
 		return 7
 	}
@@ -423,7 +423,7 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 
 	// 3. Retrieve table configurations from mysql.
 	if tableConfigurationsError != nil {
-		tfmContext.Log("Error grabbing table configurations", tableConfigurationsError)
+		tfContext.Log("Error grabbing table configurations", tableConfigurationsError)
 		tfContext.PushState("flowStateReceiver", tfContext.NewFlowStateUpdate("2", "pullerror"))
 		return 7
 	}
@@ -500,13 +500,13 @@ func ExecuteFilteredPullOnce(tfmContext FlowMachineContext, tfContext FlowContex
 		}
 	}
 	if len(tableIndexKey) == 0 {
-		tfmContext.Log("ExecuteFilteredPullOnce: missing GetTableIndexColumnNames", nil)
+		tfContext.Log("ExecuteFilteredPullOnce: missing GetTableIndexColumnNames", nil)
 		return
 	}
 
 	tableConfigurations, err := tableConfigurationFlowPullRemote(tfmContext, tfContext)
 	if err != nil {
-		tfmContext.Log("ExecuteFilteredPullOnce: error pulling configurations", err)
+		tfContext.Log("ExecuteFilteredPullOnce: error pulling configurations", err)
 		return
 	}
 

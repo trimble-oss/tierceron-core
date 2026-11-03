@@ -234,6 +234,7 @@ func SyncCheck(syncMode string) string {
 type FlowMachineContext interface {
 	GetEnv() string
 	GetId() int // >= 0 means it's running in the hive.
+	HasPlugin(string) bool
 	GetFlowContext(FlowNameType) FlowContext
 	NotifyFlowComponentLoaded(string) // Notify that a critical flow is loaded
 	GetFlowID(FlowNameType) *uint64

@@ -311,6 +311,7 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 				shouldSyncRemote = shouldSyncRemote || shouldSyncFunc(SyncRemoteModeFlowDataCyclic)
 			}
 			go tfmContext.SyncTableCycle(tfContext, flowDefinitionContext.GetTableIndexColumnNames(), flowDefinitionContext.GetTableIndexColumnNames(), flowDefinitionContext.GetIndexedPathExt, tableConfigurationFlowPushRemote, shouldSyncRemote)
+			tfContext.Log(fmt.Sprintf("%s is setup%s.", tfContext.GetFlowHeader().FlowName(), SyncCheck(tfContext.GetFlowSyncMode())), nil)
 		}
 	}
 	var previousFlowSyncMode string
@@ -322,7 +323,6 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 	} else if tfContext.GetFlowStateState() != 0 && (tfContext.FlowSyncModeMatchAny([]string{"pull", "pullonce", "push", "pushonce", "pusheast"}) && prod.IsProd()) { // pusheast is unique for isProd() as it pushes both east/west
 	} else if (tfContext.FlowSyncModeMatch("pull", true) || tfContext.FlowSyncModeMatch("push", true)) && tfContext.GetFlowSyncMode() != "pullerror" && tfContext.GetFlowSyncMode() != "pullcomplete" {
 	} else {
-		tfContext.Log(fmt.Sprintf("%s is setup%s.", tfContext.GetFlowHeader().FlowName(), SyncCheck(tfContext.GetFlowSyncMode())), nil)
 		return 4
 	}
 

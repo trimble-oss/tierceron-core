@@ -3,6 +3,7 @@ package core
 import (
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	cmap "github.com/orcaman/concurrent-map/v2"
@@ -56,7 +57,12 @@ func CallSelectedChatMsgHook(chatMsgHooks *cmap.ConcurrentMap[string, ChatHookFu
 func CallChatQueryChan(chatMsgHookCtx **cmap.ConcurrentMap[string, ChatHookFunc],
 	sourcePlugin string,
 	trcdbExchange *TrcdbExchange,
-	chatSenderChan *chan *ChatMsg) *ChatMsg {
+	chatSenderChan *chan *ChatMsg, loggers ...*log.Logger,
+) *ChatMsg {
+	var logger *log.Logger
+	if len(loggers) > 0 {
+		logger = loggers[0]
+	}
 	id := fmt.Sprintf("%s-%d", sourcePlugin, time.Now().UnixNano())
 	chatTrcdbQueryMsg := ChatMsg{
 		ChatId: &id,
@@ -82,9 +88,15 @@ func CallChatQueryChan(chatMsgHookCtx **cmap.ConcurrentMap[string, ChatHookFunc]
 	}
 
 	go func() {
+		if logger != nil {
+			logger.Printf("Sending Trcdb query: source=%s id=%s", sourcePlugin, newId)
+		}
 		*chatSenderChan <- &chatTrcdbQueryMsg
 	}()
 
 	chatResponseMsg := <-responseChan
+	if logger != nil {
+		logger.Printf("Received Trcdb query response: source=%s id=%s", sourcePlugin, newId)
+	}
 	return chatResponseMsg
 }

@@ -11,6 +11,17 @@ import (
 
 type ChatHookFunc func(*ChatMsg) bool
 
+var trcdbQueryLoggingActive = cmap.New[bool]()
+
+func SetTrcdbQueryLoggingActive(sourcePlugin string, active bool) {
+	trcdbQueryLoggingActive.Set(sourcePlugin, active)
+}
+
+func IsTrcdbQueryLoggingActive(sourcePlugin string) bool {
+	active, _ := trcdbQueryLoggingActive.Get(sourcePlugin)
+	return active
+}
+
 func RegisterChatMsgHook(chatMsgHookCtx **cmap.ConcurrentMap[string, ChatHookFunc], id string, hook ChatHookFunc) (string, error) {
 	if chatMsgHookCtx == nil {
 		return "", errors.New("chatMsgHookCtx pointer is nil")
@@ -88,14 +99,18 @@ func CallChatQueryChan(chatMsgHookCtx **cmap.ConcurrentMap[string, ChatHookFunc]
 	}
 
 	go func() {
-		if logger != nil {
-			logger.Printf("Sending Trcdb query: source=%s id=%s", sourcePlugin, newId)
+		if logger != nil && IsTrcdbQueryLoggingActive(sourcePlugin) {
+			query := ""
+			if trcdbExchange != nil {
+				query = trcdbExchange.Query
+			}
+			logger.Printf("Sending Trcdb query: source=%s id=%s query=%q", sourcePlugin, newId, query)
 		}
 		*chatSenderChan <- &chatTrcdbQueryMsg
 	}()
 
 	chatResponseMsg := <-responseChan
-	if logger != nil {
+	if logger != nil && IsTrcdbQueryLoggingActive(sourcePlugin) {
 		logger.Printf("Received Trcdb query response: source=%s id=%s", sourcePlugin, newId)
 	}
 	return chatResponseMsg

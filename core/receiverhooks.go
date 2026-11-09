@@ -3,12 +3,24 @@ package core
 import (
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	cmap "github.com/orcaman/concurrent-map/v2"
 )
 
 type ChatHookFunc func(*ChatMsg) bool
+
+var trcdbQueryLoggingActive = cmap.New[bool]()
+
+func SetTrcdbQueryLoggingActive(sourcePlugin string, active bool) {
+	trcdbQueryLoggingActive.Set(sourcePlugin, active)
+}
+
+func IsTrcdbQueryLoggingActive(sourcePlugin string) bool {
+	active, _ := trcdbQueryLoggingActive.Get(sourcePlugin)
+	return active
+}
 
 func RegisterChatMsgHook(chatMsgHookCtx **cmap.ConcurrentMap[string, ChatHookFunc], id string, hook ChatHookFunc) (string, error) {
 	if chatMsgHookCtx == nil {
@@ -56,7 +68,12 @@ func CallSelectedChatMsgHook(chatMsgHooks *cmap.ConcurrentMap[string, ChatHookFu
 func CallChatQueryChan(chatMsgHookCtx **cmap.ConcurrentMap[string, ChatHookFunc],
 	sourcePlugin string,
 	trcdbExchange *TrcdbExchange,
-	chatSenderChan *chan *ChatMsg) *ChatMsg {
+	chatSenderChan *chan *ChatMsg, loggers ...*log.Logger,
+) *ChatMsg {
+	var logger *log.Logger
+	if len(loggers) > 0 {
+		logger = loggers[0]
+	}
 	id := fmt.Sprintf("%s-%d", sourcePlugin, time.Now().UnixNano())
 	chatTrcdbQueryMsg := ChatMsg{
 		ChatId: &id,
@@ -82,9 +99,19 @@ func CallChatQueryChan(chatMsgHookCtx **cmap.ConcurrentMap[string, ChatHookFunc]
 	}
 
 	go func() {
+		if logger != nil && IsTrcdbQueryLoggingActive(sourcePlugin) {
+			query := ""
+			if trcdbExchange != nil {
+				query = trcdbExchange.Query
+			}
+			logger.Printf("Sending Trcdb query: source=%s id=%s query=%q", sourcePlugin, newId, query)
+		}
 		*chatSenderChan <- &chatTrcdbQueryMsg
 	}()
 
 	chatResponseMsg := <-responseChan
+	if logger != nil && IsTrcdbQueryLoggingActive(sourcePlugin) {
+		logger.Printf("Received Trcdb query response: source=%s id=%s", sourcePlugin, newId)
+	}
 	return chatResponseMsg
 }

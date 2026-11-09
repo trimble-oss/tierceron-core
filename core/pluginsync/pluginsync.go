@@ -13,6 +13,12 @@ func CreatePluginReadyChannel(pluginName string) *bchan.Bchan {
 	return ch
 }
 
+// IsPluginDeployed reports whether the kernel registered a local plugin deployment.
+func IsPluginDeployed(pluginName string) bool {
+	_, deployed := pluginReadyChannels[pluginName]
+	return deployed
+}
+
 // SignalPluginReady signals that a plugin has completed initialization and is ready.
 // This broadcasts to all waiting goroutines.
 func SignalPluginReady(pluginName string) {

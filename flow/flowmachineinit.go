@@ -15,7 +15,6 @@ type FlowDefinition struct {
 
 type FlowMachineInitContext struct {
 	Initialize                  func(FlowMachineContext)
-	HasPlugin                   func(string) bool
 	GetFlowMachineTemplates     func() map[string]any
 	GetIdColumnType             func(string) any
 	TableGrantNotify            func(FlowMachineContext, string)

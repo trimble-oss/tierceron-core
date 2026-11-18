@@ -7,14 +7,10 @@ import (
 	"os"
 
 	"github.com/trimble-oss/tierceron-core/v2/util/mlock"
-	"golang.org/x/sys/unix"
 )
 
-// Not a lot of effort has been put into this Darwin implementation
-// for memory protection.  Som parts may be incomplete or incorrect.
 func MemProtectInit(logger *log.Logger) error {
-	mlock.Mlock(logger)
-	return nil
+	return mlock.Mlock(logger)
 }
 
 func SetChattr(f *os.File) error {
@@ -26,10 +22,9 @@ func UnsetChattr(f *os.File) error {
 }
 
 func MemUnprotectAll(logger *log.Logger) error {
-	return unix.Munlockall()
+	return mlock.MunlockAll(logger)
 }
 
 func MemProtect(logger *log.Logger, sensitive *string) error {
-	// TODO: is this correct?
-	return mlock.Mlock(logger)
+	return mlock.Mlock2(logger, sensitive)
 }

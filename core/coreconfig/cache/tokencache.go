@@ -15,26 +15,31 @@ type TokenCache struct {
 	cache           *cmap.ConcurrentMap[string, *string]   // tokenKey, *token
 }
 
-func NewTokenCacheEmpty(varVaptr ...*string) *TokenCache {
+var protectMemory = memprotectopts.MemProtect
+
+// NewTokenCacheEmpty creates an empty cache without attempting memory protection.
+func NewTokenCacheEmpty() *TokenCache {
 	ccmap := cmap.New[*string]()
 	rmap := cmap.New[*[]string]()
 	tc := &TokenCache{rcache: &rmap, cache: &ccmap}
-	if len(varVaptr) > 0 {
-		tc.SetVaultAddress(varVaptr[0])
-	}
 	return tc
 }
 
-func NewTokenCache(tokenKey string, token *string, vaptr *string) *TokenCache {
-	if token == nil || len(*token) == 0 {
-		return NewTokenCacheEmpty(vaptr)
+// NewTokenCache protects supplied nonempty values in memonly builds before publishing them.
+// To create an address-only cache, pass an empty token key and a nil token.
+func NewTokenCache(tokenKey string, token *string, vaptr *string) (*TokenCache, error) {
+	tc := NewTokenCacheEmpty()
+	if vaptr != nil && len(*vaptr) > 0 {
+		if err := tc.SetVaultAddress(vaptr); err != nil {
+			return nil, err
+		}
 	}
-	ccmap := cmap.New[*string]()
-	ccmap.Set(tokenKey, token)
-	rmap := cmap.New[*[]string]()
-	tc := &TokenCache{rcache: &rmap, cache: &ccmap}
-	tc.SetVaultAddress(vaptr)
-	return tc
+	if token != nil && len(*token) > 0 {
+		if err := tc.AddToken(tokenKey, token); err != nil {
+			return nil, err
+		}
+	}
+	return tc, nil
 }
 
 func (tc *TokenCache) IsEmpty() bool {
@@ -46,7 +51,9 @@ func (tc *TokenCache) SetVaultAddress(vaptr *string) error {
 		return errors.New("Vault address nil or empty")
 	}
 	if memonly.IsMemonly() {
-		memprotectopts.MemProtect(nil, vaptr)
+		if err := protectMemory(nil, vaptr); err != nil {
+			return err
+		}
 	}
 	tc.VaultAddressPtr = vaptr
 	return nil
@@ -60,7 +67,9 @@ func (tc *TokenCache) AddRoleStr(roleKey string, role *string) error {
 		return errors.New("role nil or empty")
 	}
 	if memonly.IsMemonly() {
-		memprotectopts.MemProtect(nil, role)
+		if err := protectMemory(nil, role); err != nil {
+			return err
+		}
 	}
 
 	roleSlice := strings.Split(*role, ":")
@@ -76,7 +85,9 @@ func (tc *TokenCache) AddRole(roleKey string, roleSlice *[]string) error {
 	}
 	if memonly.IsMemonly() {
 		for i := range len(*roleSlice) {
-			memprotectopts.MemProtect(nil, &(*roleSlice)[i])
+			if err := protectMemory(nil, &(*roleSlice)[i]); err != nil {
+				return err
+			}
 		}
 	}
 	tc.rcache.Set(roleKey, roleSlice)
@@ -113,7 +124,9 @@ func (tc *TokenCache) AddToken(tokenKey string, token *string) error {
 		return errors.New("token nil or empty")
 	}
 	if memonly.IsMemonly() {
-		memprotectopts.MemProtect(nil, token)
+		if err := protectMemory(nil, token); err != nil {
+			return err
+		}
 	}
 	tc.cache.Set(tokenKey, token)
 	return nil

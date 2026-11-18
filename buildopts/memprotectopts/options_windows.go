@@ -3,31 +3,40 @@
 package memprotectopts
 
 import (
-	"fmt"
+	"errors"
 	"log"
 	"os"
 	"path/filepath"
-	"reflect"
-	"syscall"
+	"sync"
 	"unsafe"
 
+	"github.com/trimble-oss/tierceron-core/v2/util/mlock"
 	"golang.org/x/sys/windows"
 )
 
 const (
-	MEM_COMMIT     = 0x1000
-	MEM_RESERVE    = 0x2000
-	PAGE_READWRITE = 0x40
+	MEM_COMMIT     = windows.MEM_COMMIT
+	MEM_RESERVE    = windows.MEM_RESERVE
+	PAGE_READWRITE = windows.PAGE_READWRITE
 )
 
-// MemProtectInit -- initialization of memory protection not required on Windows
+// MemProtectInit verifies the Windows API provider. Each value is locked separately.
 func MemProtectInit(logger *log.Logger) error {
+	kernelTrust.Lock()
+	defer kernelTrust.Unlock()
+	if kernelTrust.verified {
+		return nil
+	}
+	if err := verifyKernelTrust(); err != nil {
+		return err
+	}
+	kernelTrust.verified = true
 	return nil
 }
 
-// MemUnprotectAll -- not implemented on Windows
+// MemUnprotectAll releases pages locked by MemProtect.
 func MemUnprotectAll(logger *log.Logger) error {
-	return nil
+	return mlock.MunlockAll(logger)
 }
 
 func SetChattr(f *os.File) error {
@@ -38,7 +47,10 @@ func UnsetChattr(f *os.File) error {
 	return nil
 }
 
-var kernel32 *syscall.DLL
+var kernelTrust struct {
+	sync.Mutex
+	verified bool
+}
 
 func verifyKernelTrust() error {
 	dllPath := filepath.Join("C:\\Windows\\System32", "kernel32.dll")
@@ -58,45 +70,14 @@ func verifyKernelTrust() error {
 		}),
 	}
 	verifyErr := windows.WinVerifyTrustEx(windows.InvalidHWND, &windows.WINTRUST_ACTION_GENERIC_VERIFY_V2, data)
-	if verifyErr != nil {
-		return verifyErr
-	}
 	data.StateAction = windows.WTD_STATEACTION_CLOSE
-	return windows.WinVerifyTrustEx(windows.InvalidHWND, &windows.WINTRUST_ACTION_GENERIC_VERIFY_V2, data)
+	return errors.Join(verifyErr, windows.WinVerifyTrustEx(windows.InvalidHWND, &windows.WINTRUST_ACTION_GENERIC_VERIFY_V2, data))
 }
 
 // MemProtect protects sensitive memory
 func MemProtect(logger *log.Logger, sensitive *string) error {
-	if kernel32 == nil {
-		verifyErr := verifyKernelTrust()
-		if verifyErr != nil {
-			return verifyErr
-		}
-		kernel32 = syscall.MustLoadDLL("C:\\Windows\\System32\\kernel32.dll")
-		verifyErr = verifyKernelTrust()
-		if verifyErr != nil {
-			kernel32 = nil
-			return verifyErr
-		}
-		fmt.Fprintln(os.Stderr, "Trusting the kernel.")
-	}
-	virtualAllocProc := kernel32.MustFindProc("VirtualAlloc")
-	var sensitiveLen int = (len(*sensitive))
-	pMem, _, err := virtualAllocProc.Call(
-		0,
-		uintptr(sensitiveLen),
-		MEM_COMMIT|MEM_RESERVE,
-		PAGE_READWRITE,
-	)
-
-	if err != nil && err != syscall.Errno(0) {
+	if err := MemProtectInit(logger); err != nil {
 		return err
 	}
-	s2 := make([]byte, sensitiveLen)
-	byteSliceHeader := (*reflect.SliceHeader)(unsafe.Pointer(&s2))
-	byteSliceHeader.Data = uintptr(unsafe.Pointer(pMem))
-	copy(s2, []byte(*sensitive))
-	*sensitive = string(s2)
-
-	return nil
+	return mlock.Mlock2(logger, sensitive)
 }

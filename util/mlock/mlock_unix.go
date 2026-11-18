@@ -1,11 +1,11 @@
-//go:build dragonfly || freebsd || linux || openbsd || solaris
+//go:build darwin || dragonfly || freebsd || linux || openbsd || solaris
 
 package mlock
 
 import (
+	"errors"
 	"log"
-	"reflect"
-	"syscall"
+	"runtime"
 	"unsafe"
 
 	"golang.org/x/sys/unix"
@@ -13,34 +13,24 @@ import (
 
 // Mlock - provides locking hook for OS's that support mlock
 func Mlock(logger *log.Logger) error {
-	return unix.Mlockall(syscall.MCL_CURRENT | syscall.MCL_FUTURE)
+	return unix.Mlockall(unix.MCL_CURRENT | unix.MCL_FUTURE)
 }
 
-var _zero uintptr
-
 func Mlock2(logger *log.Logger, sensitive *string) error {
-	var _p0 unsafe.Pointer
-	var err error = nil
-	sensitiveHeader := (*reflect.StringHeader)(unsafe.Pointer(sensitive))
-	sensitiveLen := sensitiveHeader.Len
-	if sensitiveLen > 0 {
-		_p0 = unsafe.Pointer(sensitiveHeader.Data)
-	} else {
-		_p0 = unsafe.Pointer(&_zero)
+	return lockString(sensitive, unix.Mlock)
+}
+
+func lockString(sensitive *string, lock func([]byte) error) error {
+	if sensitive == nil {
+		return errors.New("cannot lock a nil string")
 	}
-	_, _, e1 := unix.Syscall(unix.SYS_MLOCK2, uintptr(_p0), uintptr(sensitiveLen), 0)
-	if e1 != 0 {
-		switch e1 {
-		case 0:
-			err = nil
-		case unix.EAGAIN:
-			err = unix.EAGAIN
-		case unix.EINVAL:
-			err = unix.EINVAL
-		case unix.ENOENT:
-			err = unix.ENOENT
-		}
+	if len(*sensitive) == 0 {
+		return nil
 	}
+	// Mlock only reads the address and length; it never mutates string data.
+	data := unsafe.Slice(unsafe.StringData(*sensitive), len(*sensitive))
+	err := lock(data)
+	runtime.KeepAlive(sensitive)
 	return err
 }
 

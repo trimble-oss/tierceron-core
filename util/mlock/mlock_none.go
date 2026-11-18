@@ -1,40 +1,21 @@
-//go:build android || nacl || netbsd || plan9 || windows
+//go:build nacl || netbsd || plan9
 
 package mlock
 
 import (
-	"fmt"
+	"errors"
 	"log"
-	"os"
 )
 
 // Mlock - provides locking hook for OS's that don't support mlock
 func Mlock(logger *log.Logger) error {
-	if logger != nil {
-		logger.Println("Mlock not supported.")
-	} else {
-		fmt.Fprintln(os.Stderr, "Mlock not supported.")
-	}
-	os.Exit(1)
-	return nil
+	return errors.New("memory locking is not supported on this platform")
 }
 
 func Mlock2(logger *log.Logger, sensitive *string) error {
-	if logger != nil {
-		logger.Println("Mlock2 not supported.")
-	} else {
-		fmt.Fprintln(os.Stderr, "Mlock2 not supported.")
-	}
-	os.Exit(1)
-	return nil
+	return errors.New("memory locking is not supported on this platform")
 }
 
 func MunlockAll(logger *log.Logger) error {
-	if logger != nil {
-		logger.Println("MunlockAll not supported.")
-	} else {
-		fmt.Fprintln(os.Stderr, "MunlockAll not supported.")
-	}
-	os.Exit(1)
-	return nil
+	return errors.New("memory unlocking is not supported on this platform")
 }

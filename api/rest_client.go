@@ -11,6 +11,9 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/trimble-oss/tierceron-core/v2/buildopts/memonly"
+	"github.com/trimble-oss/tierceron-core/v2/buildopts/memprotectopts"
 )
 
 // RESTClient implements the Client interface for REST APIs
@@ -104,6 +107,11 @@ func (rc *RESTClient) Call(options *CallOptions) (*Response, error) {
 	// Set headers
 	if options.Headers != nil {
 		for key, value := range options.Headers {
+			if memonly.IsMemonly() && (strings.EqualFold(key, "Authorization") || strings.EqualFold(key, "X-Vault-Token")) {
+				if err := memprotectopts.MemProtect(nil, &value); err != nil {
+					return nil, err
+				}
+			}
 			req.Header.Set(key, value)
 		}
 	}
@@ -151,34 +159,41 @@ func (rc *RESTClient) Call(options *CallOptions) (*Response, error) {
 }
 
 func encodeFormBody(body any) (io.Reader, error) {
+	var encoded string
 	switch v := body.(type) {
 	case url.Values:
-		return strings.NewReader(v.Encode()), nil
+		encoded = v.Encode()
 	case map[string]string:
 		values := url.Values{}
 		for key, value := range v {
 			values.Set(key, value)
 		}
-		return strings.NewReader(values.Encode()), nil
+		encoded = values.Encode()
 	case map[string][]string:
 		values := url.Values{}
 		maps.Copy(values, v)
-		return strings.NewReader(values.Encode()), nil
+		encoded = values.Encode()
 	case map[string]any:
 		values := url.Values{}
 		for key, value := range v {
 			values.Set(key, fmt.Sprint(value))
 		}
-		return strings.NewReader(values.Encode()), nil
+		encoded = values.Encode()
 	case []byte:
 		return bytes.NewReader(v), nil
 	case string:
-		return strings.NewReader(v), nil
+		encoded = v
 	case io.Reader:
 		return v, nil
 	default:
 		return nil, fmt.Errorf("unsupported form body type: %T", body)
 	}
+	if memonly.IsMemonly() {
+		if err := memprotectopts.MemProtect(nil, &encoded); err != nil {
+			return nil, err
+		}
+	}
+	return strings.NewReader(encoded), nil
 }
 
 // Close closes the REST client

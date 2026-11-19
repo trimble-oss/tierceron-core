@@ -81,3 +81,35 @@ func MemProtect(logger *log.Logger, sensitive *string) error {
 	}
 	return mlock.Mlock2(logger, sensitive)
 }
+
+// MemProtectMove protects sensitive memory and erases the unlocked source copy
+// left behind by relocation into dedicated locked memory. The caller must
+// exclusively own the value's backing memory; it must not be shared, a
+// substring of shared data, or a string literal.
+func MemProtectMove(logger *log.Logger, sensitive *string) error {
+	if err := MemProtectInit(logger); err != nil {
+		return err
+	}
+	return mlock.Mlock2Move(logger, sensitive)
+}
+
+// MemRelease releases one protected owner of sensitive and blanks it; the
+// backing allocation is erased and freed when its last owner releases it.
+// Values that were never protected are left untouched.
+func MemRelease(logger *log.Logger, sensitive *string) error {
+	return mlock.Mlock2Release(logger, sensitive)
+}
+
+// LockedAlloc returns a zeroed buffer backed by locked memory, so sensitive
+// data can be received directly into protected storage. Release with LockedFree.
+func LockedAlloc(size int) ([]byte, error) {
+	if err := MemProtectInit(nil); err != nil {
+		return nil, err
+	}
+	return mlock.LockedAlloc(size)
+}
+
+// LockedFree erases and releases the locked allocation backing buf.
+func LockedFree(buf []byte) error {
+	return mlock.LockedFree(buf)
+}

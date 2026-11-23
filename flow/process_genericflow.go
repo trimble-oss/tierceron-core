@@ -187,6 +187,9 @@ func tableConfigurationFlowPullRemote(tfmContext FlowMachineContext, tfContext F
 }
 
 func tableConfigurationFlowPushRemote(tfContext FlowContext, changedItem map[string]any) error {
+	if readOnly, ok := tfContext.(interface{ IsBackingStoreReadOnly() bool }); ok && readOnly.IsBackingStoreReadOnly() {
+		return fmt.Errorf("flow backing store is read-only")
+	}
 	tfContext.WaitFlowLoaded()
 	flowDefinitionContext := tfContext.GetFlowLibraryContext()
 	regionSyncList := tfContext.GetDataSourceRegions(true)
@@ -339,6 +342,11 @@ func ProcessFlowStatesForInterval(tfContext FlowContext, tfmContext FlowMachineC
 
 	// Logic for push/pull once
 	if tfContext.FlowSyncModeMatch("push", true) {
+		if readOnly, ok := tfContext.(interface{ IsBackingStoreReadOnly() bool }); ok && readOnly.IsBackingStoreReadOnly() {
+			tfContext.Log("Cannot push a read-only flow to its backing store", nil)
+			tfContext.PushState("flowStateReceiver", tfContext.NewFlowStateUpdate("2", "pusherror"))
+			return 6
+		}
 		switch syncSuffix := strings.TrimPrefix(tfContext.GetFlowSyncMode(), "push"); syncSuffix {
 		case "once":
 		default:

@@ -6,14 +6,14 @@ import (
 )
 
 const (
-	UserTokenMetadataKey       = "x-trc-user-token"
-	UserTokenCacheKey          = "trcshtalk:su:user-token"
-	UserTokenValidatorProperty = "validateTalkctlUserToken"
-	UserTokenProviderProperty  = "talkctlUserToken"
+	OIDCIDTokenMetadataKey       = "x-trc-oidc-id-token"
+	OIDCIDTokenCacheKey          = "trcshtalk:su:oidc-id-token"
+	OIDCIDTokenValidatorProperty = "validateTalkctlOIDCIDToken"
+	OIDCIDTokenProviderProperty  = "talkctlOIDCIDToken"
 )
 
 var (
-	ErrUserTokenExpired    = errors.New("user token expired")
+	ErrOIDCIDTokenExpired  = errors.New("OIDC ID token expired")
 	ErrUserAuthUnavailable = errors.New("user authentication service unavailable")
 )
 
@@ -30,12 +30,12 @@ func HasElevatedUserAuthorization(ctx context.Context) bool {
 	return authorized
 }
 
-func UserTokenProviderFromProperties(properties map[string]any) (func(context.Context, bool) (string, error), bool) {
-	provider, ok := properties[UserTokenProviderProperty].(func(context.Context, bool) (string, error))
+func OIDCIDTokenProviderFromProperties(properties map[string]any) (func(context.Context, bool) (string, error), bool) {
+	provider, ok := properties[OIDCIDTokenProviderProperty].(func(context.Context, bool) (string, error))
 	return provider, ok && provider != nil
 }
 
-func UserTokenValidatorFromProperties(properties map[string]any) (func(context.Context, string) error, bool) {
-	validator, ok := properties[UserTokenValidatorProperty].(func(context.Context, string) error)
+func OIDCIDTokenValidatorFromProperties(properties map[string]any) (func(context.Context, string) error, bool) {
+	validator, ok := properties[OIDCIDTokenValidatorProperty].(func(context.Context, string) error)
 	return validator, ok && validator != nil
 }

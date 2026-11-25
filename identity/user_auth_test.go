@@ -5,29 +5,29 @@ import (
 	"testing"
 )
 
-func TestUserTokenProperties(t *testing.T) {
+func TestOIDCIDTokenProperties(t *testing.T) {
 	properties := map[string]any{
-		UserTokenProviderProperty:  func(context.Context, bool) (string, error) { return "user-token", nil },
-		UserTokenValidatorProperty: func(context.Context, string) error { return nil },
+		"talkctlOIDCIDToken":         func(context.Context, bool) (string, error) { return "oidc-id-token", nil },
+		"validateTalkctlOIDCIDToken": func(context.Context, string) error { return nil },
 	}
-	provider, ok := UserTokenProviderFromProperties(properties)
+	provider, ok := OIDCIDTokenProviderFromProperties(properties)
 	if !ok {
-		t.Fatal("user token provider not found")
+		t.Fatal("OIDC ID token provider not found")
 	}
-	if token, _ := provider(context.Background(), false); token != "user-token" {
-		t.Fatal("wrong user token provider")
+	if token, _ := provider(context.Background(), false); token != "oidc-id-token" {
+		t.Fatal("wrong OIDC ID token provider")
 	}
-	validator, ok := UserTokenValidatorFromProperties(properties)
+	validator, ok := OIDCIDTokenValidatorFromProperties(properties)
 	if !ok || validator(context.Background(), "") != nil {
-		t.Fatal("user token validator not found")
+		t.Fatal("OIDC ID token validator not found")
 	}
 	for _, invalid := range []any{nil, "invalid"} {
-		properties[UserTokenProviderProperty] = invalid
-		properties[UserTokenValidatorProperty] = invalid
-		if _, ok := UserTokenProviderFromProperties(properties); ok {
+		properties[OIDCIDTokenProviderProperty] = invalid
+		properties[OIDCIDTokenValidatorProperty] = invalid
+		if _, ok := OIDCIDTokenProviderFromProperties(properties); ok {
 			t.Fatal("invalid provider accepted")
 		}
-		if _, ok := UserTokenValidatorFromProperties(properties); ok {
+		if _, ok := OIDCIDTokenValidatorFromProperties(properties); ok {
 			t.Fatal("invalid validator accepted")
 		}
 	}
